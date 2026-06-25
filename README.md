@@ -7,11 +7,11 @@ A white-labelled **Distribution Management System** for a Campa (Reliance Consum
 ---
 
 ## Status
-Pre-build. Legal, requirements, design, branding and sales docs are done. Build starts once the client returns a short gap checklist (see **Open questions**). Roughly half the MVP can start immediately from the client's existing data workbook.
+**Build in progress.** Infra is live — private repo + Vercel (auto-deploy + PR previews) + Supabase (Mumbai). Shipped: foundation/scaffold, UI Kit (`/kit`), **SKU Catalog persisted on Supabase** (`/catalog`), Owner Dashboard (`/dashboard`). Next: Auth/RBAC (shared) + the transactional spine. See `docs/STATUS.md` for the live checklist and **`docs/HARDIK_KICKSTART.md`** to start.
 
 - **MVP (Phase 1):** go-live in ~4 weeks
 - **Phase 2 (core):** go-live in ~6 weeks
-- Clock starts on receipt of required inputs, not on signing.
+- Some MVP modules stay blocked on the client's gap checklist (see **Open questions**).
 
 ---
 
@@ -52,7 +52,7 @@ Aligned with BookMyMedia for speed and shared components.
 | Hosting | **Vercel** (Next.js, edge-delivered, preview URLs) |
 | Web app | **Next.js / React**, responsive, PWA-installable (web only — no native, no offline this build) |
 | Backend | **Supabase** — Postgres + Auth + Storage + Row Level Security + Edge Functions + Cron |
-| UI | **shadcn/ui + Tailwind**, **Tremor** for dashboard charts |
+| UI | **shadcn/ui + Tailwind v3**, **recharts** (shadcn charts) for dashboards |
 | Maps | **Google Maps API** (GPS, PoD, beats — Phase 2) |
 | Email | **Resend** |
 | Messaging | **Meta WhatsApp** (alerts) |
@@ -110,25 +110,19 @@ groundstruth-dms/
 ```
 > The four data folders are local working files — **git-ignored** so they stay out of the pushed repo. Sync them between the team over a private channel, not git.
 
-### Scaffolding the Next.js app (first time)
-A curated `package.json` already exists (intended deps incl. Tremor, `@supabase/ssr`, zod). `create-next-app` refuses a non-empty directory, so scaffold into a temp dir and merge — don't overwrite the curated manifest:
+### Getting started
+The app is **already scaffolded** (Next 15 + Tailwind v3 + shadcn). A clean clone builds with zero config — Catalog falls back to its seed until you add Supabase keys:
 ```bash
-npx create-next-app@latest .scaffold --ts --app --tailwind --eslint --src-dir --use-npm
-rsync -a --ignore-existing .scaffold/ .          # bring in app skeleton, keep our package.json/.gitignore/.env.example
-rm -rf .scaffold
-npm install                                      # installs the curated deps
-npx shadcn@latest init                           # then add components as needed
-```
-
-### Getting started (once scaffolded)
-```bash
-# prerequisites: Node 20+, a Supabase project, a Vercel account
+# prerequisites: Node 20+
 git clone <repo-url> && cd groundstruth-dms
 npm install
-cp .env.example .env.local   # add Supabase URL + anon key (service key server-side only)
-npm run dev
+cp .env.example .env.local        # add Supabase URL + anon + service-role keys (from the team vault)
+node scripts/check-supabase.mjs   # expect "CONNECTION OK"
+npm run dev                       # / · /catalog · /dashboard · /kit
 ```
 Never commit `.env*` or any secret. The Supabase **service-role key is server-side only**.
+
+**New agent picking up the build?** Start at **`docs/HARDIK_KICKSTART.md`**, then `CLAUDE.md` → `AGENTS.md` → `docs/COORDINATION.md` → `docs/STATUS.md`.
 
 ---
 
