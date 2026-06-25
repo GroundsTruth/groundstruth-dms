@@ -1,0 +1,11 @@
+# Source/client data folders — NOT needed for the Next.js build, and they hold
+# confidential client contracts + ~38MB of PDFs. Keep them out of every deploy
+# (applies to both `vercel` CLI and Git-connected deployments).
+artefacts/
+client/
+dev/
+wireframes/
+prompts-scm
+
+# Local docs / handoffs aren't needed in the deployed bundle.
+docs/

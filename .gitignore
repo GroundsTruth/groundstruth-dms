@@ -1,0 +1,43 @@
+# deps
+node_modules/
+.pnp
+.pnp.js
+
+# next / vercel
+.next/
+out/
+build/
+.vercel/
+
+# env & secrets — NEVER COMMIT
+.env
+.env.*
+!.env.example
+
+# supabase local
+.supabase/
+supabase/.branches/
+supabase/.temp/
+
+# misc
+.DS_Store
+*.log
+npm-debug.log*
+coverage/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Claude Code: share project plugin enablement, keep local overrides out
+.claude/settings.local.json
+
+# Project data folders (artefacts/ client/ dev/ wireframes/) are versioned on
+# this branch — they hold client deliverables we share across the team.
+# NOTE: these include confidential client contracts and driver personal data.
+# Only commit/push them to a PRIVATE remote.
+
+# Only these docs are tracked at the repo root; any other root-level note stays local.
+/*.md
+!/README.md
+!/AGENTS.md
+!/CLAUDE.md

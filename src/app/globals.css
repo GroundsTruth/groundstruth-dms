@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Near-white background (#F6F4F8) so data pops */
+    --background: 280 20% 97%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Campa Purple #5D2081 — primary actions / active nav / chart accent */
+    --primary: 278 60% 32%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Purple tint #EFE7F5 */
+    --secondary: 280 44% 93%;
+    --secondary-foreground: 278 60% 32%;
+
+    --muted: 280 20% 95%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 280 44% 93%;
+    --accent-foreground: 278 60% 32%;
+
+    /* Campa Red #E2231A — ALERTS ONLY (destructive) */
+    --destructive: 2 78% 49%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 280 16% 88%;
+    --input: 280 16% 88%;
+    --ring: 278 60% 32%;
+
+    --radius: 0.6rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
