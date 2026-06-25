@@ -23,6 +23,9 @@ export type Sku = {
   // TODO (from client / CA): mrp, hsn, taxSlabPct, cessPct, unitsPerCase.
 };
 
+/** A SKU's editable fields (everything except the auto-assigned `code`). */
+export type SkuInput = Omit<Sku, "code">;
+
 export type Confidence = "exact" | "alias" | "fuzzy" | "ambiguous" | "none";
 
 /** Result of mapping a messy feed `article_name` to a canonical SKU. */
