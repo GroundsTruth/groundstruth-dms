@@ -15,9 +15,11 @@ the seam.
 2. `AGENTS.md` — the hard build rules (source of truth).
 3. `docs/COORDINATION.md` — folder ownership, branch/PR flow, migration rules.
 4. `docs/STATUS.md` — live checklist + current state.
-5. `docs/handoffs/2026-06-25-aman.md` — what's shipped so far.
-6. `docs/MIGRATIONS.md` — migration log + naming convention.
-7. `dev/11_Delivery_Tracker.xlsx` (Drive) — module sequencing; Owner column = the split.
+5. `docs/WORKLOG.md` — latest session + who's on what (read at every session start).
+6. `docs/handoffs/2026-06-25-aman.md` — what's shipped so far.
+7. `docs/MIGRATIONS.md` — migration log + naming convention.
+8. `dev/11_Delivery_Tracker.xlsx` (now committed to the repo) — module sequencing; Owner column = the split.
+9. `artefacts/` · `client/` · `wireframes/` — briefs, proposals, requirements, UI wireframes (build reference, in the repo). NOTE: signed MSA/NDA, client financials, and driver PII are **not** in git — get those from Aman's Drive.
 
 ## Stack (proven — do not swap)
 Next.js 15 (App Router, `src/`) · React 19 · TypeScript · Tailwind v3 · shadcn/ui

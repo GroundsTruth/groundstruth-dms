@@ -25,6 +25,9 @@ avoid colliding.
 - Small PRs, rebased on `dev` before opening.
 - Every PR gets a **Vercel preview URL** — we review there before merge. This is
   our standard QA gate.
+- **Before starting a module, claim it in `docs/WORKLOG.md` ("In flight").** Read the
+  WORKLOG's top entry at session start; add one at session end. This is how we stay in
+  sync without passing prompts around, and how we avoid editing the same thing twice.
 - _(Default branch is currently `master`; rename to `main` to match the README, or
   treat `master` as `main`.)_
 

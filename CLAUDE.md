@@ -2,7 +2,8 @@
 
 **Read order:** this file → `AGENTS.md` (hard build rules — non-negotiable) →
 `docs/COORDINATION.md` (who owns what, branch/PR flow) → `docs/STATUS.md`
-(current state + checklist).
+(current state + checklist) → `docs/WORKLOG.md` (latest session + who's on what —
+read at the start of every session, update at the end).
 
 `AGENTS.md` is the source of truth for build rules. This file only adds the
 cross-team coordination and a few hard-won learnings from **BookMyMedia** (the

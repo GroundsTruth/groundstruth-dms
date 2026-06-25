@@ -31,12 +31,20 @@ coverage/
 # Claude Code: share project plugin enablement, keep local overrides out
 .claude/settings.local.json
 
-# Confidential client/source data — NEVER commit (sync via Drive, not git):
-# client contracts, financials, driver PII, ~38MB of PDFs. Kept local-only.
-artefacts/
-client/
-dev/
-wireframes/
+# Build-reference material (tracker, wireframes, briefs, proposals, requirements, seed)
+# is tracked in this PRIVATE repo so both agents share one source of truth. The
+# high-sensitivity files below stay LOCAL-ONLY (sync via the private Drive). The repo
+# must stay PRIVATE regardless.
+# --- kept OUT of git: client legal + client data + driver PII + heavy raw binaries ---
+client/1_Master_Services_Agreement.docx
+client/2_Mutual_NDA.docx
+artefacts/Jaypee_Driver_Directory.xlsx
+artefacts/Jaypee_Master_Workbook_June2026_UPDATED.xlsx
+artefacts/Beverages-Catalogue_260525_213707.pdf
+artefacts/DOC-20260421-WA0057_260421_191709.pdf
+artefacts/PPT_1.pptx
+# --- local-only housekeeping ---
+dev/*.backup-*.xlsx
 prompts-scm
 
 # Only these docs are tracked at the repo root; any other root-level note stays local.
