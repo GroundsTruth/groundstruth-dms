@@ -1,5 +1,5 @@
 import type { ResolveResult, Sku } from "./types";
-import { SEED_SKUS } from "./data";
+import { SEED_SKUS } from "./seed-data";
 
 /**
  * Resolve a messy WhatsApp-feed `article_name` to a canonical SKU.

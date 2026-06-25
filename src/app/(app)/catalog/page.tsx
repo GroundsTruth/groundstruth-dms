@@ -4,6 +4,9 @@ import { KpiCard } from "@/components/kit/kpi-card";
 import { StatusBadge } from "@/components/kit/status-badge";
 import { CatalogTable } from "@/components/catalog/catalog-table";
 
+// SKU data is read from Supabase per request — don't freeze it at build time.
+export const dynamic = "force-dynamic";
+
 export default async function CatalogPage() {
   const skus = await getSkus();
   const priced = skus.filter((s) => s.ratePerCase != null).length;

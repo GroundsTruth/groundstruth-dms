@@ -31,10 +31,13 @@ coverage/
 # Claude Code: share project plugin enablement, keep local overrides out
 .claude/settings.local.json
 
-# Project data folders (artefacts/ client/ dev/ wireframes/) are versioned on
-# this branch — they hold client deliverables we share across the team.
-# NOTE: these include confidential client contracts and driver personal data.
-# Only commit/push them to a PRIVATE remote.
+# Confidential client/source data — NEVER commit (sync via Drive, not git):
+# client contracts, financials, driver PII, ~38MB of PDFs. Kept local-only.
+artefacts/
+client/
+dev/
+wireframes/
+prompts-scm
 
 # Only these docs are tracked at the repo root; any other root-level note stays local.
 /*.md
