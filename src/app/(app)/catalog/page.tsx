@@ -8,9 +8,10 @@ import { CatalogTable } from "@/components/catalog/catalog-table";
 export const dynamic = "force-dynamic";
 
 export default async function CatalogPage() {
-  const skus = await getSkus();
-  const priced = skus.filter((s) => s.ratePerCase != null).length;
-  const cats = categoriesOf(skus);
+  const skus = await getSkus({ includeInactive: true });
+  const active = skus.filter((s) => s.isActive !== false);
+  const priced = active.filter((s) => s.ratePerCase != null).length;
+  const cats = categoriesOf(active);
 
   return (
     <>
@@ -20,7 +21,7 @@ export default async function CatalogPage() {
       />
 
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <KpiCard label="SKUs" value={String(skus.length)} accent />
+        <KpiCard label="SKUs" value={String(active.length)} accent />
         <KpiCard
           label="Priced"
           value={String(priced)}
@@ -28,7 +29,7 @@ export default async function CatalogPage() {
         />
         <KpiCard
           label="Needs rate"
-          value={String(skus.length - priced)}
+          value={String(active.length - priced)}
           sub={<StatusBadge tone="warn">from client</StatusBadge>}
         />
         <KpiCard label="Categories" value={String(cats.length)} />

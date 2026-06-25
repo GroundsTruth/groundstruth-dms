@@ -1,15 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pencil, Plus, Search } from "lucide-react";
+import { Ban, Pencil, Plus, RotateCcw, Search } from "lucide-react";
+import { toast } from "sonner";
 
 import type { Sku } from "@/lib/catalog/types";
+import { setSkuActive } from "@/lib/catalog/actions";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/kit/status-badge";
 import { EmptyState } from "@/components/kit/empty-state";
+import { useConfirm } from "@/components/kit/confirm-dialog";
 import { SkuFormSheet } from "@/components/catalog/sku-form-sheet";
 import {
   Table,
@@ -24,6 +27,58 @@ function rupees(n: number) {
   return "₹" + n.toLocaleString("en-IN");
 }
 
+function StatusCell({ s }: { s: Sku }) {
+  if (s.isActive === false) return <StatusBadge tone="neutral">Inactive</StatusBadge>;
+  if (s.ratePerCase != null) return <StatusBadge tone="ok">Priced</StatusBadge>;
+  return <StatusBadge tone="warn">Needs rate</StatusBadge>;
+}
+
+function RowActions({
+  s,
+  onEdit,
+  onToggle,
+}: {
+  s: Sku;
+  onEdit: (s: Sku) => void;
+  onToggle: (s: Sku) => void;
+}) {
+  const active = s.isActive !== false;
+  return (
+    <div className="flex items-center justify-end gap-1">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={() => onEdit(s)}
+        aria-label={`Edit ${s.name}`}
+      >
+        <Pencil className="h-4 w-4" />
+      </Button>
+      {active ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+          onClick={() => onToggle(s)}
+          aria-label={`Deactivate ${s.name}`}
+        >
+          <Ban className="h-4 w-4" />
+        </Button>
+      ) : (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-emerald-600 hover:text-emerald-700"
+          onClick={() => onToggle(s)}
+          aria-label={`Reactivate ${s.name}`}
+        >
+          <RotateCcw className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
+  );
+}
+
 export function CatalogTable({
   skus,
   categories,
@@ -33,12 +88,20 @@ export function CatalogTable({
 }) {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("All");
+  const [showInactive, setShowInactive] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editSku, setEditSku] = useState<Sku | null>(null);
+  const { confirm, dialog } = useConfirm();
 
-  const filtered = useMemo(() => {
+  const inactiveCount = useMemo(
+    () => skus.filter((s) => s.isActive === false).length,
+    [skus],
+  );
+
+  const { filtered, scopeTotal } = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return skus.filter((s) => {
+    const scoped = skus.filter((s) => showInactive || s.isActive !== false);
+    const list = scoped.filter((s) => {
       const inCat = cat === "All" || s.category === cat;
       const inQ =
         !needle ||
@@ -47,7 +110,8 @@ export function CatalogTable({
         s.category.toLowerCase().includes(needle);
       return inCat && inQ;
     });
-  }, [skus, q, cat]);
+    return { filtered: list, scopeTotal: scoped.length };
+  }, [skus, q, cat, showInactive]);
 
   const cats = ["All", ...categories];
 
@@ -58,6 +122,26 @@ export function CatalogTable({
   function openEdit(s: Sku) {
     setEditSku(s);
     setFormOpen(true);
+  }
+
+  async function toggleActive(s: Sku) {
+    const active = s.isActive !== false;
+    if (active) {
+      const ok = await confirm({
+        title: `Deactivate ${s.name}?`,
+        description:
+          "It will be hidden from the active catalog. You can reactivate it anytime via “Show inactive”.",
+        confirmLabel: "Deactivate",
+        variant: "destructive",
+      });
+      if (!ok) return;
+    }
+    const res = await setSkuActive(s.code, !active);
+    if (!res.ok) {
+      toast.error("Couldn't update", { description: res.error });
+      return;
+    }
+    toast.success(active ? "SKU deactivated" : "SKU reactivated");
   }
 
   return (
@@ -97,9 +181,23 @@ export function CatalogTable({
         ))}
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        {filtered.length} of {skus.length} SKUs
-      </p>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          {filtered.length} of {scopeTotal} SKUs
+        </p>
+        {inactiveCount > 0 ? (
+          <button
+            type="button"
+            onClick={() => setShowInactive((v) => !v)}
+            className={cn(
+              "text-xs font-medium underline-offset-2 hover:underline",
+              showInactive ? "text-foreground" : "text-muted-foreground",
+            )}
+          >
+            {showInactive ? "Hide inactive" : `Show inactive (${inactiveCount})`}
+          </button>
+        ) : null}
+      </div>
 
       {filtered.length === 0 ? (
         <EmptyState
@@ -131,14 +229,14 @@ export function CatalogTable({
                     <TableHead>Pack</TableHead>
                     <TableHead className="text-right">Rate/case</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="w-10">
-                      <span className="sr-only">Edit</span>
+                    <TableHead className="w-20 text-right">
+                      <span className="sr-only">Actions</span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.map((s) => (
-                    <TableRow key={s.code}>
+                    <TableRow key={s.code} className={cn(s.isActive === false && "opacity-60")}>
                       <TableCell className="font-mono text-xs text-muted-foreground">
                         {s.code}
                       </TableCell>
@@ -153,22 +251,10 @@ export function CatalogTable({
                         )}
                       </TableCell>
                       <TableCell>
-                        {s.ratePerCase != null ? (
-                          <StatusBadge tone="ok">Priced</StatusBadge>
-                        ) : (
-                          <StatusBadge tone="warn">Needs rate</StatusBadge>
-                        )}
+                        <StatusCell s={s} />
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => openEdit(s)}
-                          aria-label={`Edit ${s.name}`}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+                        <RowActions s={s} onEdit={openEdit} onToggle={toggleActive} />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -180,7 +266,7 @@ export function CatalogTable({
           {/* mobile: cards */}
           <div className="space-y-2.5 md:hidden">
             {filtered.map((s) => (
-              <Card key={s.code}>
+              <Card key={s.code} className={cn(s.isActive === false && "opacity-60")}>
                 <CardContent className="flex items-center justify-between gap-3 p-4">
                   <button
                     type="button"
@@ -193,26 +279,14 @@ export function CatalogTable({
                       {s.packLabel}
                     </p>
                     <div className="mt-1.5">
-                      {s.ratePerCase != null ? (
-                        <StatusBadge tone="ok">Priced</StatusBadge>
-                      ) : (
-                        <StatusBadge tone="warn">Needs rate</StatusBadge>
-                      )}
+                      <StatusCell s={s} />
                     </div>
                   </button>
-                  <div className="flex shrink-0 flex-col items-end gap-1">
+                  <div className="flex shrink-0 flex-col items-end gap-1.5">
                     <p className="text-base font-semibold tabular-nums">
                       {s.ratePerCase != null ? rupees(s.ratePerCase) : "—"}
                     </p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => openEdit(s)}
-                      aria-label={`Edit ${s.name}`}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <RowActions s={s} onEdit={openEdit} onToggle={toggleActive} />
                   </div>
                 </CardContent>
               </Card>
@@ -222,6 +296,7 @@ export function CatalogTable({
       )}
 
       <SkuFormSheet open={formOpen} editSku={editSku} onOpenChange={setFormOpen} />
+      {dialog}
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/kit/empty-state";
 import { ErrorState } from "@/components/kit/error-state";
 import { LoadingState, Spinner } from "@/components/kit/loading-state";
 import { FormField, FormActions } from "@/components/kit/form-field";
+import { useConfirm } from "@/components/kit/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +51,7 @@ export default function KitPage() {
     rate !== "" && !/^\d+$/.test(rate)
       ? "Enter a whole number (₹ per case)."
       : undefined;
+  const { confirm, dialog } = useConfirm();
 
   return (
     <>
@@ -229,7 +231,33 @@ export default function KitPage() {
             </FormActions>
           </form>
         </Section>
+
+        <Section title="Confirm dialog · every destructive action">
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                const ok = await confirm({
+                  title: "Deactivate this SKU?",
+                  description:
+                    "It will be hidden from the active catalog. You can reactivate it anytime.",
+                  confirmLabel: "Deactivate",
+                  variant: "destructive",
+                });
+                if (ok) toast.success("Confirmed");
+                else toast("Cancelled");
+              }}
+            >
+              Deactivate SKU
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              <code className="text-xs">useConfirm()</code> → awaitable boolean. Reuse for every
+              destructive action — never a bare <code className="text-xs">window.confirm()</code>.
+            </span>
+          </div>
+        </Section>
       </div>
+      {dialog}
     </>
   );
 }

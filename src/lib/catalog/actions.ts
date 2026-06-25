@@ -84,3 +84,23 @@ export async function updateSku(
     return { ok: false, error: e instanceof Error ? e.message : "Unexpected error." };
   }
 }
+
+/** Deactivate (active=false) or reactivate (active=true) a SKU — soft, reversible. */
+export async function setSkuActive(
+  code: string,
+  active: boolean,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!code?.trim()) return { ok: false, error: "Missing SKU code." };
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("skus")
+      .update({ is_active: active })
+      .eq("code", code);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/catalog");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Unexpected error." };
+  }
+}

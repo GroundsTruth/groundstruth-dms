@@ -13,7 +13,7 @@ without passing kickstart prompts back and forth.
 ## 🚧 In flight — claim before you start (this is how we avoid collisions)
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
-| Aman | `feat/ui-kit-states` | UI Kit states + forms (M04) **+** Catalog add/edit (M10) | `src/components/kit/` · `src/components/catalog/` · `src/lib/catalog/` · `src/components/ui/input.tsx` · `/kit` · `/catalog` | 2026-06-25 |
+| Aman | `feat/ui-kit-states` | UI Kit — states, forms, ConfirmDialog (M04) **+** Catalog add/edit/deactivate (M10) | `src/components/kit/` · `src/components/ui/{input,dialog}.tsx` · `src/components/catalog/` · `src/lib/catalog/` · `/kit` · `/catalog` | 2026-06-25 |
 | Hardik | — | (nothing active) | transactional spine · (auth = shared) | — |
 
 **Rules that keep us conflict-free:**
@@ -28,15 +28,17 @@ without passing kickstart prompts back and forth.
 
 ## Log (newest first)
 
-### 2026-06-25 · Aman + Claude · Aman's lane — UI Kit states + Catalog CRUD (`feat/ui-kit-states`, one PR)
+### 2026-06-25 · Aman + Claude · Aman's lane — UI Kit + Catalog CRUD (`feat/ui-kit-states`, one PR)
 - **UI Kit:** `EmptyState`, `ErrorState` (error + retryable offline), `LoadingState` + `Spinner`,
-  `FormField` + `FormActions`. `Input` shows a red border on `aria-invalid`. Demoed on `/kit`.
-- **Catalog add/edit (M10):** server actions `createSku` / `updateSku` (`src/lib/catalog/actions.ts`
-  — service-role, auto-assigns the next `SKUNNN`, revalidates `/catalog`) + `SkuFormSheet`
-  (slide-over reusing `FormField`) + per-row Edit + a real "Add SKU" on `/catalog`. Reads still
-  fall back to the seed. `TODO(auth)`: gate the actions to owner/warehouse once M05–M09 land.
+  `FormField` + `FormActions`, and `ConfirmDialog` + `useConfirm()` (on a new `ui/dialog.tsx`
+  primitive). `Input` shows a red border on `aria-invalid`. All demoed on `/kit`.
+- **Catalog (M10):** server actions `createSku` / `updateSku` / `setSkuActive`
+  (`src/lib/catalog/actions.ts` — service-role, auto-assigns next `SKUNNN`, revalidates) +
+  `SkuFormSheet` (slide-over reusing `FormField`) + per-row Edit + Add SKU + soft
+  deactivate/reactivate (confirmed via `useConfirm`) + a Show-inactive toggle on `/catalog`.
+  Reads fall back to the seed. `TODO(auth)`: gate the actions to owner/warehouse once M05–M09 land.
 - One consolidated PR by choice (Hardik reviews the lane in one pass). Independent of Hardik;
-  only shared seam touched = `src/components/ui/input.tsx` (additive).
+  shared seams touched = `src/components/ui/input.tsx` + new `src/components/ui/dialog.tsx` (additive).
 
 ### 2026-06-25 · Aman + Claude · handover prep · Supabase + Catalog · repo as shared source
 - `feat/supabase-catalog` → merged to `dev` + `main`.
