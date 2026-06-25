@@ -8,6 +8,10 @@ import { PageHeader } from "@/components/kit/page-header";
 import { KpiCard } from "@/components/kit/kpi-card";
 import { StatusBadge } from "@/components/kit/status-badge";
 import { QtyStepper } from "@/components/kit/qty-stepper";
+import { EmptyState } from "@/components/kit/empty-state";
+import { ErrorState } from "@/components/kit/error-state";
+import { LoadingState, Spinner } from "@/components/kit/loading-state";
+import { FormField, FormActions } from "@/components/kit/form-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +45,11 @@ const SAMPLE = [
 
 export default function KitPage() {
   const [qty, setQty] = useState(12);
+  const [rate, setRate] = useState("");
+  const rateError =
+    rate !== "" && !/^\d+$/.test(rate)
+      ? "Enter a whole number (₹ per case)."
+      : undefined;
 
   return (
     <>
@@ -158,6 +167,67 @@ export default function KitPage() {
               Water SKUs.
             </TabsContent>
           </Tabs>
+        </Section>
+
+        <Section title="Empty state">
+          <EmptyState
+            title="No SKUs match your search"
+            description="Try a different name, or clear the filters to see all products."
+            action={
+              <Button size="sm">
+                <Plus className="mr-1.5 h-4 w-4" /> Add SKU
+              </Button>
+            }
+          />
+        </Section>
+
+        <Section title="Loading states">
+          <div className="grid gap-4 md:grid-cols-2">
+            <LoadingState label="Loading SKUs…" rows={3} />
+            <Card>
+              <CardContent className="flex h-full items-center gap-2 p-4 text-sm text-muted-foreground">
+                <Spinner /> Saving order…
+              </CardContent>
+            </Card>
+          </div>
+        </Section>
+
+        <Section title="Error & offline · always retryable">
+          <div className="grid gap-4 md:grid-cols-2">
+            <ErrorState onRetry={() => toast("Retrying…")} />
+            <ErrorState variant="offline" onRetry={() => toast("Reconnecting…")} />
+          </div>
+        </Section>
+
+        <Section title="Form field · label, hint, required, live error">
+          <form
+            className="max-w-sm space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast.success("Saved", { description: "SKU form submitted." });
+            }}
+          >
+            <FormField label="SKU name" required hint="As it appears on the invoice.">
+              {(p) => <Input {...p} placeholder="CSD Cola — 200 ML" />}
+            </FormField>
+            <FormField label="Rate per case (₹)" required error={rateError}>
+              {(p) => (
+                <Input
+                  {...p}
+                  inputMode="numeric"
+                  placeholder="240"
+                  value={rate}
+                  onChange={(e) => setRate(e.target.value)}
+                />
+              )}
+            </FormField>
+            <FormActions>
+              <Button type="button" variant="ghost" onClick={() => setRate("")}>
+                Reset
+              </Button>
+              <Button type="submit">Save SKU</Button>
+            </FormActions>
+          </form>
         </Section>
       </div>
     </>
