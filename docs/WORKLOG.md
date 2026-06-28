@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | `feat/retailers` | M16/M17 — retailer CRUD + onboarding + approval (claimed from the shared "Both" lane) | `src/lib/retailers/**` · `src/app/(app)/retailers/**` · `src/components/retailers/**` | 2026-06-28 |
+| Hardik | `feat/auth-backend` | M05–M07 **backend** — SSR session client, middleware, RBAC, OTP actions (UI = Aman) | `src/lib/auth/**` · `src/lib/supabase/server.ts` · `middleware.ts` (shared-seam — Aman review) | 2026-06-28 |
 
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
@@ -23,8 +23,10 @@ without passing kickstart prompts back and forth.
 | **Aman** | Wire **low-stock tile** on Owner Dashboard (M30). Accessor ready: `getLowStockSkus()` in `src/lib/inventory/data.ts` (returns `SkuStock[]` at/below threshold). Just render the count/list — Hardik won't touch `src/app/(app)/dashboard/**`. | Hardik · 2026-06-28 | ⬜ open |
 | **Aman** | Add **`/orders`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/sales-orders`. Label "Orders", after Inventory. | Hardik · 2026-06-28 | ⬜ open |
 | **Aman** | Add **`/vans`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/van-load`. Label "Van loads", after Orders. | Hardik · 2026-06-28 | ⬜ open |
-| **Aman** | **5 nav links pending total** (`/inventory`, `/orders`, `/vans`, `/invoices`, `/retailers`) — easiest to add all in one pass to `src/lib/nav.ts`. | Hardik · 2026-06-28 | ⬜ open |
-| **Aman** | **Retailer lane (M16/M17) was "Both" — Hardik built it** (`feat/retailers`). If you'd started it, stop/coordinate. Reusable for per-retailer pricing + named-shop invoices later. | Hardik · 2026-06-28 | ⬜ open |
+| **Aman** | **Nav still missing `/orders` + `/retailers`** in `src/lib/nav.ts` (you added inventory/vans/invoices/collections — thanks). Also `/collections` links nowhere (it's a panel on `/invoices/[id]`, not a page) — point it at `/invoices` or drop it. | Hardik · 2026-06-28 | ⬜ open |
+| **Aman** | **Retailer lane (M16/M17) was "Both" — Hardik built it** (merged). Reusable for per-retailer pricing + named-shop invoices later. | Hardik · 2026-06-28 | ✅ done (FYI) |
+| **Aman** | **AUTH/RBAC — review `docs/AUTH_PLAN.md`.** Hardik built the backend (`feat/auth-backend`): `getSessionUser`, `requireRole`, OTP actions (`requestOtp`/`verifyOtp`/`signOut`), middleware. **You build:** `/login` + OTP screen to that contract, and role-hide nav (`allowedRoutesFor(role)`). **Confirm the role→screen matrix** (covers your dashboard/catalog). | Hardik · 2026-06-28 | ⬜ open |
+| **Both** | **Go-live for auth:** flip `NEXT_PUBLIC_AUTH_ENABLED=true` (middleware is dormant till then) once login UI + SMS OTP provider (MISSING_INPUTS #12) are live + users seeded (#11). | Hardik · 2026-06-28 | ⬜ open |
 
 **Rules that keep us conflict-free:**
 - Edit only the folders your lane owns (`COORDINATION.md`). No overlap → no conflicts.
@@ -37,6 +39,19 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-28 · Hardik + Claude · Auth/RBAC backend (M05–M07) + plan (`feat/auth-backend`)
+- **Plan first:** `docs/AUTH_PLAN.md` — Supabase phone-OTP, file-ownership split (Hardik backend /
+  Aman login UI), the `getSessionUser`/OTP contract, and a proposed **role→screen matrix** for Aman to confirm.
+- **Backend built (my half):** `src/lib/supabase/server.ts` (SSR session client, RLS-as-user) ·
+  `middleware.ts` (session refresh always; route-protect + role-gate **only when `NEXT_PUBLIC_AUTH_ENABLED`**
+  — dormant so merging can't brick the app pre-login-UI) · `src/lib/auth/rbac.ts` (`canAccess`/`allowedRoutesFor`,
+  6 tests) · `session.ts` (`getSessionUser` + `requireRole`) · `actions.ts` (`requestOtp`/`verifyOtp`/`signOut`,
+  first-login auto-creates a `users` row, default role driver_rep).
+- **101 tests green**, typecheck + build clean (middleware compiles, dormant).
+- 🤝 **Aman's half:** login/OTP screen + role-hide nav + confirm the matrix (see cross-lane asks + AUTH_PLAN).
+- 🔒 **Go-live gated:** SMS OTP provider (MISSING_INPUTS #12) + staff list (#11) + flip `AUTH_ENABLED`.
+- **Next (me):** wire `requireRole` into my mutating actions once the matrix is confirmed; otherwise my lane is at a natural pause (remaining: M25 challan = format-blocked, M08/M09 = with Aman).
 
 ### 2026-06-28 · Hardik + Claude · retailer onboarding (M16/M17) (`feat/retailers`)
 - Took the shared **"Both" retailer lane** (flagged for Aman). `src/lib/retailers/`: pure

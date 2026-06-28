@@ -62,11 +62,11 @@ empty/loading/error/offline states), and a read-only **Owner Dashboard** from se
 ### Shared — coordinate (PR-review the other)
 | ID | Module | Owner | Status | Depends on | Notes |
 |----|--------|-------|--------|-----------|-------|
-| M05 | OTP request + verify (SMS) | Both | TODO | M01,P05 | Supabase Auth |
-| M06 | JWT + role claim + refresh | Both | TODO | M05 | |
-| M07 | RBAC middleware + permission map | Both | TODO | M06 | |
-| M08 | User CRUD + role assignment | Both | TODO | M07 | |
-| M09 | Acceptance: role-gated screens | Both | TODO | M08 | |
+| M05 | OTP request + verify (SMS) | Both | **INPROGRESS** | M01,P05 | backend on `feat/auth-backend` (`requestOtp`/`verifyOtp`); login UI = Aman; SMS provider gated (#12) |
+| M06 | JWT + role claim + refresh | Both | **INPROGRESS** | M05 | `feat/auth-backend`: SSR session client + middleware refresh + `getSessionUser` |
+| M07 | RBAC middleware + permission map | Both | **INPROGRESS** | M06 | `feat/auth-backend`: `rbac.ts` (`canAccess`) + middleware gate (dormant via `AUTH_ENABLED`); matrix = Aman confirm |
+| M08 | User CRUD + role assignment | Both | TODO | M07 | needs Aman UI + staff list (#11) |
+| M09 | Acceptance: role-gated screens | Both | TODO | M08 | after matrix confirmed + AUTH_ENABLED |
 | M16 | Retailer CRUD + import | Both → **Hardik** | **INPROGRESS** | M01 | `feat/retailers`, PR open; CRUD + `/retailers` |
 | M17 | Field onboarding form + approval | Both → **Hardik** | **INPROGRESS** | M16,M07 | `feat/retailers`, PR open; onboard form + pending→approved rule |
 
