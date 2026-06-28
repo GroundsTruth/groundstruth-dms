@@ -51,13 +51,13 @@ empty/loading/error/offline states), and a read-only **Owner Dashboard** from se
 | M20 | Invoice number service (server-side series) | **INPROGRESS** | M03 | `feat/sales-invoice-no`, PR open; atomic `next_invoice_no()` RPC + `formatInvoiceNo` |
 | M21 | Invoice generation (tax compute) + view | **INPROGRESS** | M20 | `feat/sales-invoicing`, PR open; provisional GST engine + `/invoices/[id]` view. PDF + final format = P10-gated (MISSING_INPUTS) |
 | M22 | confirmAndInvoice(): invoice + stock deduct in ONE txn | **INPROGRESS** | M21,M13 | `feat/sales-invoicing`, PR open; atomic RPC (reuses next_invoice_no + deduct_stock) |
-| M23 | Acceptance: order→invoice→auto-deduct | TODO | M22 | headline acceptance |
+| M23 | Acceptance: order→invoice→auto-deduct | **INPROGRESS** | M22 | `feat/sales-collections`, PR open; pure money-path acceptance test |
 | M24 | Van load-out (qty_out) + load sheet | **INPROGRESS** | M11 | `feat/van-load`, PR open; atomic `load_van()` FIFO van_out + `/vans` |
 | M25 | Delivery challan PDF | TODO | M24,P10 | |
 | M26 | Return-stock capture | **INPROGRESS** | M24 | `feat/van-returns`, PR open; atomic `record_returns()` + `/vans/[id]` |
 | M27 | Reconciliation: out − sold − returned variance flag | **INPROGRESS** | M26,M22 | `feat/van-reconcile`, PR open; `reconcileVanLoad` + panel on `/vans/[id]` |
-| M28 | Acceptance: variance beyond tolerance flags + audit | TODO | M27 | |
-| M29 | Record cash/UPI against invoice | TODO | M22 | |
+| M28 | Acceptance: variance beyond tolerance flags + audit | **INPROGRESS** | M27 | `feat/sales-collections`, PR open; reconcile acceptance test |
+| M29 | Record cash/UPI against invoice | **INPROGRESS** | M22 | `feat/sales-collections`, PR open; `recordCollection` + Payments panel |
 
 ### Shared — coordinate (PR-review the other)
 | ID | Module | Owner | Status | Depends on | Notes |

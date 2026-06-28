@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | `feat/van-reconcile` | M27 — reconciliation (out−sold−returned variance + cash) | `src/lib/van/**` · `src/app/(app)/vans/**` · `src/components/vans/**` · new migration | 2026-06-28 |
+| Hardik | `feat/sales-collections` | M29 collection (cash/UPI vs invoice) + M23/M28 acceptance tests | `src/lib/collections/**` · `src/lib/sales/**` tests · `src/app/(app)/invoices/**` · `src/components/invoices/**` | 2026-06-28 |
 
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
@@ -36,6 +36,20 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-28 · Hardik + Claude · collection (M29) + acceptance (M23/M28) — SPINE COMPLETE (`feat/sales-collections`)
+- **M29 collection:** `src/lib/collections/` — pure `outstanding`/`validateCollection` (can't over-collect;
+  6 tests) + `recordCollection` action (validates vs outstanding, audited) + `getCollections` accessor.
+  `/invoices/[id]` gets a **Payments** panel (invoice/collected/outstanding, cash/UPI form, history,
+  settled badge). This also feeds the **cash-collected** side of reconciliation (M27) — now live.
+- **M23 acceptance:** pure money-path sim (price → GST → FIFO deduct) proving invoice totals AND stock
+  ledger both balance + a deduct recorded per allocation (audited). 1 test.
+- **M28 acceptance:** reconciliation flags unaccounted stock beyond tolerance; ok within. 2 tests.
+- **89 tests green**, typecheck + build clean. No migration (`collections` table from M01).
+- **🏁 Transactional spine DONE:** receive → order → confirm+invoice+deduct (atomic) → collect →
+  van load-out → returns → reconcile (variance flag). All stock/cash moves atomic + audited.
+- **Remaining in my lane are the genuinely-blocked / shared ones:** 🔒 M25 challan PDF (format),
+  🔒 M05–M09 Auth/RBAC (shared + staff list), 🔶 M16–M17 retailer (needs master list).
 
 ### 2026-06-28 · Hardik + Claude · van — reconciliation (M27) (`feat/van-reconcile`)
 - **The reason the system exists.** `reconcileVanLoad()` — compares stock that left the van
