@@ -10,6 +10,7 @@ import { StatusBadge, type StatusTone } from "@/components/kit/status-badge";
 import { EmptyState } from "@/components/kit/empty-state";
 import { ClipboardList } from "lucide-react";
 import type { OrderSummary } from "@/lib/sales/orders-data";
+import { ConfirmInvoiceButton } from "./confirm-invoice-button";
 
 const STATUS_TONE: Record<string, StatusTone> = {
   draft: "neutral",
@@ -43,6 +44,7 @@ export function OrdersTable({ rows }: { rows: OrderSummary[] }) {
             <TableHead>Date</TableHead>
             <TableHead className="text-right">Total</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead className="text-right">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -56,6 +58,9 @@ export function OrdersTable({ rows }: { rows: OrderSummary[] }) {
                 <StatusBadge tone={STATUS_TONE[o.status] ?? "neutral"}>
                   {o.status}
                 </StatusBadge>
+              </TableCell>
+              <TableCell className="text-right">
+                {o.status === "draft" ? <ConfirmInvoiceButton orderId={o.id} /> : "—"}
               </TableCell>
             </TableRow>
           ))}

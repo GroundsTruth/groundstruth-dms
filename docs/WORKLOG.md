@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | `feat/van-returns` | M26 — return-stock capture (`van_return` → batch) + load detail page | `src/lib/van/**` · `src/app/(app)/vans/**` · `src/components/vans/**` · new migration | 2026-06-28 |
+| Hardik | `feat/sales-invoicing` | M21+M22 — invoice gen (provisional GST) + atomic `confirmAndInvoice()` | `src/lib/sales/**` · `src/app/(app)/{invoices,orders}/**` · `src/components/invoices/**` · new migrations | 2026-06-28 |
 
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
@@ -23,7 +23,7 @@ without passing kickstart prompts back and forth.
 | **Aman** | Wire **low-stock tile** on Owner Dashboard (M30). Accessor ready: `getLowStockSkus()` in `src/lib/inventory/data.ts` (returns `SkuStock[]` at/below threshold). Just render the count/list — Hardik won't touch `src/app/(app)/dashboard/**`. | Hardik · 2026-06-28 | ⬜ open |
 | **Aman** | Add **`/orders`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/sales-orders`. Label "Orders", after Inventory. | Hardik · 2026-06-28 | ⬜ open |
 | **Aman** | Add **`/vans`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/van-load`. Label "Van loads", after Orders. | Hardik · 2026-06-28 | ⬜ open |
-| **Aman** | **3 nav links pending total** (`/inventory`, `/orders`, `/vans`) — easiest to add all in one pass to `src/lib/nav.ts`. | Hardik · 2026-06-28 | ⬜ open |
+| **Aman** | **4 nav links pending total** (`/inventory`, `/orders`, `/vans`, `/invoices`) — easiest to add all in one pass to `src/lib/nav.ts`. | Hardik · 2026-06-28 | ⬜ open |
 
 **Rules that keep us conflict-free:**
 - Edit only the folders your lane owns (`COORDINATION.md`). No overlap → no conflicts.
@@ -36,6 +36,24 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-28 · Hardik + Claude · sales — invoice gen + atomic confirmAndInvoice (M21+M22) (`feat/sales-invoicing`)
+- **THE money path.** `confirm_and_invoice()` RPC (`20260628110659_*.sql`): in ONE txn it reserves
+  an invoice no (`next_invoice_no`), creates the invoice + a line per FIFO batch allocation
+  (`deduct_stock`), computes GST+cess per line, totals, and flips the order to `invoiced`. Reuses
+  the tested numbering + deduct RPCs (same txn) → shortfall raises and **everything rolls back**
+  (no invoice, no burned number, no partial deduct). The headline atomicity acceptance (M22/M23).
+- **Provisional GST (per Hardik's call, not P10-blocked):** `20260628110658` seeds statutory
+  rates by category (aerated 28%+12% cess, water 18%, juice 12%) into `skus`, fills nulls only +
+  a placeholder `seller`/GSTIN + `tax_provisional` flag. See `docs/MISSING_INPUTS.md`.
+- **`src/lib/sales/`:** pure `invoice-tax.computeInvoiceTotals` (per-line GST/cess + rounding, 3 tests)
+  + `confirmAndInvoice` action + `getRecentInvoices`/`getInvoice` accessors.
+- **UI:** `/orders` gets a **Confirm & invoice** button per draft (→ navigates to invoice) ·
+  `/invoices` list · `/invoices/[id]` printable **GST tax invoice** with a clear *provisional* banner.
+- **76 tests green**, typecheck + build clean (`/invoices`, `/invoices/[id]`).
+- ⏳ **Apply 2 migrations** (`110658` then `110659`) in SQL Editor, then date MIGRATIONS.
+- ⚠️ **Nav flag** — `/invoices` needs `src/lib/nav.ts` (Aman). | 🔒 Issuing real invoices still gated on GST values + GSTIN + CA (MISSING_INPUTS P1).
+- **Next (me):** M27 reconciliation (out−sold−returned variance) → M29 collection → M23/M28 acceptance tests.
 
 ### 2026-06-28 · Hardik + Claude · van — return capture (M26) + missing-inputs writeup (`feat/van-returns`)
 - **Decision:** don't block on P10/CA — build the lane through, invoice tax **provisional**

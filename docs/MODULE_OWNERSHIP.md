@@ -49,8 +49,8 @@ empty/loading/error/offline states), and a read-only **Owner Dashboard** from se
 | M18 | Price-list rule (SKU × retailer/region) | **INPROGRESS** | M10,M16 | `feat/sales-pricelist`, PR open; `resolvePrice`/`priceFor`/`setPrice`, 11 tests |
 | M19 | Order punch UI + order/order_lines model | **INPROGRESS** | M18,M07 | `feat/sales-orders`, PR open; `/orders` punch + `createOrder`, base prices seeded |
 | M20 | Invoice number service (server-side series) | **INPROGRESS** | M03 | `feat/sales-invoice-no`, PR open; atomic `next_invoice_no()` RPC + `formatInvoiceNo` |
-| M21 | Invoice generation (tax to CA spec) + PDF | TODO | M20,P10 | blocked on P10 format |
-| M22 | confirmAndInvoice(): invoice + stock deduct in ONE txn | TODO | M21,M13 | **critical atomicity** |
+| M21 | Invoice generation (tax compute) + view | **INPROGRESS** | M20 | `feat/sales-invoicing`, PR open; provisional GST engine + `/invoices/[id]` view. PDF + final format = P10-gated (MISSING_INPUTS) |
+| M22 | confirmAndInvoice(): invoice + stock deduct in ONE txn | **INPROGRESS** | M21,M13 | `feat/sales-invoicing`, PR open; atomic RPC (reuses next_invoice_no + deduct_stock) |
 | M23 | Acceptance: order→invoice→auto-deduct | TODO | M22 | headline acceptance |
 | M24 | Van load-out (qty_out) + load sheet | **INPROGRESS** | M11 | `feat/van-load`, PR open; atomic `load_van()` FIFO van_out + `/vans` |
 | M25 | Delivery challan PDF | TODO | M24,P10 | |
