@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | `feat/ui-kit-states` | UI Kit — states, forms, ConfirmDialog (M04) **+** Catalog add/edit/deactivate (M10) | `src/components/kit/` · `src/components/ui/{input,dialog}.tsx` · `src/components/catalog/` · `src/lib/catalog/` · `/kit` · `/catalog` | 2026-06-25 |
-| Hardik | — | (nothing active) | transactional spine · (auth = shared) | — |
+| Hardik | `feat/core-schema` | P13 ER schema + M01 core migrations (PR open → `dev`) | `supabase/migrations/**` · `docs/SCHEMA.md` (shared seam — review) | 2026-06-28 |
 
 **Rules that keep us conflict-free:**
 - Edit only the folders your lane owns (`COORDINATION.md`). No overlap → no conflicts.
@@ -27,6 +27,22 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-28 · Hardik + Claude · transactional spine — P13 ER schema + M01 core migrations (`feat/core-schema`)
+- **Merge hygiene:** `feat/ui-kit-states` → `dev` (PR #1). `feat/supabase-catalog` stale
+  (already in `dev`) — delete it. Cut `feat/core-schema` off updated `dev`.
+- **P13/M01 schema:** filled `docs/SCHEMA.md` (template → real ER) + **six timestamped
+  migrations** (`20260628070450`–`455`): `users/config/audit_log`,
+  `stock_batches/stock_movements`, `retailers`, `price_list/orders/order_lines/invoices/invoice_lines`,
+  `van_loads/van_load_lines/reconciliations`, `collections`. **15 tables**, all on the
+  `skus`/0001 pattern (RLS + read policy + server-only writes + grants + trigger).
+- **Tables + constraints only** — FIFO/`confirmAndInvoice()`/`reconcile()`/AuditService
+  deferred to their module branches. Auth M05–M09 = only `users` table created here.
+- 4 decisions flagged for Aman: role-as-enum (no `roles` table), returns-as-column,
+  added `stock_movements` ledger, server-only writes. See `docs/handoffs/2026-06-28-hardik.md`.
+- **NOT applied to Supabase yet** — run in SQL Editor in filename order, then date `docs/MIGRATIONS.md`.
+- Added `docs/MODULE_OWNERSHIP.md` (status table). Hardened `.gitignore` (`*env.local`, `/*.txt`).
+- **Next (me):** apply migrations → M02 audit hook → M03 config → inventory M11–M12.
 
 ### 2026-06-25 · Aman + Claude · Aman's lane — UI Kit + Catalog CRUD (`feat/ui-kit-states`, one PR)
 - **UI Kit:** `EmptyState`, `ErrorState` (error + retryable offline), `LoadingState` + `Spinner`,

@@ -13,6 +13,9 @@ build/
 .env
 .env.*
 !.env.example
+# guard against a re-paste without the leading dot (env.local, foo.env.local)
+env.local
+*env.local
 
 # supabase local
 .supabase/
@@ -52,3 +55,5 @@ prompts-scm
 !/README.md
 !/AGENTS.md
 !/CLAUDE.md
+# Root-level scratch notes (kickstart prompts, etc.) stay local — never tracked.
+/*.txt
