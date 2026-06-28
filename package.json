@@ -18,7 +18,8 @@
     "db:types": "supabase gen types typescript --linked > src/lib/database.types.ts",
     "db:push": "supabase db push",
     "db:reset": "supabase db reset",
-    "db:seed": "supabase db execute --file supabase/seed/seed_skus.sql"
+    "db:seed": "supabase db execute --file supabase/seed/seed_skus.sql",
+    "seed:demo": "node scripts/seed-demo.mjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.2.0",
