@@ -14,13 +14,14 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | `feat/sales-pricelist` | M18 — price-list rule + `priceFor()` resolver (retailer>route>base) | `src/lib/sales/**` | 2026-06-28 |
+| Hardik | `feat/sales-orders` | M19 — order punch (order + order_lines, priced via `priceFor`) + base-price seed | `src/lib/sales/**` · `src/app/(app)/orders/**` · `src/components/orders/**` · new migration | 2026-06-28 |
 
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
 |-----|-----|-----------|--------|
 | **Aman** | Add **`/inventory`** to the sidebar nav (`src/lib/nav.ts` — your lane). Hardik shipped the page on `feat/inventory-receive` but didn't touch your file. Label "Inventory", after Catalog. | Hardik · 2026-06-28 | ⬜ open |
 | **Aman** | Wire **low-stock tile** on Owner Dashboard (M30). Accessor ready: `getLowStockSkus()` in `src/lib/inventory/data.ts` (returns `SkuStock[]` at/below threshold). Just render the count/list — Hardik won't touch `src/app/(app)/dashboard/**`. | Hardik · 2026-06-28 | ⬜ open |
+| **Aman** | Add **`/orders`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/sales-orders`. Label "Orders", after Inventory. | Hardik · 2026-06-28 | ⬜ open |
 
 **Rules that keep us conflict-free:**
 - Edit only the folders your lane owns (`COORDINATION.md`). No overlap → no conflicts.
@@ -33,6 +34,22 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-28 · Hardik + Claude · sales — order punch + base-price seed (M19) (`feat/sales-orders`)
+- **Prices found in the old-zip workbook:** the per-case **selling rate** is already in
+  `skus.rate_per_case` (37/46 SKUs; CSD Cola 200ML=₹240 etc., uniform across routes →
+  base pricing confirmed). Seeded `price_list` base rows from it (`20260628095313_seed_base_prices.sql`,
+  idempotent). 9 nulls = client to confirm.
+- **`src/lib/sales/`:** pure `order-logic` (`validateOrderLines` missing-price guard +
+  `computeOrderTotals`, tax 0 until CA slabs; 5 tests) + `orders-data` (`getOrderableSkus`,
+  `getRecentOrders`, `ROUTES`) + `createOrder` action (resolves price per line via `priceFor`,
+  order+lines write with header-rollback on line failure, audited; `ORD0001` numbering).
+- **`/orders` page** (dynamic): KPIs + punch form (route + multi-line, live subtotal, unpriced-SKU
+  block) + recent-orders table. Reuses Aman's kit; none of his files touched.
+- **60 tests green**, typecheck + build clean. Order is a **draft** — no stock/money impact (that's M22).
+- ⏳ **Apply** `20260628095313_seed_base_prices.sql` in SQL Editor (base prices), then date MIGRATIONS.
+- ⚠️ **Nav flag** — `/orders` needs adding to `src/lib/nav.ts` (Aman's lane); see cross-lane asks.
+- **Next (me):** M20 invoice-number service (config `invoice_series`). Then **M21 invoice gen is BLOCKED on P10** (CA format); M22 `confirmAndInvoice()` will call `deductStock()`.
 
 ### 2026-06-28 · Hardik + Claude · sales — price-list rule + resolver (M18) (`feat/sales-pricelist`)
 - **`src/lib/sales/`:** pure `resolvePrice` (precedence **retailer > route > base**, latest
