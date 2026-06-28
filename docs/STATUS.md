@@ -40,14 +40,18 @@ agent-readable mirror — update it at the end of every session.
   ⬜ remaining: live aggregates (after more tables) + real reconciliation (Hardik).
 
 ### Hardik's lane — transactional spine
-- 🟡 **P13 / M01** — Phase-1 ER schema + core migrations on `feat/core-schema` (PR open
-  → `dev`). 15 tables in 6 timestamped migrations (`20260628070450`–`455`): core/auth
+- ✅ **P13 / M01** — Phase-1 ER schema + core migrations (`feat/core-schema` → merged to
+  `dev`; **applied to Supabase 2026-06-28**, 16 tables live incl. `skus`). 15 new tables
+  in 6 timestamped migrations (`20260628070450`–`455`): core/auth
   (`users`,`config`,`audit_log`), inventory (`stock_batches`,`stock_movements`),
   `retailers`, sales (`price_list`,`orders`,`order_lines`,`invoices`,`invoice_lines`),
   van (`van_loads`,`van_load_lines`,`reconciliations`), `collections`. Tables +
   constraints only; all on the `skus`/0001 RLS+grant pattern.
-  ⬜ remaining: **apply in SQL Editor** (not yet run) + Aman PR review.
-- ⬜ M02 audit · M03 config · M11–M15 inventory (FIFO, low-stock) ·
+- 🟡 **M02 / M03** — AuditService + config layer (`feat/audit-config`, PR open → `dev`).
+  `src/lib/audit/` (`logAudit`, never-throws) + `src/lib/config/` (`getConfig`/`getAllConfig`
+  + defaults) + `20260628080405_config_seed.sql` (**applied 2026-06-28**, 5 rows live). 22 tests green.
+  ⬜ remaining: Aman PR review + merge.
+- ⬜ M11–M15 inventory (FIFO, low-stock) ·
   M18–M23 order → invoice → **atomic** stock deduct · M24–M28 van load + challan +
   **reconciliation** · M29 collections.
 - ⬜ M05–M09 Auth & RBAC (shared foundation — coordinate; Supabase Auth + server
