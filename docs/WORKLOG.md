@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | `feat/auth-backend` | M05–M07 **backend** — SSR session client, middleware, RBAC, OTP actions (UI = Aman) | `src/lib/auth/**` · `src/lib/supabase/server.ts` · `middleware.ts` (shared-seam — Aman review) | 2026-06-28 |
+| Hardik | — | **Lane complete & merged** (spine M01–M29 + retailers M16/M17 + auth-backend M05–M07). Paused. Remaining = Aman UI / client data — see `docs/MISSING_INPUTS.md` §B. | transactional spine · retailers · auth backend | — |
 
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
