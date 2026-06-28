@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   Table,
   TableHeader,
@@ -45,7 +46,11 @@ export function LoadsTable({ rows }: { rows: VanLoadSummary[] }) {
         <TableBody>
           {rows.map((l) => (
             <TableRow key={l.id}>
-              <TableCell className="font-mono text-xs">{l.loadNo}</TableCell>
+              <TableCell className="font-mono text-xs">
+                <Link href={`/vans/${l.id}`} className="text-primary hover:underline">
+                  {l.loadNo}
+                </Link>
+              </TableCell>
               <TableCell>{l.route ?? "—"}</TableCell>
               <TableCell className="text-muted-foreground">{l.vehicle ?? "—"}</TableCell>
               <TableCell className="text-muted-foreground">{l.loadDate}</TableCell>

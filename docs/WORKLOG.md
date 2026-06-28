@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | `feat/van-load` | M24 — van load-out (atomic FIFO `van_out`) + load sheet + `/vans` | `src/lib/van/**` · `src/app/(app)/vans/**` · `src/components/vans/**` · new migration | 2026-06-28 |
+| Hardik | `feat/van-returns` | M26 — return-stock capture (`van_return` → batch) + load detail page | `src/lib/van/**` · `src/app/(app)/vans/**` · `src/components/vans/**` · new migration | 2026-06-28 |
 
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
@@ -36,6 +36,22 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-28 · Hardik + Claude · van — return capture (M26) + missing-inputs writeup (`feat/van-returns`)
+- **Decision:** don't block on P10/CA — build the lane through, invoice tax **provisional**
+  (Hardik's call). Wrote **`docs/MISSING_INPUTS.md`** — every file/data input still needed
+  (invoice format, per-SKU GST/cess/HSN, distributor GSTIN, retailer list, staff list…),
+  who it's from, the workaround in place, and which are **go-live gates** vs build gates.
+- **Atomic returns:** `record_returns()` RPC (`20260628104700_*.sql`) — qty back to the source
+  batch + `van_return` movement + `qty_returned` bump per line; guards `returned+qty <= qty_out`;
+  all-or-nothing. Closes the out→return loop; warehouse on-hand restored for unsold cases.
+- **`src/lib/van/`:** pure `returns-logic` (`validateReturnLine`/`returnableRemaining`, 5 tests) +
+  `recordReturns` action + `getVanLoad(id)` detail accessor.
+- **`/vans/[id]` load detail page** + returns form (per-line, bounded by still-out); loads table links to it.
+- **73 tests green**, typecheck + build clean.
+- ⏳ **Apply** `20260628104700_record_returns_fn.sql` in SQL Editor, then date MIGRATIONS.
+- **Next (me):** M21 invoice gen + M22 `confirmAndInvoice()` (provisional GST engine; calls `deductStock`)
+  → M27 reconciliation (out−sold−returned) → M29 collection → M23/M28 acceptance. Finishing the spine.
 
 ### 2026-06-28 · Hardik + Claude · van — load-out (M24) (`feat/van-load`)
 - **Atomic load-out:** `load_van()` RPC (`20260628101459_*.sql`) — creates the van_load, then

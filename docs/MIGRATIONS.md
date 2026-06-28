@@ -24,7 +24,8 @@ coordinated + PR-reviewed by the other person.
 | `20260628090247_deduct_stock_fn.sql` | `deduct_stock()` fn | 2026-06-28 | Hardik | M13. Atomic FIFO deduct: oldest-expiry batch first (`for update` lock), per-batch `sale_deduct` movement, raises on shortfall (full rollback). Returns allocations. `execute` to `service_role` only. |
 | `20260628095313_seed_base_prices.sql` | `price_list` (seed) | 2026-06-28 | Hardik | M18/M19. Seeds base prices from `skus.rate_per_case` (37/46 SKUs; selling rate from workbook). Idempotent (`not exists` guard); unpriced SKUs left for client to confirm. |
 | `20260628100608_next_invoice_no_fn.sql` | `next_invoice_no()` fn | 2026-06-28 | Hardik | M20. Atomic invoice numbering: reads+increments `config.invoice_series` under `for update` lock (no dup/skip), self-heals missing row. `execute` to `service_role` only. |
-| `20260628101459_load_van_fn.sql` | `load_van()` fn | _pending_ | Hardik | M24. Atomic van load-out: header + FIFO `van_out` per line (oldest-expiry, row-locked) + `van_load_lines`; raises on shortfall (full rollback). `p_lines` jsonb. `execute` to `service_role`. |
+| `20260628101459_load_van_fn.sql` | `load_van()` fn | 2026-06-28 | Hardik | M24. Atomic van load-out: header + FIFO `van_out` per line (oldest-expiry, row-locked) + `van_load_lines`; raises on shortfall (full rollback). `p_lines` jsonb. `execute` to `service_role`. |
+| `20260628104700_record_returns_fn.sql` | `record_returns()` fn | _pending_ | Hardik | M26. Atomic returns: qty back to source batch + `van_return` movement + `qty_returned` bump per line; guards `returned+qty <= qty_out`. `p_returns` jsonb. `execute` to `service_role`. |
 
 **Apply order (Hardik, once `.env.local` keys are in):** paste `070450`→`070455` in
 sequence in the Supabase SQL Editor (FK-ordered). Each is idempotent — safe to re-run.

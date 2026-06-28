@@ -25,6 +25,81 @@ export type VanLoadLine = {
   qtyReturned: number;
 };
 
+export type VanLoadDetail = {
+  id: string;
+  loadNo: string;
+  route: string | null;
+  vehicle: string | null;
+  loadDate: string;
+  status: string;
+  lines: {
+    lineId: string;
+    skuId: string;
+    code: string;
+    name: string;
+    qtyOut: number;
+    qtyReturned: number;
+    remaining: number;
+  }[];
+};
+
+/** One van load with its lines (for the detail + returns view). Null if not found. */
+export async function getVanLoad(id: string): Promise<VanLoadDetail | null> {
+  try {
+    const supabase = createAdminClient();
+    const { data: load, error: loadErr } = await supabase
+      .from("van_loads")
+      .select("id,load_no,route,vehicle,load_date,status")
+      .eq("id", id)
+      .maybeSingle();
+    if (loadErr || !load) {
+      if (loadErr) console.error("getVanLoad: load error —", loadErr.message);
+      return null;
+    }
+
+    const { data: lines, error: lineErr } = await supabase
+      .from("van_load_lines")
+      .select("id,sku_id,qty_out,qty_returned")
+      .eq("van_load_id", id);
+    if (lineErr) {
+      console.error("getVanLoad: lines error —", lineErr.message);
+      return null;
+    }
+
+    const skuIds = Array.from(new Set((lines ?? []).map((l) => l.sku_id)));
+    const { data: skus } = skuIds.length
+      ? await supabase.from("skus").select("id,code,name").in("id", skuIds)
+      : { data: [] as { id: string; code: string; name: string }[] };
+    const skuById = new Map((skus ?? []).map((s) => [s.id, { code: s.code, name: s.name }]));
+
+    return {
+      id: load.id,
+      loadNo: load.load_no,
+      route: load.route,
+      vehicle: load.vehicle,
+      loadDate: load.load_date,
+      status: load.status,
+      lines: (lines ?? []).map((l) => {
+        const sku = skuById.get(l.sku_id) ?? { code: "—", name: "Unknown SKU" };
+        const qtyOut = Number(l.qty_out);
+        const qtyReturned = Number(l.qty_returned);
+        return {
+          lineId: l.id,
+          skuId: l.sku_id,
+          code: sku.code,
+          name: sku.name,
+          qtyOut,
+          qtyReturned,
+          remaining: qtyOut - qtyReturned,
+        };
+      }),
+    };
+  } catch (err) {
+    console.error("getVanLoad: unexpected error —", err);
+    return null;
+  }
+}
+
 /** Recent van loads with out/returned totals. */
 export async function getVanLoads(limit = 25): Promise<VanLoadSummary[]> {
   try {
