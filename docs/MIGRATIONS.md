@@ -20,6 +20,7 @@ coordinated + PR-reviewed by the other person.
 | `20260628070454_van.sql` | `van_loads`, `van_load_lines`, `reconciliations` | 2026-06-28 | Hardik | M24-M28. `van_load_status`/`recon_status` enums; returns as `qty_returned` column. |
 | `20260628070455_collection.sql` | `collections` | 2026-06-28 | Hardik | M29. `collection_mode` enum; payment ref captured not processed. |
 | `20260628080405_config_seed.sql` | `config` (seed rows) | 2026-06-28 | Hardik | M03. Inserts 5 default config rows (`invoice_series`, `recon_tolerance`, `discount_ceiling`, `low_stock_threshold`, `tax_slabs={}`) `on conflict do nothing`. Mirrors `src/lib/config/defaults.ts`. |
+| `20260628082112_receive_stock_fn.sql` | `receive_stock()` fn | _pending_ | Hardik | M12. Atomic RPC: batch upsert + inward `stock_movements` in one txn. `execute` granted to `service_role` only (revoked from public). |
 
 **Apply order (Hardik, once `.env.local` keys are in):** paste `070450`→`070455` in
 sequence in the Supabase SQL Editor (FK-ordered). Each is idempotent — safe to re-run.

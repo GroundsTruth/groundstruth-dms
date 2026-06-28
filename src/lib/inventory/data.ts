@@ -29,6 +29,28 @@ export type BatchRow = {
   receivedAt: string;
 };
 
+export type SkuOption = { id: string; code: string; name: string };
+
+/** Active SKUs as {id,code,name} for the receive form's picker (id needed for the RPC). */
+export async function getSkuOptions(): Promise<SkuOption[]> {
+  try {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("skus")
+      .select("id,code,name")
+      .eq("is_active", true)
+      .order("code");
+    if (error) {
+      console.error("getSkuOptions: Supabase error —", error.message);
+      return [];
+    }
+    return (data ?? []).map((s) => ({ id: s.id, code: s.code, name: s.name }));
+  } catch (err) {
+    console.error("getSkuOptions: unexpected error —", err);
+    return [];
+  }
+}
+
 /** On-hand totals per active SKU, with a low-stock flag from config. */
 export async function getStockBySku(): Promise<SkuStock[]> {
   try {

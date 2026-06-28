@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | `feat/ui-kit-states` | UI Kit — states, forms, ConfirmDialog (M04) **+** Catalog add/edit/deactivate (M10) | `src/components/kit/` · `src/components/ui/{input,dialog}.tsx` · `src/components/catalog/` · `src/lib/catalog/` · `/kit` · `/catalog` | 2026-06-25 |
-| Hardik | `feat/audit-config` | M02 audit hook + M03 config (service layers) | `src/lib/{audit,config}/**` · new `supabase/migrations/**` config seed | 2026-06-28 |
+| Hardik | `feat/inventory-receive` | M11/M12 — receive stock (atomic RPC) + stock view + `/inventory` | `src/lib/inventory/**` · `src/app/(app)/inventory/**` · `src/components/inventory/**` · new migration | 2026-06-28 |
 
 **Rules that keep us conflict-free:**
 - Edit only the folders your lane owns (`COORDINATION.md`). No overlap → no conflicts.
@@ -27,6 +27,20 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-28 · Hardik + Claude · inventory — receive stock (atomic) + stock view + `/inventory` (M11/M12) (`feat/inventory-receive`)
+- **Atomic receive:** `receive_stock()` RPC (`20260628082112_receive_stock_fn.sql`) — batch
+  upsert + inward `stock_movements` in ONE txn; `execute` to `service_role` only. Sets the
+  txn pattern for FIFO deduct (M13) + confirmAndInvoice (M22).
+- **`src/lib/inventory/`:** pure `logic` (validateReceive/lowStockFlag/sumOnHand, 10 tests) +
+  `receiveStock()` (rpc + non-blocking `logAudit`) + `getStockBySku`/`getBatches`/`getSkuOptions`
+  (separate queries + JS merge — no nested joins) + `receiveStockAction` server action.
+- **`/inventory` page** (dynamic): KPIs + receive form (reuses kit FormField/Input/Button) +
+  by-SKU table (low-stock `StatusBadge`) + batches table. Reuses Aman's kit, none of his files edited.
+- **32 tests green**, typecheck + build clean (`/inventory` = ƒ dynamic).
+- ⏳ **receive_stock RPC NOT applied yet** — run `20260628082112_*.sql` in SQL Editor, then date MIGRATIONS.
+- ⚠️ **Nav link pending** — `/inventory` needs adding to `src/lib/nav.ts` (Aman's lane); flagged for him.
+- **Next (me):** M13 FIFO deduct (reuses this RPC pattern) or M14 low-stock dashboard wiring.
 
 ### 2026-06-28 · Hardik + Claude · platform — AuditService (M02) + config layer (M03) (`feat/audit-config`)
 - **M02 audit:** `src/lib/audit/` — pure `buildAuditRow` (camel→snake, normalize, validate;
