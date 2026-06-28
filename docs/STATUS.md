@@ -54,7 +54,11 @@ agent-readable mirror — update it at the end of every session.
   Atomic `receive_stock()` RPC + `src/lib/inventory/` + `/inventory` page (KPIs, receive form,
   by-SKU + batch tables). 32 tests green. `receive_stock()` RPC **applied 2026-06-28**.
   ⬜ remaining: add `/inventory` to `src/lib/nav.ts` (Aman); Aman PR review + merge.
-- ⬜ M13–M15 inventory (FIFO deduct, low-stock alerts) ·
+- 🟡 **M13** — FIFO deduct service (`feat/inventory-fifo`, PR open → `dev`). Atomic
+  `deduct_stock()` RPC (oldest-expiry first, all-or-nothing, locks rows) + `deductStock()` +
+  pure `planFifo` (7 tests). 39 tests green. RPC **applied 2026-06-28**.
+  ⬜ remaining: Aman PR review + merge. Used by `confirmAndInvoice()` (M22).
+- ⬜ M14–M15 inventory (low-stock alerts, acceptance) ·
   M18–M23 order → invoice → **atomic** stock deduct · M24–M28 van load + challan +
   **reconciliation** · M29 collections.
 - ⬜ M05–M09 Auth & RBAC (shared foundation — coordinate; Supabase Auth + server

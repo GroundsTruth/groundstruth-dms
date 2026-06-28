@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | `feat/inventory-receive` | M11/M12 — receive stock (atomic RPC) + stock view + `/inventory` | `src/lib/inventory/**` · `src/app/(app)/inventory/**` · `src/components/inventory/**` · new migration | 2026-06-28 |
+| Hardik | `feat/inventory-fifo` | M13 — FIFO deduct service (atomic RPC, oldest-expiry first) | `src/lib/inventory/**` · new migration | 2026-06-28 |
 
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
@@ -32,6 +32,18 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-28 · Hardik + Claude · inventory — FIFO deduct service (M13) (`feat/inventory-fifo`)
+- **Atomic FIFO deduct:** `deduct_stock()` RPC (`20260628090247_deduct_stock_fn.sql`) —
+  oldest-expiry batch first (nulls last, then oldest received), `for update` row locks
+  (no oversell), per-batch `sale_deduct` movement, **raises on shortfall → full rollback**
+  (never partial/negative). Returns allocations `(batch_id, qty)` for `invoice_lines.batch_id` (M22).
+- **`src/lib/inventory/`:** pure `fifo-logic` (`validateDeduct` + `planFifo` mirroring the SQL
+  ordering, 7 tests) + `deductStock()` server fn (rpc + non-blocking audit, friendly insufficient-stock msg).
+- **39 tests green**, typecheck + build clean. No UI (service called by invoicing/M22).
+- ✅ **deduct_stock RPC applied 2026-06-28** (SQL Editor).
+- **Next (me):** M14 low-stock alerts (wire `lowStockFlag` to dashboard) OR M18 price-list → M19 order punch.
+  Heads-up Aman: M22 `confirmAndInvoice()` will call this `deductStock()` — invoice + deduct in one txn.
 
 ### 2026-06-28 · Hardik + Claude · inventory — receive stock (atomic) + stock view + `/inventory` (M11/M12) (`feat/inventory-receive`)
 - **Atomic receive:** `receive_stock()` RPC (`20260628082112_receive_stock_fn.sql`) — batch
