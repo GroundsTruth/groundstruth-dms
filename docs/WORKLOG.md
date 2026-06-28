@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | `feat/sales-invoice-no` | M20 — server-side invoice-number service (atomic series from config) | `src/lib/sales/**` · new migration | 2026-06-28 |
+| Hardik | `feat/van-load` | M24 — van load-out (atomic FIFO `van_out`) + load sheet + `/vans` | `src/lib/van/**` · `src/app/(app)/vans/**` · `src/components/vans/**` · new migration | 2026-06-28 |
 
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
@@ -22,6 +22,8 @@ without passing kickstart prompts back and forth.
 | **Aman** | Add **`/inventory`** to the sidebar nav (`src/lib/nav.ts` — your lane). Hardik shipped the page on `feat/inventory-receive` but didn't touch your file. Label "Inventory", after Catalog. | Hardik · 2026-06-28 | ⬜ open |
 | **Aman** | Wire **low-stock tile** on Owner Dashboard (M30). Accessor ready: `getLowStockSkus()` in `src/lib/inventory/data.ts` (returns `SkuStock[]` at/below threshold). Just render the count/list — Hardik won't touch `src/app/(app)/dashboard/**`. | Hardik · 2026-06-28 | ⬜ open |
 | **Aman** | Add **`/orders`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/sales-orders`. Label "Orders", after Inventory. | Hardik · 2026-06-28 | ⬜ open |
+| **Aman** | Add **`/vans`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/van-load`. Label "Van loads", after Orders. | Hardik · 2026-06-28 | ⬜ open |
+| **Aman** | **3 nav links pending total** (`/inventory`, `/orders`, `/vans`) — easiest to add all in one pass to `src/lib/nav.ts`. | Hardik · 2026-06-28 | ⬜ open |
 
 **Rules that keep us conflict-free:**
 - Edit only the folders your lane owns (`COORDINATION.md`). No overlap → no conflicts.
@@ -34,6 +36,21 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-28 · Hardik + Claude · van — load-out (M24) (`feat/van-load`)
+- **Atomic load-out:** `load_van()` RPC (`20260628101459_*.sql`) — creates the van_load, then
+  FIFO-pulls `qty_out` per line from warehouse batches (oldest-expiry, row-locked), writing a
+  `van_out` movement + `van_load_line` per allocation. All-or-nothing: short on any SKU → whole
+  load rolls back. Warehouse on-hand drops by what's loaded (anti-leakage truth).
+- **`src/lib/van/`:** pure `load-logic` (`validateLoad` incl. duplicate-SKU guard + `formatLoadNo`,
+  5 tests) + `loadVan` action (`VL0001` numbering, audited) + `getVanLoads` accessor (out/returned aggregates).
+- **`/vans` page** (dynamic): KPIs + load form (route/vehicle, multi-line, shows on-hand, over-load block)
+  + recent-loads table. Reuses kit + inventory `getStockBySku`; none of Aman's files touched.
+- **68 tests green**, typecheck + build clean.
+- ⏳ **Apply** `20260628101459_load_van_fn.sql` in SQL Editor, then date MIGRATIONS.
+- ⚠️ **Nav flag** — `/vans` needs adding to `src/lib/nav.ts` (Aman); see cross-lane asks.
+- **Next (me):** M26 return-stock capture (`recordReturns`, van_return → batch). Then M27 reconciliation
+  (needs M22 — money path, P10-blocked). M25 challan = P10-blocked.
 
 ### 2026-06-28 · Hardik + Claude · sales — invoice-number service (M20) (`feat/sales-invoice-no`)
 - **Atomic numbering:** `next_invoice_no()` RPC (`20260628100608_*.sql`) — reads + increments
