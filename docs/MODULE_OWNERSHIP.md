@@ -46,7 +46,7 @@ empty/loading/error/offline states), and a read-only **Owner Dashboard** from se
 | M13 | FIFO deduction service (atomic RPC) | **DONE** | M11,M02 | merged PR #5; `deduct_stock()`, oldest-expiry |
 | M14 | Low-stock accessor (`getLowStockSkus`) | **INPROGRESS** | M12,M03 | code on `feat/inventory-alerts`; dashboard tile = Aman |
 | M15 | Acceptance: receive→deduct→balance & audited | **INPROGRESS** | M13 | `feat/inventory-alerts`, PR open |
-| M18 | Price-list rule (SKU × retailer/region) | TODO | M10,M16 | **next up** |
+| M18 | Price-list rule (SKU × retailer/region) | **INPROGRESS** | M10,M16 | `feat/sales-pricelist`, PR open; `resolvePrice`/`priceFor`/`setPrice`, 11 tests |
 | M19 | Order punch UI + order/order_lines model | TODO | M18,M07 | |
 | M20 | Invoice number service (server-side series) | TODO | M03 | |
 | M21 | Invoice generation (tax to CA spec) + PDF | TODO | M20,P10 | blocked on P10 format |
