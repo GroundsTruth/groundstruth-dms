@@ -4,7 +4,9 @@ Source of sequencing: `dev/11_Delivery_Tracker.xlsx` (tabs Pre-Build + MVP Phase
 This is the clarity mirror for **who builds what**. Status legend: **TODO** ·
 **INPROGRESS** · **DONE** · **BLOCKED** (on client). Update at session end.
 
-_Last updated: 2026-06-27 (Hardik)._
+_Last updated: 2026-06-28 (Hardik). **Hardik's lane is built + merged** (M01–M29, M16/M17,
+M05–M07 backend). Remaining items are **Aman's UI** (login, dashboard tiles, user mgmt, nav)
+or **client-gated** (invoice format, GST values, M25 challan) — see `docs/MISSING_INPUTS.md`._
 
 ## What Aman has already built (one line)
 Foundation scaffold (Next 15 + Tailwind v3 + shadcn) + **UI Kit / design system**,
@@ -44,31 +46,31 @@ empty/loading/error/offline states), and a read-only **Owner Dashboard** from se
 | M11 | Stock model: batch + expiry, qty>=0 | **DONE** | M10 | table in M01; receive RPC PR #4 |
 | M12 | Inward stock (receive RPC) + stock view + `/inventory` | **DONE** | M11 | merged PR #4; atomic `receive_stock()` |
 | M13 | FIFO deduction service (atomic RPC) | **DONE** | M11,M02 | merged PR #5; `deduct_stock()`, oldest-expiry |
-| M14 | Low-stock accessor (`getLowStockSkus`) | **INPROGRESS** | M12,M03 | code on `feat/inventory-alerts`; dashboard tile = Aman |
-| M15 | Acceptance: receive→deduct→balance & audited | **INPROGRESS** | M13 | `feat/inventory-alerts`, PR open |
-| M18 | Price-list rule (SKU × retailer/region) | **INPROGRESS** | M10,M16 | `feat/sales-pricelist`, PR open; `resolvePrice`/`priceFor`/`setPrice`, 11 tests |
-| M19 | Order punch UI + order/order_lines model | **INPROGRESS** | M18,M07 | `feat/sales-orders`, PR open; `/orders` punch + `createOrder`, base prices seeded |
-| M20 | Invoice number service (server-side series) | **INPROGRESS** | M03 | `feat/sales-invoice-no`, PR open; atomic `next_invoice_no()` RPC + `formatInvoiceNo` |
-| M21 | Invoice generation (tax compute) + view | **INPROGRESS** | M20 | `feat/sales-invoicing`, PR open; provisional GST engine + `/invoices/[id]` view. PDF + final format = P10-gated (MISSING_INPUTS) |
-| M22 | confirmAndInvoice(): invoice + stock deduct in ONE txn | **INPROGRESS** | M21,M13 | `feat/sales-invoicing`, PR open; atomic RPC (reuses next_invoice_no + deduct_stock) |
-| M23 | Acceptance: order→invoice→auto-deduct | **INPROGRESS** | M22 | `feat/sales-collections`, PR open; pure money-path acceptance test |
-| M24 | Van load-out (qty_out) + load sheet | **INPROGRESS** | M11 | `feat/van-load`, PR open; atomic `load_van()` FIFO van_out + `/vans` |
-| M25 | Delivery challan PDF | TODO | M24,P10 | |
-| M26 | Return-stock capture | **INPROGRESS** | M24 | `feat/van-returns`, PR open; atomic `record_returns()` + `/vans/[id]` |
-| M27 | Reconciliation: out − sold − returned variance flag | **INPROGRESS** | M26,M22 | `feat/van-reconcile`, PR open; `reconcileVanLoad` + panel on `/vans/[id]` |
-| M28 | Acceptance: variance beyond tolerance flags + audit | **INPROGRESS** | M27 | `feat/sales-collections`, PR open; reconcile acceptance test |
-| M29 | Record cash/UPI against invoice | **INPROGRESS** | M22 | `feat/sales-collections`, PR open; `recordCollection` + Payments panel |
+| M14 | Low-stock accessor (`getLowStockSkus`) | **DONE** | M12,M03 | merged; dashboard tile = Aman (M30) |
+| M15 | Acceptance: receive→deduct→balance & audited | **DONE** | M13 | merged; pure acceptance test |
+| M18 | Price-list rule (SKU × retailer/region) | **DONE** | M10,M16 | merged; `resolvePrice`/`priceFor`/`setPrice` |
+| M19 | Order punch UI + order/order_lines model | **DONE** | M18 | merged; `/orders` punch + `createOrder`, base prices seeded |
+| M20 | Invoice number service (server-side series) | **DONE** | M03 | merged; atomic `next_invoice_no()` |
+| M21 | Invoice generation (tax compute) + view | **DONE** (provisional) | M20 | merged; provisional GST engine + `/invoices/[id]`. **Final PDF/format = client-gated** (MISSING_INPUTS #1–#3) |
+| M22 | confirmAndInvoice(): invoice + stock deduct in ONE txn | **DONE** | M21,M13 | merged; atomic RPC (reuses next_invoice_no + deduct_stock) |
+| M23 | Acceptance: order→invoice→auto-deduct | **DONE** | M22 | merged; money-path acceptance test |
+| M24 | Van load-out (qty_out) + load sheet | **DONE** | M11 | merged; atomic `load_van()` + `/vans` |
+| M25 | Delivery challan PDF | 🔒 **BLOCKED** | M24,P10 | needs invoice/challan **format** (client, MISSING_INPUTS #1) |
+| M26 | Return-stock capture | **DONE** | M24 | merged; atomic `record_returns()` + `/vans/[id]` |
+| M27 | Reconciliation: out − sold − returned variance flag | **DONE** | M26,M22 | merged; `reconcileVanLoad` + panel |
+| M28 | Acceptance: variance beyond tolerance flags + audit | **DONE** | M27 | merged; reconcile acceptance test |
+| M29 | Record cash/UPI against invoice | **DONE** | M22 | merged; `recordCollection` + Payments panel |
 
 ### Shared — coordinate (PR-review the other)
 | ID | Module | Owner | Status | Depends on | Notes |
 |----|--------|-------|--------|-----------|-------|
-| M05 | OTP request + verify (SMS) | Both | **INPROGRESS** | M01,P05 | backend on `feat/auth-backend` (`requestOtp`/`verifyOtp`); login UI = Aman; SMS provider gated (#12) |
-| M06 | JWT + role claim + refresh | Both | **INPROGRESS** | M05 | `feat/auth-backend`: SSR session client + middleware refresh + `getSessionUser` |
-| M07 | RBAC middleware + permission map | Both | **INPROGRESS** | M06 | `feat/auth-backend`: `rbac.ts` (`canAccess`) + middleware gate (dormant via `AUTH_ENABLED`); matrix = Aman confirm |
-| M08 | User CRUD + role assignment | Both | TODO | M07 | needs Aman UI + staff list (#11) |
-| M09 | Acceptance: role-gated screens | Both | TODO | M08 | after matrix confirmed + AUTH_ENABLED |
-| M16 | Retailer CRUD + import | Both → **Hardik** | **INPROGRESS** | M01 | `feat/retailers`, PR open; CRUD + `/retailers` |
-| M17 | Field onboarding form + approval | Both → **Hardik** | **INPROGRESS** | M16,M07 | `feat/retailers`, PR open; onboard form + pending→approved rule |
+| M05 | OTP request + verify (SMS) | Both | **Hardik DONE (backend)** · ⬜ Aman UI | M01,P05 | merged `requestOtp`/`verifyOtp`; **Aman: `/login` screen**; SMS provider gated (#12) |
+| M06 | JWT + role claim + refresh | Both | **Hardik DONE** | M05 | merged: SSR session client + middleware refresh + `getSessionUser` |
+| M07 | RBAC middleware + permission map | Both | **Hardik DONE** · ⬜ Aman confirm matrix | M06 | merged: `rbac.ts` + middleware gate (dormant via `AUTH_ENABLED`); Aman confirms role→screen matrix |
+| M08 | User CRUD + role assignment | Both | ⬜ **Aman UI** + Hardik actions | M07 | needs Aman screen + staff list (#11) |
+| M09 | Acceptance: role-gated screens | Both | ⬜ joint | M08 | after matrix confirmed + `AUTH_ENABLED` flipped |
+| M16 | Retailer CRUD + import | Both → **Hardik** | **DONE** | M01 | merged; CRUD + `/retailers` |
+| M17 | Field onboarding form + approval | Both → **Hardik** | **DONE** | M16 | merged; onboard form + pending→approved rule |
 
 ### Phase-1 hardening (Both)
 M32 critical-path tests · M33 QA pass · M34 backups/monitoring · M35 pilot · M36 go-live — all TODO.
