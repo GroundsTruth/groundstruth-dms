@@ -119,8 +119,15 @@ npm install
 cp .env.example .env.local        # add Supabase URL + anon + service-role keys (from the team vault)
 node scripts/check-supabase.mjs   # expect "CONNECTION OK"
 npm run dev                       # / · /catalog · /dashboard · /kit
+npm run seed:demo                 # OPTIONAL — fill the DB with one end-to-end demo flow
 ```
 Never commit `.env*` or any secret. The Supabase **service-role key is server-side only**.
+
+The transactional screens (`/inventory`, `/orders`, `/invoices`, `/vans`, `/retailers`)
+start **empty** — they show data once you use the flow. To see them populated quickly,
+run **`npm run seed:demo`**: it receives stock, onboards a retailer, punches an order,
+runs `confirmAndInvoice` (GST invoice + atomic FIFO stock deduct), records a partial
+collection, and loads a van — against the DB in `.env.local`. Demo/staging only, not prod.
 
 **New agent picking up the build?** Start at **`docs/HARDIK_KICKSTART.md`**, then `CLAUDE.md` → `AGENTS.md` → `docs/COORDINATION.md` → `docs/STATUS.md`.
 
