@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | `feat/sales-collections` | M29 collection (cash/UPI vs invoice) + M23/M28 acceptance tests | `src/lib/collections/**` · `src/lib/sales/**` tests · `src/app/(app)/invoices/**` · `src/components/invoices/**` | 2026-06-28 |
+| Hardik | `feat/retailers` | M16/M17 — retailer CRUD + onboarding + approval (claimed from the shared "Both" lane) | `src/lib/retailers/**` · `src/app/(app)/retailers/**` · `src/components/retailers/**` | 2026-06-28 |
 
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
@@ -23,7 +23,8 @@ without passing kickstart prompts back and forth.
 | **Aman** | Wire **low-stock tile** on Owner Dashboard (M30). Accessor ready: `getLowStockSkus()` in `src/lib/inventory/data.ts` (returns `SkuStock[]` at/below threshold). Just render the count/list — Hardik won't touch `src/app/(app)/dashboard/**`. | Hardik · 2026-06-28 | ⬜ open |
 | **Aman** | Add **`/orders`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/sales-orders`. Label "Orders", after Inventory. | Hardik · 2026-06-28 | ⬜ open |
 | **Aman** | Add **`/vans`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/van-load`. Label "Van loads", after Orders. | Hardik · 2026-06-28 | ⬜ open |
-| **Aman** | **4 nav links pending total** (`/inventory`, `/orders`, `/vans`, `/invoices`) — easiest to add all in one pass to `src/lib/nav.ts`. | Hardik · 2026-06-28 | ⬜ open |
+| **Aman** | **5 nav links pending total** (`/inventory`, `/orders`, `/vans`, `/invoices`, `/retailers`) — easiest to add all in one pass to `src/lib/nav.ts`. | Hardik · 2026-06-28 | ⬜ open |
+| **Aman** | **Retailer lane (M16/M17) was "Both" — Hardik built it** (`feat/retailers`). If you'd started it, stop/coordinate. Reusable for per-retailer pricing + named-shop invoices later. | Hardik · 2026-06-28 | ⬜ open |
 
 **Rules that keep us conflict-free:**
 - Edit only the folders your lane owns (`COORDINATION.md`). No overlap → no conflicts.
@@ -37,6 +38,17 @@ without passing kickstart prompts back and forth.
 
 ## Log (newest first)
 
+### 2026-06-28 · Hardik + Claude · retailer onboarding (M16/M17) (`feat/retailers`)
+- Took the shared **"Both" retailer lane** (flagged for Aman). `src/lib/retailers/`: pure
+  `validateRetailer`/`normalizePhone` (name required, light phone/GSTIN checks; 6 tests) +
+  `getRetailers` + actions `createRetailer`/`updateRetailer`/`setRetailerApproval`/`setRetailerActive` (audited).
+- **`/retailers` page**: KPIs + onboard/edit form (name·shop·phone·GSTIN·route·address) + table with
+  **approval rule** (pending → Approve) + soft activate/deactivate. Route kept so it works shop- or route-centric.
+- Uses the empty `retailers` table (M01) — **no migration**. Slots in the client master list when it arrives (MISSING_INPUTS #9).
+- **92 tests green** (rebased on collections), typecheck + build clean. Photo/geo capture deferred (optional; geo fields exist).
+- ⚠️ **Nav flag** — `/retailers` needs `src/lib/nav.ts` (Aman).
+- **Next (me):** lane is essentially complete; remaining is blocked (M25 challan format, M05–M09 auth + staff list).
+
 ### 2026-06-28 · Hardik + Claude · collection (M29) + acceptance (M23/M28) — SPINE COMPLETE (`feat/sales-collections`)
 - **M29 collection:** `src/lib/collections/` — pure `outstanding`/`validateCollection` (can't over-collect;
   6 tests) + `recordCollection` action (validates vs outstanding, audited) + `getCollections` accessor.
@@ -48,8 +60,6 @@ without passing kickstart prompts back and forth.
 - **89 tests green**, typecheck + build clean. No migration (`collections` table from M01).
 - **🏁 Transactional spine DONE:** receive → order → confirm+invoice+deduct (atomic) → collect →
   van load-out → returns → reconcile (variance flag). All stock/cash moves atomic + audited.
-- **Remaining in my lane are the genuinely-blocked / shared ones:** 🔒 M25 challan PDF (format),
-  🔒 M05–M09 Auth/RBAC (shared + staff list), 🔶 M16–M17 retailer (needs master list).
 
 ### 2026-06-28 · Hardik + Claude · van — reconciliation (M27) (`feat/van-reconcile`)
 - **The reason the system exists.** `reconcileVanLoad()` — compares stock that left the van
