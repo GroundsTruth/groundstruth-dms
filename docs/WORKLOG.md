@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | `feat/sales-orders` | M19 — order punch (order + order_lines, priced via `priceFor`) + base-price seed | `src/lib/sales/**` · `src/app/(app)/orders/**` · `src/components/orders/**` · new migration | 2026-06-28 |
+| Hardik | `feat/sales-invoice-no` | M20 — server-side invoice-number service (atomic series from config) | `src/lib/sales/**` · new migration | 2026-06-28 |
 
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
@@ -34,6 +34,19 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-28 · Hardik + Claude · sales — invoice-number service (M20) (`feat/sales-invoice-no`)
+- **Atomic numbering:** `next_invoice_no()` RPC (`20260628100608_*.sql`) — reads + increments
+  `config.invoice_series` ({prefix,next,padding}) under `for update` lock so concurrent invoices
+  never collide/skip; self-heals a missing config row. `execute` to `service_role`.
+- **`src/lib/sales/`:** pure `invoice-format.formatInvoiceNo` (3 tests) + `invoice-number.nextInvoiceNo`
+  (atomic server call; returns null on failure so M22 can abort cleanly). Split pure↔DB so the
+  formatter unit-tests without the `@/` alias (lesson: keep `@/` imports out of unit-tested files).
+- **63 tests green**, typecheck + build clean. No UI (service for M22).
+- ⏳ **Apply** `20260628100608_next_invoice_no_fn.sql` in SQL Editor, then date MIGRATIONS.
+- 🚧 **NEXT IS BLOCKED:** M21 invoice generation (tax compute + PDF) needs **P10 — CA sign-off on the
+  invoice/challan format** (client). M22 `confirmAndInvoice()` depends on M21. → I'll pivot to the
+  **unblocked van lane (M24 load-out → M26 returns)** instead, and park M21/M22 until P10 lands.
 
 ### 2026-06-28 · Hardik + Claude · sales — order punch + base-price seed (M19) (`feat/sales-orders`)
 - **Prices found in the old-zip workbook:** the per-case **selling rate** is already in

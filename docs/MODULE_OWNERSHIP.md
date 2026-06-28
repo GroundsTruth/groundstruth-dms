@@ -48,7 +48,7 @@ empty/loading/error/offline states), and a read-only **Owner Dashboard** from se
 | M15 | Acceptance: receive→deduct→balance & audited | **INPROGRESS** | M13 | `feat/inventory-alerts`, PR open |
 | M18 | Price-list rule (SKU × retailer/region) | **INPROGRESS** | M10,M16 | `feat/sales-pricelist`, PR open; `resolvePrice`/`priceFor`/`setPrice`, 11 tests |
 | M19 | Order punch UI + order/order_lines model | **INPROGRESS** | M18,M07 | `feat/sales-orders`, PR open; `/orders` punch + `createOrder`, base prices seeded |
-| M20 | Invoice number service (server-side series) | TODO | M03 | |
+| M20 | Invoice number service (server-side series) | **INPROGRESS** | M03 | `feat/sales-invoice-no`, PR open; atomic `next_invoice_no()` RPC + `formatInvoiceNo` |
 | M21 | Invoice generation (tax to CA spec) + PDF | TODO | M20,P10 | blocked on P10 format |
 | M22 | confirmAndInvoice(): invoice + stock deduct in ONE txn | TODO | M21,M13 | **critical atomicity** |
 | M23 | Acceptance: order→invoice→auto-deduct | TODO | M22 | headline acceptance |
