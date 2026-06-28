@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getInvoice } from "@/lib/sales/invoice-data";
+import { getCollections } from "@/lib/collections/data";
 import { InvoiceView } from "@/components/invoices/invoice-view";
+import { PaymentPanel } from "@/components/invoices/payment-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +16,7 @@ export default async function InvoiceDetailPage({
   const { id } = await params;
   const invoice = await getInvoice(id);
   if (!invoice) notFound();
+  const { rows: collections, total: collected } = await getCollections(id);
 
   return (
     <>
@@ -24,6 +27,12 @@ export default async function InvoiceDetailPage({
         <ArrowLeft className="h-4 w-4" /> Invoices
       </Link>
       <InvoiceView invoice={invoice} />
+      <PaymentPanel
+        invoiceId={invoice.id}
+        total={invoice.total}
+        collections={collections}
+        collected={collected}
+      />
     </>
   );
 }
