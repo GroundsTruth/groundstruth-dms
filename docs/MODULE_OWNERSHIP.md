@@ -52,7 +52,7 @@ empty/loading/error/offline states), and a read-only **Owner Dashboard** from se
 | M21 | Invoice generation (tax to CA spec) + PDF | TODO | M20,P10 | blocked on P10 format |
 | M22 | confirmAndInvoice(): invoice + stock deduct in ONE txn | TODO | M21,M13 | **critical atomicity** |
 | M23 | Acceptance: order→invoice→auto-deduct | TODO | M22 | headline acceptance |
-| M24 | Van load-out (qty_out) + load sheet | TODO | M11 | |
+| M24 | Van load-out (qty_out) + load sheet | **INPROGRESS** | M11 | `feat/van-load`, PR open; atomic `load_van()` FIFO van_out + `/vans` |
 | M25 | Delivery challan PDF | TODO | M24,P10 | |
 | M26 | Return-stock capture | TODO | M24 | |
 | M27 | Reconciliation: out − sold − returned variance flag | TODO | M26,M22 | **the reason the system exists** |
