@@ -47,8 +47,11 @@ agent-readable mirror — update it at the end of every session.
   `retailers`, sales (`price_list`,`orders`,`order_lines`,`invoices`,`invoice_lines`),
   van (`van_loads`,`van_load_lines`,`reconciliations`), `collections`. Tables +
   constraints only; all on the `skus`/0001 RLS+grant pattern.
-  ⬜ next: M02 audit hook + M03 config seed.
-- ⬜ M02 audit · M03 config · M11–M15 inventory (FIFO, low-stock) ·
+- 🟡 **M02 / M03** — AuditService + config layer (`feat/audit-config`, PR open → `dev`).
+  `src/lib/audit/` (`logAudit`, never-throws) + `src/lib/config/` (`getConfig`/`getAllConfig`
+  + defaults) + `20260628080405_config_seed.sql`. 22 tests green.
+  ⬜ remaining: apply `config_seed` in SQL Editor + Aman review.
+- ⬜ M11–M15 inventory (FIFO, low-stock) ·
   M18–M23 order → invoice → **atomic** stock deduct · M24–M28 van load + challan +
   **reconciliation** · M29 collections.
 - ⬜ M05–M09 Auth & RBAC (shared foundation — coordinate; Supabase Auth + server

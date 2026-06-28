@@ -28,6 +28,17 @@ without passing kickstart prompts back and forth.
 
 ## Log (newest first)
 
+### 2026-06-28 · Hardik + Claude · platform — AuditService (M02) + config layer (M03) (`feat/audit-config`)
+- **M02 audit:** `src/lib/audit/` — pure `buildAuditRow` (camel→snake, normalize, validate;
+  5 tests) + `logAudit()` side-effect writer to `audit_log` (try/catch, **never throws/blocks**,
+  CLAUDE.md rule 4). Call after the primary mutation.
+- **M03 config:** `src/lib/config/` — pure `CONFIG_DEFAULTS` + `getDefault`/`coerceConfigValue`
+  (7 tests) + `getConfig`/`getAllConfig` accessors (DB read, default fallback — `getSkus` pattern)
+  + `20260628080405_config_seed.sql` (5 default rows, `on conflict do nothing`). `tax_slabs` empty (CA-gated).
+- **22 tests green** (10 catalog + 12 new), typecheck + `next build` clean. PR open → `dev`.
+- ⏳ **config_seed NOT applied yet** — run `20260628080405_config_seed.sql` in SQL Editor, then date MIGRATIONS.
+- **Next (me):** inventory M11 (stock receive) → M12 (stock view). Auth M05–M09 = sync with Aman first.
+
 ### 2026-06-28 · Hardik + Claude · transactional spine — P13 ER schema + M01 core migrations (`feat/core-schema`)
 - **Merge hygiene:** `feat/ui-kit-states` → `dev` (PR #1). `feat/supabase-catalog` stale
   (already in `dev`) — delete it. Cut `feat/core-schema` off updated `dev`.
