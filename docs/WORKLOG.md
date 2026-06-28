@@ -14,12 +14,13 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | `feat/inventory-fifo` | M13 — FIFO deduct service (atomic RPC, oldest-expiry first) | `src/lib/inventory/**` · new migration | 2026-06-28 |
+| Hardik | `feat/inventory-alerts` | M14 low-stock accessor + M15 inventory acceptance (ledger invariant) | `src/lib/inventory/**` | 2026-06-28 |
 
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
 |-----|-----|-----------|--------|
 | **Aman** | Add **`/inventory`** to the sidebar nav (`src/lib/nav.ts` — your lane). Hardik shipped the page on `feat/inventory-receive` but didn't touch your file. Label "Inventory", after Catalog. | Hardik · 2026-06-28 | ⬜ open |
+| **Aman** | Wire **low-stock tile** on Owner Dashboard (M30). Accessor ready: `getLowStockSkus()` in `src/lib/inventory/data.ts` (returns `SkuStock[]` at/below threshold). Just render the count/list — Hardik won't touch `src/app/(app)/dashboard/**`. | Hardik · 2026-06-28 | ⬜ open |
 
 **Rules that keep us conflict-free:**
 - Edit only the folders your lane owns (`COORDINATION.md`). No overlap → no conflicts.
@@ -32,6 +33,18 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-28 · Hardik + Claude · inventory — low-stock accessor (M14) + acceptance (M15) (`feat/inventory-alerts`)
+- **M14 low-stock:** `getLowStockSkus()` in `src/lib/inventory/data.ts` — SKUs in stock and
+  at/below `low_stock_threshold` (config). Dashboard tile = Aman's lane → flagged in cross-lane asks.
+- **M15 acceptance:** `ledger.ts` pure `netFromMovements` (on-hand = signed sum of movements;
+  foundation for recon M27) + `acceptance.test.ts` proving the inventory invariant: receive →
+  FIFO deduct → **physical on-hand === ledger net**, every op audited, over-deduct rejected (no partial).
+- **44 tests green** (3 ledger + 2 acceptance new), typecheck + build clean. No migration, no UI.
+- **Inventory module (M10–M15) now complete** end-to-end: catalog → receive (atomic) → FIFO deduct
+  (atomic) → low-stock → acceptance.
+- **Next (me):** money path — M18 price-list → M19 order punch → M20 invoice-number service.
+  ⚠️ M21 invoice gen is **client-blocked (P10 CA format)**; M22 `confirmAndInvoice()` reuses `deductStock()`.
 
 ### 2026-06-28 · Hardik + Claude · inventory — FIFO deduct service (M13) (`feat/inventory-fifo`)
 - **Atomic FIFO deduct:** `deduct_stock()` RPC (`20260628090247_deduct_stock_fn.sql`) —
