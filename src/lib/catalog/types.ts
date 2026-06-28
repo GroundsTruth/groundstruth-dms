@@ -20,8 +20,16 @@ export type Sku = {
   packLabel: string;
   /** ₹ per case where known; null = client still to confirm. */
   ratePerCase: number | null;
+  /** Active in the catalog. Optional — `undefined` ≡ active (the static seed). */
+  isActive?: boolean;
   // TODO (from client / CA): mrp, hsn, taxSlabPct, cessPct, unitsPerCase.
 };
+
+/**
+ * A SKU's user-editable fields — not the auto-assigned `code`, and not the
+ * `isActive` flag (activation is managed separately via `setSkuActive`).
+ */
+export type SkuInput = Omit<Sku, "code" | "isActive">;
 
 export type Confidence = "exact" | "alias" | "fuzzy" | "ambiguous" | "none";
 

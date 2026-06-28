@@ -20,35 +20,45 @@ is built so far.
   (`service_role` all, `authenticated` select) + `updated_at` trigger. **Copy this
   pattern** for every new table.
 
-## Phase-1 tables to design  (propose columns + policies per table)
+## Phase-1 ER — proposed (built on `feat/core-schema`, pending Aman PR review)
 
-**Core / Auth — joint (M02–M03, M05–M09):**
-- `users`, `roles` — auth identities + RBAC (Owner / Warehouse / Driver-Rep).
-- `config` — tax slabs, invoice series, reconciliation tolerance, discount ceiling.
-- `audit_log` — append-only mutation trail.
+15 tables added across six timestamped migrations (`20260628070450`–`455`), all on
+the `skus` pattern: RLS on · read policy `authenticated` · **writes server-only**
+(`service_role`, no write policy) · explicit grants · `updated_at` trigger ·
+`numeric >= 0` checks. **Tables + constraints only** — the services (FIFO,
+`confirmAndInvoice()`, `reconcile()`, AuditService) land in their own module branches.
+Full design: `docs/superpowers/specs/2026-06-28-core-schema-design.md`.
 
-**Inventory — Hardik (M11–M14):**
-- `inventory` / `stock_batches` — on-hand by SKU + batch + expiry, `qty >= 0`.
-- (FIFO deduction is a *service* over batches, not a table — M13.)
+**Core / Auth — `_core` (joint):**
+- `users` — `id = auth.users.id`, name, phone, `role app_role(owner|warehouse|driver_rep)`, is_active.
+- `config` — key/value (`jsonb`): tax slabs, invoice series, recon tolerance, discount ceiling, low-stock threshold.
+- `audit_log` — append-only (select+insert grant only); written by AuditService (M02).
 
-**Sales / money path — Hardik (M18–M23):**
-- `price_list` — price per SKU (per route/segment? — confirm with feed).
-- `orders`, `order_lines` — order punch.
-- `invoices`, `invoice_lines` — tax computed; **server-side invoice-number service**.
-- `confirmAndInvoice()` — RPC doing invoice + stock deduct in **ONE transaction**.
+**Inventory — `_inventory` (Hardik):**
+- `stock_batches` — on-hand by SKU + batch + expiry, `qty_on_hand >= 0`, `unique(sku_id,batch_no)`.
+- `stock_movements` — append-only ledger (inward/sale_deduct/van_out/van_return/adjustment); truth source for FIFO (M13) + recon (M27).
 
-**Van / reconciliation — Hardik (M24–M28):**
-- `van_loads`, `van_load_lines` — qty_out per SKU per van/route.
-- `returns` — qty_returned.
-- reconciliation = *service* over loads − sold − returned → variance flags + audit.
+**Retailer — `_retailer` (joint):** `retailers` — shops with `route` attribute + `approval_status`; forward-compatible with the route-centric feed.
 
-**Collection — Hardik (M29):**
-- `collections` — cash/UPI recorded against an invoice.
+**Sales / money path — `_sales` (Hardik):**
+- `price_list` — price per SKU, optional retailer/route scope.
+- `orders` / `order_lines` — order punch (`order_status`).
+- `invoices` / `invoice_lines` — `invoice_no` unique (server series, M20); `invoice_lines.batch_id` records FIFO batch.
+- `confirmAndInvoice()` (M22) — RPC: invoice + FIFO deduct + audit in **ONE transaction** (service, not a table).
 
-**Retailer — TBD, blocked on client Q2 (M16–M17):**
-- `retailers` — only if the client confirms individual shops; the feed is route-centric today.
+**Van / reconciliation — `_van` (Hardik):**
+- `van_loads` / `van_load_lines` — `qty_out` + `qty_returned` (returns as a column, M26).
+- `reconciliations` — one per load: out − sold − returned variance + cash variance + `recon_status` flag.
 
-## Open schema questions (client/CA — see README "Open questions")
-1. Invoicing/tax fields per SKU: MRP / HSN / tax-slab / cess / units-per-case.
-2. Retailer entity yes/no (route-only vs individual shops).
-3. Batch/expiry tracked, or on-hand only.
+**Collection — `_collection` (Hardik):** `collections` — cash/UPI against an invoice (`collection_mode`, reference captured not processed).
+
+### Decisions flagged for review
+1. **Role as enum**, no `roles` table (3 fixed roles; M07 permission map is code/config).
+2. **Returns as `qty_returned` column** on `van_load_lines`, not a separate table.
+3. **`stock_movements` ledger added** (not explicit in tracker) — makes FIFO/recon/audit verifiable.
+4. **Writes server-only** (no write RLS policy) on every table — RBAC enforced in the server layer (M07).
+
+## Open schema questions (client/CA — still gating *values*, not structure)
+1. Invoicing/tax fields per SKU: MRP / HSN / tax-slab / cess / units-per-case (columns exist on `skus`, awaiting values).
+2. Retailer entity — modelled as `retailers` (proposed default); confirm route-only vs per-shop with client.
+3. Batch/expiry — modelled in `stock_batches` (proposed default); confirm with client.

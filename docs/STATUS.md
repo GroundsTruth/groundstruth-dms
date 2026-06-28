@@ -40,7 +40,29 @@ agent-readable mirror — update it at the end of every session.
   ⬜ remaining: live aggregates (after more tables) + real reconciliation (Hardik).
 
 ### Hardik's lane — transactional spine
-- ⬜ M02 audit · M03 config · M11–M15 inventory (FIFO, low-stock) ·
+- ✅ **P13 / M01** — Phase-1 ER schema + core migrations (`feat/core-schema` → merged to
+  `dev`; **applied to Supabase 2026-06-28**, 16 tables live incl. `skus`). 15 new tables
+  in 6 timestamped migrations (`20260628070450`–`455`): core/auth
+  (`users`,`config`,`audit_log`), inventory (`stock_batches`,`stock_movements`),
+  `retailers`, sales (`price_list`,`orders`,`order_lines`,`invoices`,`invoice_lines`),
+  van (`van_loads`,`van_load_lines`,`reconciliations`), `collections`. Tables +
+  constraints only; all on the `skus`/0001 RLS+grant pattern.
+- ✅ **M02 / M03** — AuditService + config layer (merged PR #3; applied). `src/lib/audit/`
+  (`logAudit`, never-throws) + `src/lib/config/` (`getConfig`/`getAllConfig` + defaults) +
+  `config_seed` (5 rows live). 22 tests.
+- ✅ **M11 / M12** — receive stock + stock view (merged PR #4; `receive_stock()` RPC applied).
+  Atomic RPC + `src/lib/inventory/` + `/inventory` page. 32 tests.
+  ⬜ cross-lane: add `/inventory` to `src/lib/nav.ts` (Aman).
+- ✅ **M13** — FIFO deduct service (merged PR #5; `deduct_stock()` RPC applied). Atomic
+  oldest-expiry, all-or-nothing, row locks + `deductStock()` + pure `planFifo`. 39 tests.
+  Used by `confirmAndInvoice()` (M22).
+- 🟡 **M14 / M15** — low-stock accessor + inventory acceptance (`feat/inventory-alerts`, **PR open → `dev`**).
+  `getLowStockSkus()` (M14; dashboard tile = Aman) + `ledger.netFromMovements` + acceptance test
+  (receive→FIFO deduct→balance===ledger net, audited). 44 tests. ⬜ remaining: Aman review + merge;
+  Aman wire low-stock dashboard tile. **Inventory M10–M15 feature-complete.**
+- 🟡 **M18** — price-list rule (`feat/sales-pricelist`, PR open → `dev`). `src/lib/sales/`:
+  `resolvePrice` (retailer>route>base) + `priceFor()` + `setPrice` action. 55 tests. No migration
+  (uses M01 `price_list`). ⬜ remaining: Aman review; seed prices (client rate sheet).
   M18–M23 order → invoice → **atomic** stock deduct · M24–M28 van load + challan +
   **reconciliation** · M29 collections.
 - ⬜ M05–M09 Auth & RBAC (shared foundation — coordinate; Supabase Auth + server

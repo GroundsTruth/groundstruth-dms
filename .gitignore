@@ -13,11 +13,16 @@ build/
 .env
 .env.*
 !.env.example
+# guard against a re-paste without the leading dot (env.local, foo.env.local)
+env.local
+*env.local
 
 # supabase local
 .supabase/
 supabase/.branches/
 supabase/.temp/
+# throwaway one-paste apply helper (real source = numbered files in migrations/)
+supabase/_apply_all*.sql
 
 # misc
 .DS_Store
@@ -52,3 +57,5 @@ prompts-scm
 !/README.md
 !/AGENTS.md
 !/CLAUDE.md
+# Root-level scratch notes (kickstart prompts, etc.) stay local — never tracked.
+/*.txt
