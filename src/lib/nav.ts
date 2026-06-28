@@ -2,9 +2,10 @@ import {
   LayoutDashboard,
   Package,
   Boxes,
+  ClipboardList,
   Truck,
   ReceiptText,
-  Wallet,
+  Store,
   Palette,
   type LucideIcon,
 } from "lucide-react";
@@ -16,15 +17,18 @@ export type NavItem = {
 };
 
 /**
- * Primary navigation. Some targets are placeholders until their module ships;
- * the active item highlights based on the current path.
+ * Primary navigation — one entry per shipped module, ordered along the flow:
+ * catalog → inventory → orders → vans → invoices → retailers. The active item
+ * highlights on the current path. (Collections is recorded on an invoice's Payments
+ * panel — reached via Invoices — so it has no separate top-level entry.)
  */
 export const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Catalog", href: "/catalog", icon: Package },
   { label: "Inventory", href: "/inventory", icon: Boxes },
+  { label: "Orders", href: "/orders", icon: ClipboardList },
   { label: "Van Load", href: "/vans", icon: Truck },
   { label: "Invoices", href: "/invoices", icon: ReceiptText },
-  { label: "Collections", href: "/collections", icon: Wallet },
+  { label: "Retailers", href: "/retailers", icon: Store },
   { label: "UI Kit", href: "/kit", icon: Palette },
 ];
