@@ -67,8 +67,8 @@ empty/loading/error/offline states), and a read-only **Owner Dashboard** from se
 | M07 | RBAC middleware + permission map | Both | TODO | M06 | |
 | M08 | User CRUD + role assignment | Both | TODO | M07 | |
 | M09 | Acceptance: role-gated screens | Both | TODO | M08 | |
-| M16 | Retailer CRUD + import | Both | TODO | M01 | |
-| M17 | Field onboarding form + approval | Both | TODO | M16,M07 | |
+| M16 | Retailer CRUD + import | Both → **Hardik** | **INPROGRESS** | M01 | `feat/retailers`, PR open; CRUD + `/retailers` |
+| M17 | Field onboarding form + approval | Both → **Hardik** | **INPROGRESS** | M16,M07 | `feat/retailers`, PR open; onboard form + pending→approved rule |
 
 ### Phase-1 hardening (Both)
 M32 critical-path tests · M33 QA pass · M34 backups/monitoring · M35 pilot · M36 go-live — all TODO.
