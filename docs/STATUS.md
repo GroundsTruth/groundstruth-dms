@@ -49,8 +49,8 @@ agent-readable mirror — update it at the end of every session.
   constraints only; all on the `skus`/0001 RLS+grant pattern.
 - 🟡 **M02 / M03** — AuditService + config layer (`feat/audit-config`, PR open → `dev`).
   `src/lib/audit/` (`logAudit`, never-throws) + `src/lib/config/` (`getConfig`/`getAllConfig`
-  + defaults) + `20260628080405_config_seed.sql`. 22 tests green.
-  ⬜ remaining: apply `config_seed` in SQL Editor + Aman review.
+  + defaults) + `20260628080405_config_seed.sql` (**applied 2026-06-28**, 5 rows live). 22 tests green.
+  ⬜ remaining: Aman PR review + merge.
 - ⬜ M11–M15 inventory (FIFO, low-stock) ·
   M18–M23 order → invoice → **atomic** stock deduct · M24–M28 van load + challan +
   **reconciliation** · M29 collections.
