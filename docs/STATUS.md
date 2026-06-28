@@ -52,8 +52,8 @@ agent-readable mirror — update it at the end of every session.
   + defaults) + `20260628080405_config_seed.sql` (**applied 2026-06-28**, 5 rows live). 22 tests green.
 - 🟡 **M11 / M12** — receive stock + stock view (`feat/inventory-receive`, PR open → `dev`).
   Atomic `receive_stock()` RPC + `src/lib/inventory/` + `/inventory` page (KPIs, receive form,
-  by-SKU + batch tables). 32 tests green. ⬜ remaining: apply RPC migration in SQL Editor;
-  add `/inventory` to `src/lib/nav.ts` (Aman); Aman review.
+  by-SKU + batch tables). 32 tests green. `receive_stock()` RPC **applied 2026-06-28**.
+  ⬜ remaining: add `/inventory` to `src/lib/nav.ts` (Aman); Aman PR review + merge.
 - ⬜ M13–M15 inventory (FIFO deduct, low-stock alerts) ·
   M18–M23 order → invoice → **atomic** stock deduct · M24–M28 van load + challan +
   **reconciliation** · M29 collections.
