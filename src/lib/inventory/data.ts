@@ -96,6 +96,16 @@ export async function getStockBySku(): Promise<SkuStock[]> {
   }
 }
 
+/**
+ * Low-stock SKUs (M14) — those in stock but at/below the configured threshold.
+ * For the Owner Dashboard low-stock tile/list (M30). Out-of-stock (qty 0) is
+ * excluded — that's a separate "out of stock" state.
+ */
+export async function getLowStockSkus(): Promise<SkuStock[]> {
+  const stock = await getStockBySku();
+  return stock.filter((s) => s.qtyOnHand > 0 && s.lowStock);
+}
+
 /** Individual batches (newest received first), merged with their SKU code/name. */
 export async function getBatches(): Promise<BatchRow[]> {
   try {
