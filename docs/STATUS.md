@@ -40,13 +40,14 @@ agent-readable mirror — update it at the end of every session.
   ⬜ remaining: live aggregates (after more tables) + real reconciliation (Hardik).
 
 ### Hardik's lane — transactional spine
-- 🟡 **P13 / M01** — Phase-1 ER schema + core migrations on `feat/core-schema` (PR open
-  → `dev`). 15 tables in 6 timestamped migrations (`20260628070450`–`455`): core/auth
+- ✅ **P13 / M01** — Phase-1 ER schema + core migrations (`feat/core-schema` → merged to
+  `dev`; **applied to Supabase 2026-06-28**, 16 tables live incl. `skus`). 15 new tables
+  in 6 timestamped migrations (`20260628070450`–`455`): core/auth
   (`users`,`config`,`audit_log`), inventory (`stock_batches`,`stock_movements`),
   `retailers`, sales (`price_list`,`orders`,`order_lines`,`invoices`,`invoice_lines`),
   van (`van_loads`,`van_load_lines`,`reconciliations`), `collections`. Tables +
   constraints only; all on the `skus`/0001 RLS+grant pattern.
-  ⬜ remaining: **apply in SQL Editor** (not yet run) + Aman PR review.
+  ⬜ next: M02 audit hook + M03 config seed.
 - ⬜ M02 audit · M03 config · M11–M15 inventory (FIFO, low-stock) ·
   M18–M23 order → invoice → **atomic** stock deduct · M24–M28 van load + challan +
   **reconciliation** · M29 collections.

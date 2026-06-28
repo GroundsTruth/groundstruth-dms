@@ -21,6 +21,8 @@ env.local
 .supabase/
 supabase/.branches/
 supabase/.temp/
+# throwaway one-paste apply helper (real source = numbered files in migrations/)
+supabase/_apply_all*.sql
 
 # misc
 .DS_Store
