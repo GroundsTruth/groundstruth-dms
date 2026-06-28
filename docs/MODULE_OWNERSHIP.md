@@ -38,15 +38,15 @@ empty/loading/error/offline states), and a read-only **Owner Dashboard** from se
 ### Hardik's lane — transactional spine (anti-leakage core)
 | ID | Module | Status | Depends on | Notes |
 |----|--------|--------|-----------|-------|
-| M01 | Core DB migrations (users, roles, skus, inventory, orders, order_lines, invoices, van_loads, collections, audit_log) | TODO | P13,P17 | **start here after schema** |
-| M02 | Audit logging hook (every mutation → audit_log) | TODO | M01 | liability hotspot — do early |
-| M03 | Config layer (tax slabs, invoice series, thresholds, recon tolerance) | TODO | M01 | |
-| M11 | Stock model: batch + expiry, qty>=0 | TODO | M10 | |
-| M12 | Inward stock (receive) + stock view | TODO | M11 | |
-| M13 | FIFO deduction service (transactional) | TODO | M11,M02 | core; called by invoicing |
-| M14 | Low-stock alert rule + dashboard flag | TODO | M12,M03 | |
-| M15 | Acceptance: receive→deduct→balance correct & audited | TODO | M13 | |
-| M18 | Price-list rule (SKU × retailer/region) | TODO | M10,M16 | |
+| M01 | Core DB migrations (16 tables) + ER schema (P13) | **DONE** | P13,P17 | merged PR #2; applied to Supabase 2026-06-28 |
+| M02 | Audit logging hook (`logAudit` → audit_log) | **DONE** | M01 | merged PR #3 |
+| M03 | Config layer (`getConfig` + defaults + seed) | **DONE** | M01 | merged PR #3; 5 rows seeded |
+| M11 | Stock model: batch + expiry, qty>=0 | **DONE** | M10 | table in M01; receive RPC PR #4 |
+| M12 | Inward stock (receive RPC) + stock view + `/inventory` | **DONE** | M11 | merged PR #4; atomic `receive_stock()` |
+| M13 | FIFO deduction service (atomic RPC) | **DONE** | M11,M02 | merged PR #5; `deduct_stock()`, oldest-expiry |
+| M14 | Low-stock accessor (`getLowStockSkus`) | **INPROGRESS** | M12,M03 | code on `feat/inventory-alerts`; dashboard tile = Aman |
+| M15 | Acceptance: receive→deduct→balance & audited | **INPROGRESS** | M13 | `feat/inventory-alerts`, PR open |
+| M18 | Price-list rule (SKU × retailer/region) | TODO | M10,M16 | **next up** |
 | M19 | Order punch UI + order/order_lines model | TODO | M18,M07 | |
 | M20 | Invoice number service (server-side series) | TODO | M03 | |
 | M21 | Invoice generation (tax to CA spec) + PDF | TODO | M20,P10 | blocked on P10 format |
