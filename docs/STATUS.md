@@ -47,21 +47,19 @@ agent-readable mirror — update it at the end of every session.
   `retailers`, sales (`price_list`,`orders`,`order_lines`,`invoices`,`invoice_lines`),
   van (`van_loads`,`van_load_lines`,`reconciliations`), `collections`. Tables +
   constraints only; all on the `skus`/0001 RLS+grant pattern.
-- 🟡 **M02 / M03** — AuditService + config layer (`feat/audit-config`, PR open → `dev`).
-  `src/lib/audit/` (`logAudit`, never-throws) + `src/lib/config/` (`getConfig`/`getAllConfig`
-  + defaults) + `20260628080405_config_seed.sql` (**applied 2026-06-28**, 5 rows live). 22 tests green.
-- 🟡 **M11 / M12** — receive stock + stock view (`feat/inventory-receive`, PR open → `dev`).
-  Atomic `receive_stock()` RPC + `src/lib/inventory/` + `/inventory` page (KPIs, receive form,
-  by-SKU + batch tables). 32 tests green. `receive_stock()` RPC **applied 2026-06-28**.
-  ⬜ remaining: add `/inventory` to `src/lib/nav.ts` (Aman); Aman PR review + merge.
-- 🟡 **M13** — FIFO deduct service (`feat/inventory-fifo`, PR open → `dev`). Atomic
-  `deduct_stock()` RPC (oldest-expiry first, all-or-nothing, locks rows) + `deductStock()` +
-  pure `planFifo` (7 tests). 39 tests green. RPC **applied 2026-06-28**.
-  ⬜ remaining: Aman PR review + merge. Used by `confirmAndInvoice()` (M22).
-- 🟡 **M14 / M15** — low-stock accessor + inventory acceptance (`feat/inventory-alerts`, PR open → `dev`).
+- ✅ **M02 / M03** — AuditService + config layer (merged PR #3; applied). `src/lib/audit/`
+  (`logAudit`, never-throws) + `src/lib/config/` (`getConfig`/`getAllConfig` + defaults) +
+  `config_seed` (5 rows live). 22 tests.
+- ✅ **M11 / M12** — receive stock + stock view (merged PR #4; `receive_stock()` RPC applied).
+  Atomic RPC + `src/lib/inventory/` + `/inventory` page. 32 tests.
+  ⬜ cross-lane: add `/inventory` to `src/lib/nav.ts` (Aman).
+- ✅ **M13** — FIFO deduct service (merged PR #5; `deduct_stock()` RPC applied). Atomic
+  oldest-expiry, all-or-nothing, row locks + `deductStock()` + pure `planFifo`. 39 tests.
+  Used by `confirmAndInvoice()` (M22).
+- 🟡 **M14 / M15** — low-stock accessor + inventory acceptance (`feat/inventory-alerts`, **PR open → `dev`**).
   `getLowStockSkus()` (M14; dashboard tile = Aman) + `ledger.netFromMovements` + acceptance test
-  (receive→FIFO deduct→balance===ledger net, audited). 44 tests green. ⬜ remaining: Aman review;
-  Aman wire low-stock dashboard tile. **Inventory M10–M15 done.**
+  (receive→FIFO deduct→balance===ledger net, audited). 44 tests. ⬜ remaining: Aman review + merge;
+  Aman wire low-stock dashboard tile. **Inventory M10–M15 feature-complete.**
   M18–M23 order → invoice → **atomic** stock deduct · M24–M28 van load + challan +
   **reconciliation** · M29 collections.
 - ⬜ M05–M09 Auth & RBAC (shared foundation — coordinate; Supabase Auth + server
