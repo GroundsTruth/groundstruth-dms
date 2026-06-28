@@ -55,7 +55,7 @@ empty/loading/error/offline states), and a read-only **Owner Dashboard** from se
 | M24 | Van load-out (qty_out) + load sheet | **INPROGRESS** | M11 | `feat/van-load`, PR open; atomic `load_van()` FIFO van_out + `/vans` |
 | M25 | Delivery challan PDF | TODO | M24,P10 | |
 | M26 | Return-stock capture | **INPROGRESS** | M24 | `feat/van-returns`, PR open; atomic `record_returns()` + `/vans/[id]` |
-| M27 | Reconciliation: out − sold − returned variance flag | TODO | M26,M22 | **the reason the system exists** |
+| M27 | Reconciliation: out − sold − returned variance flag | **INPROGRESS** | M26,M22 | `feat/van-reconcile`, PR open; `reconcileVanLoad` + panel on `/vans/[id]` |
 | M28 | Acceptance: variance beyond tolerance flags + audit | TODO | M27 | |
 | M29 | Record cash/UPI against invoice | TODO | M22 | |
 

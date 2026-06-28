@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | `feat/sales-invoicing` | M21+M22 — invoice gen (provisional GST) + atomic `confirmAndInvoice()` | `src/lib/sales/**` · `src/app/(app)/{invoices,orders}/**` · `src/components/invoices/**` · new migrations | 2026-06-28 |
+| Hardik | `feat/van-reconcile` | M27 — reconciliation (out−sold−returned variance + cash) | `src/lib/van/**` · `src/app/(app)/vans/**` · `src/components/vans/**` · new migration | 2026-06-28 |
 
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
@@ -36,6 +36,20 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-28 · Hardik + Claude · van — reconciliation (M27) (`feat/van-reconcile`)
+- **The reason the system exists.** `reconcileVanLoad()` — compares stock that left the van
+  (out − returned) against **invoiced** sales, and cash owed (invoice totals) against cash
+  collected. Either gap beyond `config.recon_tolerance` → **flagged** to the owner. Sales/cash
+  matched to the load by route + date (best linkage until van↔invoice is explicit — documented).
+- **`src/lib/van/`:** pure `computeReconciliation` (variance + cash variance + flag, 4 tests) +
+  `reconcileVanLoad` action (upserts `reconciliations`, flips load → `reconciled`, audited) +
+  `getReconciliation` accessor.
+- **UI:** `/vans/[id]` gets a **Reconcile** panel — out/returned/invoiced, stock variance, cash
+  expected/collected/variance, ok/flagged badge. No migration (`reconciliations` table from M01).
+- **80 tests green**, typecheck + build clean.
+- ⚠️ Cash-collected side reads `collections` — fills in once **M29** lands. Variance math already wired.
+- **Next (me):** M29 collection (cash/UPI vs invoice) → M23/M28 acceptance tests. Then transactional spine done.
 
 ### 2026-06-28 · Hardik + Claude · sales — invoice gen + atomic confirmAndInvoice (M21+M22) (`feat/sales-invoicing`)
 - **THE money path.** `confirm_and_invoice()` RPC (`20260628110659_*.sql`): in ONE txn it reserves

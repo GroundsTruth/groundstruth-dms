@@ -2,9 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getVanLoad } from "@/lib/van/data";
+import { getReconciliation } from "@/lib/van/reconcile";
 import { PageHeader } from "@/components/kit/page-header";
 import { StatusBadge, type StatusTone } from "@/components/kit/status-badge";
 import { ReturnsForm } from "@/components/vans/returns-form";
+import { ReconcilePanel } from "@/components/vans/reconcile-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +18,7 @@ export default async function VanLoadDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const load = await getVanLoad(id);
+  const [load, reconciliation] = await Promise.all([getVanLoad(id), getReconciliation(id)]);
   if (!load) notFound();
 
   return (
@@ -35,6 +37,7 @@ export default async function VanLoadDetailPage({
       />
 
       <ReturnsForm load={load} />
+      <ReconcilePanel vanLoadId={load.id} existing={reconciliation} />
     </>
   );
 }
