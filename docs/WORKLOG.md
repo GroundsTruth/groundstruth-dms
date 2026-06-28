@@ -41,7 +41,7 @@ without passing kickstart prompts back and forth.
 - **`src/lib/inventory/`:** pure `fifo-logic` (`validateDeduct` + `planFifo` mirroring the SQL
   ordering, 7 tests) + `deductStock()` server fn (rpc + non-blocking audit, friendly insufficient-stock msg).
 - **39 tests green**, typecheck + build clean. No UI (service called by invoicing/M22).
-- ⏳ **deduct_stock RPC NOT applied yet** — run `20260628090247_*.sql` in SQL Editor, then date MIGRATIONS.
+- ✅ **deduct_stock RPC applied 2026-06-28** (SQL Editor).
 - **Next (me):** M14 low-stock alerts (wire `lowStockFlag` to dashboard) OR M18 price-list → M19 order punch.
   Heads-up Aman: M22 `confirmAndInvoice()` will call this `deductStock()` — invoice + deduct in one txn.
 
