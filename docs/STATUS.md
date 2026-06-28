@@ -60,6 +60,9 @@ agent-readable mirror — update it at the end of every session.
   `getLowStockSkus()` (M14; dashboard tile = Aman) + `ledger.netFromMovements` + acceptance test
   (receive→FIFO deduct→balance===ledger net, audited). 44 tests. ⬜ remaining: Aman review + merge;
   Aman wire low-stock dashboard tile. **Inventory M10–M15 feature-complete.**
+- 🟡 **M18** — price-list rule (`feat/sales-pricelist`, PR open → `dev`). `src/lib/sales/`:
+  `resolvePrice` (retailer>route>base) + `priceFor()` + `setPrice` action. 55 tests. No migration
+  (uses M01 `price_list`). ⬜ remaining: Aman review; seed prices (client rate sheet).
   M18–M23 order → invoice → **atomic** stock deduct · M24–M28 van load + challan +
   **reconciliation** · M29 collections.
 - ⬜ M05–M09 Auth & RBAC (shared foundation — coordinate; Supabase Auth + server

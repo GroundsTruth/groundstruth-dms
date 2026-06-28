@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | `feat/inventory-alerts` | M14 low-stock accessor + M15 inventory acceptance (ledger invariant) | `src/lib/inventory/**` | 2026-06-28 |
+| Hardik | `feat/sales-pricelist` | M18 — price-list rule + `priceFor()` resolver (retailer>route>base) | `src/lib/sales/**` | 2026-06-28 |
 
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
@@ -33,6 +33,18 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-28 · Hardik + Claude · sales — price-list rule + resolver (M18) (`feat/sales-pricelist`)
+- **`src/lib/sales/`:** pure `resolvePrice` (precedence **retailer > route > base**, latest
+  `effective_from` wins, ignores inactive/not-yet-effective; 7 tests) + `validateSetPrice`
+  (one scope only; 4 tests) + `getPriceRules`/`priceFor()` accessors + `setPrice` server action
+  (insert-only, keeps price history; non-blocking audit).
+- `priceFor()` is the `priceLine()` the order punch (M19) will call per line. Returns **null when
+  no rule** — caller must handle (don't guess a price).
+- Uses existing `price_list` table (M01) — **no migration**. 55 tests green, typecheck + build clean.
+- ⚠️ **No prices seeded yet** — `setPrice` exists but the list is empty until prices are entered
+  (client rate sheet, or seed from `skus.rate_per_case` later). M19 order lines need rules present.
+- **Next (me):** M19 order punch (order + order_lines model + punch UI, uses `priceFor`) → M20 invoice-number service.
 
 ### 2026-06-28 · Hardik + Claude · inventory — low-stock accessor (M14) + acceptance (M15) (`feat/inventory-alerts`)
 - **M14 low-stock:** `getLowStockSkus()` in `src/lib/inventory/data.ts` — SKUs in stock and
