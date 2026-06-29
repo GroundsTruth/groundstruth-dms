@@ -59,3 +59,6 @@ prompts-scm
 !/CLAUDE.md
 # Root-level scratch notes (kickstart prompts, etc.) stay local — never tracked.
 /*.txt
+
+# tsc incremental build cache
+tsconfig.tsbuildinfo
