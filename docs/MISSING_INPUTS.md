@@ -16,6 +16,8 @@ below is mostly **client data** + **Aman's UI half**._
 
 **✅ Tax-rate corrected (2026-06-29):** updated provisional GST to **aerated 40% / water+juice 5%** (cess 0), per the proposal deck — applied live + migration `20260629150401`. (Old 28%+12% superseded.) **Still pending CA confirm + HSN per SKU** (#2). 'Other' category left at 18% (unknown).
 
+**✅ Update — 2026-06-30 (Aman):** client sent a **sample tax invoice** → reverse-engineered in `docs/INVOICE_SPEC.md` (unblocks #1's invoice side). **Per-SKU GST + HSN researched** (42/46, post-Sept-2025 rates, adversarially verified — table + sources in `INVOICE_SPEC.md` §3a); refines the category rates (plain **soda → 18%**, **Jeera RTD → 40%**) and **adds HSN per SKU**. **Seller = Falcon Enterprises**, GSTIN `06AIMPB2225L2ZE` (resolves #3 — to set in `config.seller`). Invoice **numbering deferred** to go-live. Re-seed of the refined rates **HELD** pending Hardik reconcile (WORKLOG cross-lane asks). "Mix"/"Power UP" still unidentified.
+
 **New requirement spotted (Phase 2, not scoped):** **returnable bottle/crate deposit ledger** + buy-X-get-Y free-goods (zero-value stock deduct w/ GST). Logged for Phase 2.
 
 **Still genuinely OPEN (the proposal's own notes list these as client questions):** invoice/challan **format sample** (#1), per-SKU **GST%/cess/HSN** confirmation + **GSTIN** (#2/#3), **MRP** (#7 — likely in the Beverages Catalogue PDF but it's image-only → needs OCR), the **9 unpriced SKUs** (#6 — no June sales), **retailer master list** (#9 — workbook is route-only), **acceptance criteria** (#13).
@@ -27,9 +29,9 @@ below is mostly **client data** + **Aman's UI half**._
 ### A1 — gates real invoicing (M21/M22 go-live)
 | # | Input | Needed for | Build workaround in place | Status |
 |---|-------|-----------|---------------------------|--------|
-| 1 | **Invoice + challan format/sample** (a real Jaypee tax invoice & challan, PDF/image) | M21 invoice layout, M25 challan | Built to a **standard GST Rule-46 layout**; swap to client's | ⬜ needed |
-| 2 | **Per-SKU GST % + cess % + HSN code** | Correct tax on M21/M22 | **Provisional statutory rates seeded** (aerated 28%+12%, water 18%, juice 12%); `tax_provisional` flag shown on invoice | ⬜ needed · **GO-LIVE GATE** |
-| 3 | **Distributor GSTIN** (+ legal name, address, state code) | Mandatory seller block on every GST invoice | `config.seller` placeholder; invoice prints "[GSTIN pending]" | ⬜ needed · **GO-LIVE GATE** |
+| 1 | **Invoice + challan format/sample** (a real tax invoice & challan, PDF/image) | M21 invoice layout, M25 challan | **Invoice sample RECEIVED 2026-06-30** → `docs/INVOICE_SPEC.md` (layout, GST-inclusive math, CGST/SGST-vs-IGST, numbering). Align built layout to it. **Challan** sample still wanted. | 🟡 invoice in · challan pending |
+| 2 | **Per-SKU GST % + cess % + HSN code** | Correct tax on M21/M22 | **Researched & seeded 42/46** (post-Sept-2025: 40% carbonated/energy · 5% water/juice · 18% soda · cess 0) **+ HSN per SKU** — `INVOICE_SPEC.md` §3a. "Mix"/"Power UP" unidentified (null). Reconcile vs live category migration. | 🟡 researched · **CA sign-off = GO-LIVE GATE** |
+| 3 | **Distributor GSTIN** (+ legal name, address, state code) | Mandatory seller block on every GST invoice | **RESOLVED: Falcon Enterprises, GSTIN `06AIMPB2225L2ZE`, Gurugram (state 06)** — from the sample invoice. TODO: set `config.seller` (Hardik). | 🟡 known · set in config |
 | 4 | **CA sign-off** that #1–#3 are GST-compliant (P10) | Compliance before real issuance | n/a — the formal gate, not a code dependency | ⬜ needed · **GO-LIVE GATE** |
 | 5 | **Rounding + place-of-supply rule** (per-line vs total; intra/inter-state CGST+SGST vs IGST) | Tax math correctness | Defaulting to intra-state, round at invoice total; parameterised | ⬜ confirm |
 

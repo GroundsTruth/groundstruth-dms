@@ -25,7 +25,11 @@ async function main() {
 
   const supabase = createClient(url, key, { auth: { persistSession: false } });
 
-  const rows = SEED_SKUS.map((s) => ({
+  // Pass 1 — core columns the seed is authoritative for. Safe to upsert for every
+  // SKU on every run. We deliberately DON'T send tax/commercial columns here: a
+  // heterogeneous upsert defaults any missing key to NULL, which would clobber
+  // values captured elsewhere (e.g. a CA filling HSN/GST via /catalog). See pass 2.
+  const coreRows = SEED_SKUS.map((s) => ({
     code: s.code,
     name: s.name,
     category: s.category,
@@ -36,14 +40,41 @@ async function main() {
 
   const { data, error } = await supabase
     .from("skus")
-    .upsert(rows, { onConflict: "code" })
+    .upsert(coreRows, { onConflict: "code" })
     .select("code");
 
   if (error) {
     console.error("❌ Seed FAILED:", error.message);
     process.exit(1);
   }
-  console.log(`✅ Upserted ${data?.length ?? 0} SKUs.`);
+  console.log(`✅ Upserted ${data?.length ?? 0} SKUs (core columns).`);
+
+  // Pass 2 — tax/commercial columns, ONLY for the SKUs whose seed entry actually
+  // defines at least one (today: the water SKUs confirmed by the sample invoice).
+  // An explicit per-row UPDATE of just the defined columns means a re-seed never
+  // nulls tax values on rows the seed doesn't own (the null-overwrite footgun).
+  const taxRows = SEED_SKUS.filter(
+    (s) =>
+      s.mrp != null ||
+      s.hsn != null ||
+      s.taxSlabPct != null ||
+      s.cessPct != null ||
+      s.unitsPerCase != null,
+  );
+  for (const s of taxRows) {
+    const patch: Record<string, string | number> = {};
+    if (s.mrp != null) patch.mrp = s.mrp;
+    if (s.hsn != null) patch.hsn = s.hsn;
+    if (s.taxSlabPct != null) patch.tax_slab_pct = s.taxSlabPct;
+    if (s.cessPct != null) patch.cess_pct = s.cessPct;
+    if (s.unitsPerCase != null) patch.units_per_case = s.unitsPerCase;
+    const { error: taxErr } = await supabase.from("skus").update(patch).eq("code", s.code);
+    if (taxErr) {
+      console.error(`❌ Tax update FAILED for ${s.code}:`, taxErr.message);
+      process.exit(1);
+    }
+  }
+  console.log(`✅ Applied tax/commercial fields to ${taxRows.length} SKUs.`);
 
   const { count } = await supabase
     .from("skus")

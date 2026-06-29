@@ -40,6 +40,12 @@ export function SkuFormSheet({
   const [packMl, setPackMl] = useState("");
   const [packLabel, setPackLabel] = useState("");
   const [rate, setRate] = useState("");
+  // Commercial / tax (optional — from the client / CA).
+  const [hsn, setHsn] = useState("");
+  const [gst, setGst] = useState("");
+  const [cess, setCess] = useState("");
+  const [mrp, setMrp] = useState("");
+  const [unitsPerCase, setUnitsPerCase] = useState("");
   const [touched, setTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -47,18 +53,29 @@ export function SkuFormSheet({
   useEffect(() => {
     if (!open) return;
     setTouched(false);
+    const numOrEmpty = (n: number | null | undefined) => (n != null ? String(n) : "");
     if (editSku) {
       setName(editSku.name);
       setCategory(editSku.category);
-      setPackMl(editSku.packMl != null ? String(editSku.packMl) : "");
+      setPackMl(numOrEmpty(editSku.packMl));
       setPackLabel(editSku.packLabel);
-      setRate(editSku.ratePerCase != null ? String(editSku.ratePerCase) : "");
+      setRate(numOrEmpty(editSku.ratePerCase));
+      setHsn(editSku.hsn ?? "");
+      setGst(numOrEmpty(editSku.taxSlabPct));
+      setCess(numOrEmpty(editSku.cessPct));
+      setMrp(numOrEmpty(editSku.mrp));
+      setUnitsPerCase(numOrEmpty(editSku.unitsPerCase));
     } else {
       setName("");
       setCategory("Cola");
       setPackMl("");
       setPackLabel("");
       setRate("");
+      setHsn("");
+      setGst("");
+      setCess("");
+      setMrp("");
+      setUnitsPerCase("");
     }
   }, [open, editSku]);
 
@@ -67,7 +84,26 @@ export function SkuFormSheet({
   const packMlError = packMl !== "" && !/^\d+$/.test(packMl) ? "Whole number only." : undefined;
   const rateError =
     rate !== "" && !/^\d+(\.\d{1,2})?$/.test(rate) ? "Number only (max 2 decimals)." : undefined;
-  const blocked = packMlError != null || rateError != null;
+  const money = /^\d+(\.\d{1,2})?$/;
+  const hsnError = hsn !== "" && !/^\d{4,8}$/.test(hsn) ? "4–8 digits." : undefined;
+  const gstError =
+    gst !== "" && (!money.test(gst) || parseFloat(gst) > 100) ? "0–100 (max 2 dp)." : undefined;
+  const cessError =
+    cess !== "" && (!money.test(cess) || parseFloat(cess) > 100) ? "0–100 (max 2 dp)." : undefined;
+  // Cess only makes sense alongside a GST slab — mirror the server-side guard.
+  const cessNeedsGst = cess !== "" && gst === "" ? "Set GST % first." : undefined;
+  const mrpError = mrp !== "" && !money.test(mrp) ? "Number only (max 2 decimals)." : undefined;
+  const unitsPerCaseError =
+    unitsPerCase !== "" && !/^\d+$/.test(unitsPerCase) ? "Whole number only." : undefined;
+  const blocked =
+    packMlError != null ||
+    rateError != null ||
+    hsnError != null ||
+    gstError != null ||
+    cessError != null ||
+    cessNeedsGst != null ||
+    mrpError != null ||
+    unitsPerCaseError != null;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -80,6 +116,11 @@ export function SkuFormSheet({
       packMl: packMl === "" ? null : parseInt(packMl, 10),
       packLabel,
       ratePerCase: rate === "" ? null : parseFloat(rate),
+      hsn: hsn.trim() === "" ? null : hsn.trim(),
+      taxSlabPct: gst === "" ? null : parseFloat(gst),
+      cessPct: cess === "" ? null : parseFloat(cess),
+      mrp: mrp === "" ? null : parseFloat(mrp),
+      unitsPerCase: unitsPerCase === "" ? null : parseInt(unitsPerCase, 10),
     };
 
     setSubmitting(true);
@@ -181,6 +222,85 @@ export function SkuFormSheet({
               />
             )}
           </FormField>
+
+          {/* Tax & commercial — arrives from the client / CA, often after launch. */}
+          <div
+            role="group"
+            aria-labelledby="sku-tax-heading"
+            className="space-y-4 rounded-md border border-dashed border-border bg-muted/30 p-3"
+          >
+            <div>
+              <p id="sku-tax-heading" className="text-sm font-medium">
+                Tax &amp; commercial
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Pre-filled from GST research (provisional) — edit per the CA&apos;s
+                confirmation. Water is also corroborated by the sample invoice.
+              </p>
+            </div>
+
+            <FormField label="HSN / SAC" error={hsnError} hint="4–8 digit code">
+              {(p) => (
+                <Input
+                  {...p}
+                  inputMode="numeric"
+                  value={hsn}
+                  onChange={(e) => setHsn(e.target.value)}
+                  placeholder="22011010"
+                />
+              )}
+            </FormField>
+
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="GST %" error={gstError} hint="total, e.g. 5 / 18 / 28">
+                {(p) => (
+                  <Input
+                    {...p}
+                    inputMode="decimal"
+                    value={gst}
+                    onChange={(e) => setGst(e.target.value)}
+                    placeholder="5"
+                  />
+                )}
+              </FormField>
+              <FormField label="Cess %" error={cessError ?? cessNeedsGst} hint="0 for most">
+                {(p) => (
+                  <Input
+                    {...p}
+                    inputMode="decimal"
+                    value={cess}
+                    onChange={(e) => setCess(e.target.value)}
+                    placeholder="0"
+                  />
+                )}
+              </FormField>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="MRP (₹)" error={mrpError} hint="optional">
+                {(p) => (
+                  <Input
+                    {...p}
+                    inputMode="decimal"
+                    value={mrp}
+                    onChange={(e) => setMrp(e.target.value)}
+                    placeholder="20"
+                  />
+                )}
+              </FormField>
+              <FormField label="Units / case" error={unitsPerCaseError} hint="pieces per case">
+                {(p) => (
+                  <Input
+                    {...p}
+                    inputMode="numeric"
+                    value={unitsPerCase}
+                    onChange={(e) => setUnitsPerCase(e.target.value)}
+                    placeholder="24"
+                  />
+                )}
+              </FormField>
+            </div>
+          </div>
 
           <FormActions className="mt-auto border-t pt-4">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting}>

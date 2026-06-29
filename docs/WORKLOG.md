@@ -13,7 +13,7 @@ without passing kickstart prompts back and forth.
 ## 🚧 In flight — claim before you start (this is how we avoid collisions)
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
-| Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
+| Aman | `feat/catalog-tax-invoice-spec` | Catalog tax/commercial fields + GST research + INVOICE_SPEC (M10) — from the client sample invoice | `src/lib/catalog/` · `src/components/catalog/` · `scripts/seed-skus.ts` · `docs/INVOICE_SPEC.md` · `/catalog` | 2026-06-30 |
 | Hardik | — | **Lane complete & merged** (spine M01–M29 + retailers M16/M17 + auth-backend M05–M07). Paused. Remaining = Aman UI / client data — see `docs/MISSING_INPUTS.md` §B. | transactional spine · retailers · auth backend | — |
 
 > **Aman — starting fresh? Read `docs/AMAN_KICKSTART.md` first.** It has everything Hardik
@@ -31,6 +31,10 @@ without passing kickstart prompts back and forth.
 | **Aman** | **Retailer lane (M16/M17) was "Both" — Hardik built it** (merged). Reusable for per-retailer pricing + named-shop invoices later. | Hardik · 2026-06-28 | ✅ done (FYI) |
 | **Aman** | **AUTH/RBAC — review `docs/AUTH_PLAN.md`.** Hardik built the backend (`feat/auth-backend`): `getSessionUser`, `requireRole`, OTP actions (`requestOtp`/`verifyOtp`/`signOut`), middleware. **You build:** `/login` + OTP screen to that contract, and role-hide nav (`allowedRoutesFor(role)`). **Confirm the role→screen matrix** (covers your dashboard/catalog). | Hardik · 2026-06-28 | ⬜ open |
 | **Both** | **Go-live for auth:** flip `NEXT_PUBLIC_AUTH_ENABLED=true` (middleware is dormant till then) once login UI + SMS OTP provider (MISSING_INPUTS #12) are live + users seeded (#11). | Hardik · 2026-06-28 | ⬜ open |
+| **Hardik** | **Tax reconcile (provisional):** my GST research refines your category-level live rates — plain **Soda = 18%** (you set 40%), **Jeera RTD = 40%** (you left 'Other'=18%), and I added per-SKU **HSN codes** (your migration set rates only). Table + sources: `docs/INVOICE_SPEC.md` §3a. Agree, then apply to live (re-seed or a migration). | Aman · 2026-06-30 | ⬜ open |
+| **Hardik** | **Seller = Falcon Enterprises**, GSTIN `06AIMPB2225L2ZE` (confirmed by Aman, from the sample invoice). Please set `config.seller` to replace the "[GSTIN pending]" placeholder. | Aman · 2026-06-30 | ⬜ open |
+| **Hardik** | **Invoice format unblocked** — client sent a real tax invoice → reverse-engineered in `docs/INVOICE_SPEC.md` (layout, GST-inclusive math, CGST/SGST-vs-IGST, numbering). Use for M21 invoice + M25 challan (was format-blocked). | Aman · 2026-06-30 | ⬜ open |
+| **Both** | **Re-seed HELD:** `scripts/seed-skus.ts` now carries per-SKU tax + is two-pass (non-destructive) but is **not run** — it would overwrite Hardik's live category rates. Run only after the tax reconcile above is agreed. | Aman · 2026-06-30 | ⬜ open |
 
 **Rules that keep us conflict-free:**
 - Edit only the folders your lane owns (`COORDINATION.md`). No overlap → no conflicts.
@@ -43,6 +47,25 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-30 · Aman + Claude · Catalog tax fields + GST research + Invoice spec (`feat/catalog-tax-invoice-spec`)
+- **Client sample invoice arrived** (`Invoice-7210376259.pdf`) — the artefact MISSING_INPUTS #1 needed.
+  Reverse-engineered into **`docs/INVOICE_SPEC.md`**: exact layout, **GST-inclusive** tax math (worked
+  example), CGST/SGST-vs-IGST place-of-supply rule, numbering note. Unblocks M21 invoice + M25 challan.
+- **Catalog tax fields surfaced end-to-end (M10):** `hsn`/`taxSlabPct`/`cessPct`/`mrp`/`unitsPerCase` now in
+  the `Sku` type, accessor (`SKU_COLUMNS`), server-action validate/`toRow`, the add/edit Sheet, a Tax column
+  + a "Tax set" KPI on `/catalog`. (Columns already existed on `skus` — no migration.)
+- **Per-SKU GST/HSN researched & seeded (42/46):** multi-agent web research of the post-22-Sep-2025
+  "GST 2.0" rates, adversarially verified with citations (`INVOICE_SPEC.md` §3a). Carbonated + energy = 40%,
+  juice + water = 5%, plain soda = 18%, **cess 0**. "Mix"/"Power UP" left null (unidentifiable). **PROVISIONAL —
+  pending CA.** `seed-data.ts` now the seed-of-record for tax; `scripts/seed-skus.ts` made two-pass (non-destructive).
+- **Client decisions:** billing entity = **Falcon Enterprises** (GSTIN `06AIMPB2225L2ZE`); invoice numbering **deferred** to go-live.
+- **⚠️ Reconcile with Hardik** (cross-lane asks above): research refines his category-level live rates
+  (Soda 18 vs 40, Jeera 40 vs 18) + adds HSN. **Re-seed HELD** until agreed. Falcon → `config.seller` (his lane).
+- Branch cut **fresh off `dev`** (the earlier session ran on a 51-commit-stale branch; only additive work carried
+  over, stale doc edits dropped). **101 tests green**, typecheck + build clean.
+- Also added **`docs/CLIENT_QUESTIONNAIRE_2026-06-30.md`** (focused client follow-up).
+- **Next (Aman):** per `AMAN_KICKSTART.md` → **Auth UI** (`/login`) then Owner Dashboard live tiles.
 
 ### 2026-06-28 · Hardik + Claude · Auth/RBAC backend (M05–M07) + plan (`feat/auth-backend`)
 - **Plan first:** `docs/AUTH_PLAN.md` — Supabase phone-OTP, file-ownership split (Hardik backend /

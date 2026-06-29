@@ -20,9 +20,33 @@ function validate(input: SkuInput): string | null {
   if (input.ratePerCase != null && (Number.isNaN(input.ratePerCase) || input.ratePerCase < 0)) {
     return "Rate per case must be 0 or more.";
   }
+  // Commercial / tax — all optional; validate only when supplied.
+  if (input.mrp != null && (Number.isNaN(input.mrp) || input.mrp < 0)) {
+    return "MRP must be 0 or more.";
+  }
+  if (input.hsn != null && input.hsn !== "" && !/^\d{4,8}$/.test(input.hsn)) {
+    return "HSN must be 4–8 digits.";
+  }
+  if (input.taxSlabPct != null && (Number.isNaN(input.taxSlabPct) || input.taxSlabPct < 0 || input.taxSlabPct > 100)) {
+    return "GST % must be between 0 and 100.";
+  }
+  if (input.cessPct != null && (Number.isNaN(input.cessPct) || input.cessPct < 0 || input.cessPct > 100)) {
+    return "Cess % must be between 0 and 100.";
+  }
+  // Cess is meaningless without a GST slab to sit alongside — reject the bare combo
+  // so it can't persist as cess_pct set / tax_slab_pct null (which the Tax column hides).
+  if (input.cessPct != null && input.taxSlabPct == null) {
+    return "Set a GST % before adding cess.";
+  }
+  if (input.unitsPerCase != null && (!Number.isInteger(input.unitsPerCase) || input.unitsPerCase < 1)) {
+    return "Units per case must be a whole number ≥ 1.";
+  }
   return null;
 }
 
+// NOTE: this is a FULL-ROW value map — `updateSku` writes every column, so absent
+// optional fields become null. Callers must pass a COMPLETE SkuInput (the edit form
+// prefills from a fully-hydrated Sku); a partial input would blank confirmed columns.
 function toRow(input: SkuInput) {
   return {
     name: input.name.trim(),
@@ -30,6 +54,11 @@ function toRow(input: SkuInput) {
     pack_ml: input.packMl,
     pack_label: input.packLabel.trim(),
     rate_per_case: input.ratePerCase,
+    mrp: input.mrp ?? null,
+    hsn: input.hsn ? input.hsn.trim() : null,
+    tax_slab_pct: input.taxSlabPct ?? null,
+    cess_pct: input.cessPct ?? null,
+    units_per_case: input.unitsPerCase ?? null,
   };
 }
 

@@ -22,7 +22,22 @@ export type Sku = {
   ratePerCase: number | null;
   /** Active in the catalog. Optional — `undefined` ≡ active (the static seed). */
   isActive?: boolean;
-  // TODO (from client / CA): mrp, hsn, taxSlabPct, cessPct, unitsPerCase.
+
+  // ── Commercial / tax fields ──────────────────────────────────────────────
+  // Optional (like `isActive`): `undefined` ≡ "not captured yet". These arrive
+  // from the client / CA late (AGENTS rule 4 — never hardcode tax). The sample
+  // invoice (docs/INVOICE_SPEC.md) confirms only the water line so far; the rest
+  // await the client's per-SKU HSN/GST/cess table.
+  /** Printed MRP in ₹. Basis (per piece vs per case) pending client — see spec. */
+  mrp?: number | null;
+  /** HSN/SAC code, e.g. "22011010" (packaged water). */
+  hsn?: string | null;
+  /** Total GST %, e.g. 5 / 12 / 18 / 28. Split into CGST+SGST or IGST at invoice time. */
+  taxSlabPct?: number | null;
+  /** Compensation cess % — some goods carry it (confirm per-SKU with the CA); water does not. */
+  cessPct?: number | null;
+  /** Pieces per case — converts case ⇄ piece (QPU on the invoice). */
+  unitsPerCase?: number | null;
 };
 
 /**
