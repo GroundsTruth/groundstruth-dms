@@ -14,7 +14,7 @@ below is mostly **client data** + **Aman's UI half**._
 - **#10 Sales model** → **WhatsApp-driven van pre-sell** (open sub-q: replace vs feed the WhatsApp flow).
 - **#12 OTP** → confirmed OTP login (gateway still external).
 
-**⚠️ Tax-rate correction (from the proposal deck):** it states **post-Sept-2025: aerated/cola = 40% GST, juices/water = 5%** — our provisional seed used 28%+12% cess. **Recommend updating the provisional rates to 40% / 5%** (cess folded into the 40% slab) — still pending CA confirm + HSN mapping. (#2 below.)
+**✅ Tax-rate corrected (2026-06-29):** updated provisional GST to **aerated 40% / water+juice 5%** (cess 0), per the proposal deck — applied live + migration `20260629150401`. (Old 28%+12% superseded.) **Still pending CA confirm + HSN per SKU** (#2). 'Other' category left at 18% (unknown).
 
 **New requirement spotted (Phase 2, not scoped):** **returnable bottle/crate deposit ledger** + buy-X-get-Y free-goods (zero-value stock deduct w/ GST). Logged for Phase 2.
 
