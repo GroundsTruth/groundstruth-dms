@@ -6,6 +6,22 @@ code rewrites. Anything marked **GO-LIVE GATE** = don't issue real documents to 
 customers until confirmed. _Last refreshed: 2026-06-28 — Hardik's lane is built; what's left
 below is mostly **client data** + **Aman's UI half**._
 
+## Update — 2026-06-29: analysed the shared workbook + proposal (`Downloads/groundstruth-dms-master`)
+**Now SOURCED from the files (no longer ask the client):**
+- **#11 Staff/driver list** → `Jaypee_Driver_Directory.xlsx`: 8 named staff + phones + van# (2 store managers → warehouse role; 6 drivers → driver_rep). _PII — kept local, not git; ready to seed `users` when auth goes live._
+- **#14 Opening stock** → workbook `MASTER_INVENTORY`: **loaded** (`npm run … seed-opening-stock`, 26/28 SKUs mapped via the resolver, ~12,165 cases). Unmatched: "Energy Berry Kick 150 PET", "Raskik Gluco Energy 250ml" → need an alias.
+- **#15 Routes** → confirmed ROUTE-1…7 + Warehouse.
+- **#10 Sales model** → **WhatsApp-driven van pre-sell** (open sub-q: replace vs feed the WhatsApp flow).
+- **#12 OTP** → confirmed OTP login (gateway still external).
+
+**✅ Tax-rate corrected (2026-06-29):** updated provisional GST to **aerated 40% / water+juice 5%** (cess 0), per the proposal deck — applied live + migration `20260629150401`. (Old 28%+12% superseded.) **Still pending CA confirm + HSN per SKU** (#2). 'Other' category left at 18% (unknown).
+
+**New requirement spotted (Phase 2, not scoped):** **returnable bottle/crate deposit ledger** + buy-X-get-Y free-goods (zero-value stock deduct w/ GST). Logged for Phase 2.
+
+**Still genuinely OPEN (the proposal's own notes list these as client questions):** invoice/challan **format sample** (#1), per-SKU **GST%/cess/HSN** confirmation + **GSTIN** (#2/#3), **MRP** (#7 — likely in the Beverages Catalogue PDF but it's image-only → needs OCR), the **9 unpriced SKUs** (#6 — no June sales), **retailer master list** (#9 — workbook is route-only), **acceptance criteria** (#13).
+
+---
+
 ## A. Ask the CLIENT now (data / docs)
 
 ### A1 — gates real invoicing (M21/M22 go-live)

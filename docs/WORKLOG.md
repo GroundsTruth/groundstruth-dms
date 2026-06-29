@@ -16,6 +16,10 @@ without passing kickstart prompts back and forth.
 | Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
 | Hardik | — | **Lane complete & merged** (spine M01–M29 + retailers M16/M17 + auth-backend M05–M07). Paused. Remaining = Aman UI / client data — see `docs/MISSING_INPUTS.md` §B. | transactional spine · retailers · auth backend | — |
 
+> **Aman — starting fresh? Read `docs/AMAN_KICKSTART.md` first.** It has everything Hardik
+> built (done + merged), your lane (Auth UI → Dashboard tiles → UI kit), the assumptions we
+> took, the contracts you build against, and the open client questions.
+
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
 |-----|-----|-----------|--------|
