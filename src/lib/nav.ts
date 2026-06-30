@@ -1,5 +1,6 @@
 import {
   LayoutDashboard,
+  ShoppingCart,
   Package,
   Boxes,
   ClipboardList,
@@ -24,6 +25,7 @@ export type NavItem = {
  */
 export const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Capture sale", href: "/capture", icon: ShoppingCart },
   { label: "Catalog", href: "/catalog", icon: Package },
   { label: "Inventory", href: "/inventory", icon: Boxes },
   { label: "Orders", href: "/orders", icon: ClipboardList },

@@ -13,7 +13,7 @@ without passing kickstart prompts back and forth.
 ## 🚧 In flight — claim before you start (this is how we avoid collisions)
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
-| Aman | — | (catalog-tax/INVOICE_SPEC merged, PR #25) — **next:** Sales-Capture UI (#7) · dashboard live tiles · auth login UI · #18/#20/#24 | UI Kit · Catalog · Dashboard · auth UI | — |
+| Aman | `feat/sales-capture-ui` | **Sales-Capture UI (#7)** — `/capture` field flow built. **Next:** auth login UI · dashboard live tiles · #24 | `src/app/(app)/capture/` · `src/components/capture/` · `src/lib/nav.ts` | 2026-06-30 |
 | Hardik | — | **30thJunechanges PR ready to merge** — all 24 build-audit gaps fixed (Batches 1–5, money path inclusive+exact, applied live). Paused after merge. | transactional spine · sales · retailer · inventory | 2026-06-30 |
 
 > **Aman — starting fresh? Read `docs/AMAN_KICKSTART.md` first.** It has everything Hardik
@@ -36,7 +36,7 @@ without passing kickstart prompts back and forth.
 | **Hardik** | **Invoice format unblocked** — client sent a real tax invoice → reverse-engineered in `docs/INVOICE_SPEC.md` (layout, GST-inclusive math, CGST/SGST-vs-IGST, numbering). Used for M21 inclusive invoice (Batch 1). M25 challan still needs a challan sample. | Aman · 2026-06-30 | ✅ DONE (Hardik 6/30) |
 | **Both** | **Re-seed HELD:** `scripts/seed-skus.ts` now carries per-SKU tax + is two-pass (non-destructive) but is **not run** — it would overwrite Hardik's live category rates. Run 6/30 (client confirmed correct) — per-SKU tax+HSN live. | Aman · 2026-06-30 | ✅ DONE (Hardik 6/30) |
 | **Hardik** | 🔴 **BUILD AUDIT (2026-06-30) → `docs/BUILD_AUDIT_2026-06-30.md`** — 24 confirmed gaps vs the client's WhatsApp answers/Catalogue (file:line + fixes). Spine items before real billing: **GST math is EXCLUSIVE, must be INCLUSIVE** in BOTH `invoice-tax.ts` AND the `confirm_and_invoice` RPC (the tests assert the wrong math) (#1,#2); below-list **admin-approval** (#5); **credit ledger** (#6); two **price lists** + remove dead `discount_ceiling` (#9,#10); retailer **cash/credit + photo + GPS-capture + owner-name + role-gated approval** (#11,#12,#13,#22,#23); **dynamic low-stock + wastage/adjustment + count screen** (#14,#15,#16); **seller-by-brand + HSN on invoice** (#8,#17); **Soda→18% corrective migration + NULL-guard** (#3,#19). **Plus net-new scope S1–S5** (admin panel · schemes · wholesale channel · dispatch edit-lock · rep targets). | Aman · 2026-06-30 | 🟡 24 gaps DONE (Batches 1–5, this PR); S1–S5 net-new = later |
-| **Both** | 🟠 **Phase-1 "Sales Capture" flow (client's 6/29 priority)** — one driver→shop(+inline onboard)→SKU/qty/**rate/discount**→**payment mode**→preview→invoice journey. Needs Hardik: line-level rate/discount + payment + inline-onboard in schema/actions (#4,#7); Aman: the capture UI. | Aman · 2026-06-30 | 🟡 Hardik backend DONE (`captureSale`); Aman builds the screen |
+| **Both** | 🟠 **Phase-1 "Sales Capture" flow (client's 6/29 priority)** — one driver→shop(+inline onboard)→SKU/qty/**rate/discount**→**payment mode**→preview→invoice journey. Needs Hardik: line-level rate/discount + payment + inline-onboard in schema/actions (#4,#7); Aman: the capture UI. | Aman · 2026-06-30 | ✅ DONE — Hardik `captureSale` + Aman `/capture` mobile flow (`feat/sales-capture-ui`). Go-live needs auth login. |
 
 **Rules that keep us conflict-free:**
 - Edit only the folders your lane owns (`COORDINATION.md`). No overlap → no conflicts.
@@ -49,6 +49,22 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-30 · Aman + Claude · Sales-Capture UI — the field MVP (`feat/sales-capture-ui`)
+- **Client's 6/29 priority shipped (UI half):** `/capture` — a mobile-first, thumb-first field flow
+  (Onfleet benchmark) on Hardik's `captureSale` backend. One journey: **route + price-list (retail/
+  wholesale) → shop (search existing **or** inline-onboard a cash shop with GPS capture) → items
+  (SKU + `QtyStepper` + optional rate override, live GST-inclusive totals, below-list flag) → payment
+  (cash/UPI/credit-later) → Review & confirm → invoice**. Handles all three `captureSale` outcomes:
+  invoiced (→ invoice link), `pending_approval` (below-list → admin), error.
+- New: `src/app/(app)/capture/page.tsx` (server, fetches `getOrderableSkus`+`getRetailers`) +
+  `src/components/capture/capture-client.tsx`. Nav: added "Capture sale" (`src/lib/nav.ts`).
+- Field shops onboarded here are **cash-only** (credit accounts need admin sign-off via `/retailers`,
+  per the client rule). Reuses the kit (`QtyStepper`, `FormField`, `StatusBadge`, `Button`).
+- **109 tests green**, typecheck + build clean (`/capture` = ƒ dynamic).
+- **Next (Aman):** auth **login UI** (so drivers can sign in — go-live still needs the client's SMS
+  OTP provider + staff numbers) → dashboard live tiles + role-scoping (#24). Shop-photo capture (#12)
+  to fold in (schema/field exist).
 
 ### 2026-06-30 · Hardik + Claude · build-audit Batches 2–5 + CA confirmed (`30thJunechanges`)
 **Client confirmed the tax/HSN/seller data is correct → CA sign-off is NO LONGER a gate.**
