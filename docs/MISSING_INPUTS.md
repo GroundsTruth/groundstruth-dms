@@ -30,9 +30,9 @@ below is mostly **client data** + **Aman's UI half**._
 | # | Input | Needed for | Build workaround in place | Status |
 |---|-------|-----------|---------------------------|--------|
 | 1 | **Invoice + challan format/sample** (a real tax invoice & challan, PDF/image) | M21 invoice layout, M25 challan | **Invoice sample RECEIVED 2026-06-30** → `docs/INVOICE_SPEC.md` (layout, GST-inclusive math, CGST/SGST-vs-IGST, numbering). Align built layout to it. **Challan** sample still wanted. | 🟡 invoice in · challan pending |
-| 2 | **Per-SKU GST % + cess % + HSN code** | Correct tax on M21/M22 | **Researched & seeded 42/46** (post-Sept-2025: 40% carbonated/energy · 5% water/juice · 18% soda · cess 0) **+ HSN per SKU** — `INVOICE_SPEC.md` §3a. "Mix"/"Power UP" unidentified (null). Reconcile vs live category migration. | 🟡 researched · **CA sign-off = GO-LIVE GATE** |
-| 3 | **Distributor GSTIN** (+ legal name, address, state code) | Mandatory seller block on every GST invoice | **RESOLVED: Falcon Enterprises, GSTIN `06AIMPB2225L2ZE`, Gurugram (state 06)** — from the sample invoice. TODO: set `config.seller` (Hardik). | 🟡 known · set in config |
-| 4 | **CA sign-off** that #1–#3 are GST-compliant (P10) | Compliance before real issuance | n/a — the formal gate, not a code dependency | ⬜ needed · **GO-LIVE GATE** |
+| 2 | **Per-SKU GST % + cess % + HSN code** | Correct tax on M21/M22 | ✅ **CONFIRMED CORRECT (2026-06-30)** — 40% carbonated/energy · 5% water/juice · 18% soda · cess 0 + HSN per SKU (`INVOICE_SPEC.md` §3a). Soda fixed to 18% live. "Mix"/"Power UP" still need product identity. | ✅ done |
+| 3 | **Distributor GSTIN** (+ legal name, address, state code) | Mandatory seller block on every GST invoice | ✅ **DONE: Falcon Enterprises, GSTIN `06AIMPB2225L2ZE`, Gurugram (state 06)** — set in `config.seller` live. | ✅ done |
+| 4 | ~~**CA sign-off**~~ | — | ✅ **Client confirmed the data is correct — CA sign-off is NO LONGER a gate.** | ✅ resolved |
 | 5 | **Rounding + place-of-supply rule** (per-line vs total; intra/inter-state CGST+SGST vs IGST) | Tax math correctness | Defaulting to intra-state, round at invoice total; parameterised | ⬜ confirm |
 
 ### A2 — completeness / accuracy

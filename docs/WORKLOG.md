@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | `feat/catalog-tax-invoice-spec` | Catalog tax/commercial fields + GST research + INVOICE_SPEC (M10) — from the client sample invoice | `src/lib/catalog/` · `src/components/catalog/` · `scripts/seed-skus.ts` · `docs/INVOICE_SPEC.md` · `/catalog` | 2026-06-30 |
-| Hardik | `30thJunechanges` | **Build-audit fixes — Batch 1 (tax correctness):** inclusive GST math (TS + RPC), Soda 18%, HSN on invoice, CGST/SGST split | `src/lib/sales/**` · `src/components/invoices/**` · new migration | 2026-06-30 |
+| Hardik | `30thJunechanges` | **Build-audit fixes — Batches 1–5 DONE** (tax-inclusive, pricing/approval, retailer credit, inventory adjust, sales-capture backend) | `src/lib/{sales,retailers,inventory,config}/**` · `src/components/{invoices,orders,retailers,inventory}/**` · migrations | 2026-06-30 |
 
 > **Aman — starting fresh? Read `docs/AMAN_KICKSTART.md` first.** It has everything Hardik
 > built (done + merged), your lane (Auth UI → Dashboard tiles → UI kit), the assumptions we
@@ -49,6 +49,29 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-30 · Hardik + Claude · build-audit Batches 2–5 + CA confirmed (`30thJunechanges`)
+**Client confirmed the tax/HSN/seller data is correct → CA sign-off is NO LONGER a gate.**
+Set `config.seller = Falcon Enterprises` (GSTIN `06AIMPB2225L2ZE`) + `tax_provisional=false` live;
+removed the invoice "provisional" banner; "pending CA / provisional" wording dropped across docs.
+- **Batch 2 — pricing/approval:** order_lines `list_price`+`discount_pct`; punch form Rate input;
+  below-list → `pending_approval` + approve/reject; `confirm_and_invoice` gated; `price_list.list_type`
+  (retail/wholesale) + `retailers.customer_category`; removed dead `discount_ceiling`. (`20260630140020`)
+- **Batch 3 — retailer:** cash/credit `customer_type` (cash auto-approves), `credit_limit`, derived
+  `getRetailerCredit` (#6), `owner_name`, GPS capture on save, `shop_photo_path` (field-app upload later),
+  **role-gated approval** (#23). (`20260630141226`)
+- **Batch 4 — inventory:** dynamic low-stock (days-of-cover < `low_stock_days`), `adjust_stock` RPC
+  (wastage/expiry/count) + `/inventory` count panel. (`20260630142741`)
+- **Batch 5 — sales capture:** `captureSale` backend (inline-onboard → order(rate/discount) → invoice →
+  payment, one call) for Aman's capture screen. #17 two-sellers **dropped** (Falcon is the single confirmed entity).
+- **109 tests green**, typecheck + build clean. **4 migrations to apply** — consolidated SQL handed to Hardik.
+
+**→ AMAN, pick up next (build-audit items in your lane):**
+- **#7 Sales-Capture UI** — single screen (driver→shop/inline-onboard→SKU/qty/rate/discount→payment→preview).
+  Backend ready: `captureSale()` in `src/lib/sales/capture.ts`. **Client's stated priority.**
+- **#18 `brand` column on SKUs** (Campa Sure / Campa Cola) + seed; **#20 reclassify Gluco Energy → Juice 5%**
+  in `seed-data.ts`; **#24 dashboard role-scoping** (reps see only own route — `rbac.ts` already grants `/dashboard`).
+- Owner Dashboard live tiles (M30/M31) + Auth login UI still open (see `docs/AMAN_KICKSTART.md`).
 
 ### 2026-06-30 · Hardik + Claude · build-audit Batch 1 — tax correctness (`30thJunechanges`)
 Working `docs/BUILD_AUDIT_2026-06-30.md` (Hardik-lane) + `docs/INVOICE_SPEC.md`. **Batch 1 = money correctness:**

@@ -39,7 +39,7 @@ agent-readable mirror — update it at the end of every session.
   `taxSlabPct`, `cessPct`, `mrp`, `unitsPerCase` wired end-to-end (type, accessor, actions,
   form, Tax column + KPI on `/catalog`). **42/46 SKUs GST-classified** from researched
   post-Sept-2025 rates (40% carbonated/energy · 5% juice/water · 18% soda · cess 0;
-  table + sources in `docs/INVOICE_SPEC.md` §3a). **PROVISIONAL — pending CA.** Billing
+  table + sources in `docs/INVOICE_SPEC.md` §3a). **Client-confirmed correct (2026-06-30).** Billing
   entity = **Falcon Enterprises** (confirmed). ⬜ remaining: CA sign-off; identify
   "Mix"/"Power UP"; reconcile rates vs Hardik's live migration (Soda/Jeera); MRP + units/case (client).
 - ✅ **Owner Dashboard** (M30–31) — `/dashboard`: KPI row + Sales-by-route chart +

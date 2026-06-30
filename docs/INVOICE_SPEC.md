@@ -6,8 +6,9 @@ the layout to replicate and the tax math to implement. It partially unblocks **o
 question Q1** ("do they invoice?" → **yes**). What the sample does *not* settle is in
 §7 "Open questions" — those still need the client / CA before invoicing goes live.
 
-> ⚠️ **Not yet CA-signed-off.** Tax correctness stays with the client's CA (AGENTS.md
-> P10). Build to this spec, but treat the rates/numbering as provisional until confirmed.
+> ✅ **Client-confirmed correct (2026-06-30).** The researched per-SKU GST/HSN, the seller
+> (Falcon Enterprises, GSTIN `06AIMPB2225L2ZE`), and the inclusive tax math are treated as
+> **final** — no separate CA sign-off is gating go-live. (Numbering convention still TBD, §5.)
 
 ---
 
@@ -86,7 +87,7 @@ tax_total     = round( qty * billing_price_incl, 2 ) - taxable_value
 Compute **per line**, then sum — don't compute tax on the rounded invoice total. Confirm the
 rounding rule with the CA (§7); the sample rounds cleanly so it doesn't disambiguate.
 
-## 3a. Per-SKU GST/HSN table (researched — PROVISIONAL, pending CA)
+## 3a. Per-SKU GST/HSN table (researched — client-CONFIRMED 2026-06-30)
 
 Researched against the **post-22-Sep-2025 "GST 2.0"** regime (56th GST Council; CBIC
 Notification 09/2025-CT(R), incl. the **1-May-2026** HSN renumbering via 01/2026-CT(R)) and
@@ -122,7 +123,7 @@ provisional rates live (Cola/Lemon/Orange/Soda/Energy → 40%, Water/Juice → 5
 This table **refines** that per-SKU: plain **Soda → 18%** (vs 40%), **Jeera RTD → 40%** (vs 'Other' 18%),
 and it **adds HSN codes** (the migration set rates only). The refined values live in
 `src/lib/catalog/seed-data.ts`; applying them live (re-seed or a follow-up migration) is **HELD pending
-agreement** — see the WORKLOG cross-lane asks. Either way, all rates stay provisional until CA sign-off.
+agreement** — see the WORKLOG cross-lane asks. Client confirmed these are correct (2026-06-30) — treat as final.
 
 ## 4. Place-of-supply (CGST/SGST vs IGST)
 
