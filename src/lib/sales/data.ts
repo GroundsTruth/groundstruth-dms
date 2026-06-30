@@ -16,7 +16,7 @@ export async function getPriceRules(skuId?: string): Promise<PriceRule[]> {
     const supabase = createAdminClient();
     let query = supabase
       .from("price_list")
-      .select("sku_id,retailer_id,route,price,effective_from,is_active")
+      .select("sku_id,retailer_id,route,price,effective_from,is_active,list_type")
       .eq("is_active", true);
     if (skuId) query = query.eq("sku_id", skuId);
     const { data, error } = await query;
@@ -32,6 +32,7 @@ export async function getPriceRules(skuId?: string): Promise<PriceRule[]> {
       price: Number(r.price),
       effectiveFrom: r.effective_from,
       isActive: r.is_active,
+      listType: (r.list_type ?? "retail") as "retail" | "wholesale",
     }));
   } catch (err) {
     console.error("getPriceRules: unexpected error —", err);

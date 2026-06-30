@@ -20,10 +20,10 @@ describe("CONFIG_DEFAULTS", () => {
     expect(d.padding).toBeGreaterThanOrEqual(1);
   });
 
-  it("recon_tolerance / discount_ceiling / low_stock_threshold are numeric defaults", () => {
+  it("recon_tolerance / low_stock_threshold / low_stock_days are numeric defaults", () => {
     expect(CONFIG_DEFAULTS.recon_tolerance.amount).toBe(0);
-    expect(CONFIG_DEFAULTS.discount_ceiling.pct).toBeGreaterThanOrEqual(0);
     expect(CONFIG_DEFAULTS.low_stock_threshold.cases).toBeGreaterThan(0);
+    expect(CONFIG_DEFAULTS.low_stock_days.days).toBeGreaterThan(0);
   });
 
   it("tax_slabs is an empty placeholder (client/CA-gated)", () => {
@@ -33,7 +33,7 @@ describe("CONFIG_DEFAULTS", () => {
 
 describe("getDefault", () => {
   it("returns the typed default for a key", () => {
-    expect(getDefault("discount_ceiling")).toEqual(CONFIG_DEFAULTS.discount_ceiling);
+    expect(getDefault("low_stock_days")).toEqual(CONFIG_DEFAULTS.low_stock_days);
   });
 });
 

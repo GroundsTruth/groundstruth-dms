@@ -11,9 +11,11 @@ import { EmptyState } from "@/components/kit/empty-state";
 import { ClipboardList } from "lucide-react";
 import type { OrderSummary } from "@/lib/sales/orders-data";
 import { ConfirmInvoiceButton } from "./confirm-invoice-button";
+import { OrderApprovalButtons } from "./order-approval-buttons";
 
 const STATUS_TONE: Record<string, StatusTone> = {
   draft: "neutral",
+  pending_approval: "warn",
   confirmed: "warn",
   invoiced: "ok",
   cancelled: "bad",
@@ -60,7 +62,13 @@ export function OrdersTable({ rows }: { rows: OrderSummary[] }) {
                 </StatusBadge>
               </TableCell>
               <TableCell className="text-right">
-                {o.status === "draft" ? <ConfirmInvoiceButton orderId={o.id} /> : "—"}
+                {o.status === "draft" || o.status === "confirmed" ? (
+                  <ConfirmInvoiceButton orderId={o.id} />
+                ) : o.status === "pending_approval" ? (
+                  <OrderApprovalButtons orderId={o.id} />
+                ) : (
+                  "—"
+                )}
               </TableCell>
             </TableRow>
           ))}

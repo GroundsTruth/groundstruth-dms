@@ -10,15 +10,15 @@
 
 export type InvoiceSeries = { prefix: string; next: number; padding: number };
 export type ReconTolerance = { amount: number; pct: number };
-export type DiscountCeiling = { pct: number };
 export type LowStockThreshold = { cases: number };
+export type LowStockDays = { days: number }; // audit #14 — days-of-cover threshold
 export type TaxSlabs = Record<string, never> | Record<string, number>;
 
 export type ConfigShape = {
   invoice_series: InvoiceSeries;
   recon_tolerance: ReconTolerance;
-  discount_ceiling: DiscountCeiling;
   low_stock_threshold: LowStockThreshold;
+  low_stock_days: LowStockDays;
   tax_slabs: TaxSlabs;
 };
 
@@ -30,10 +30,10 @@ export const CONFIG_DEFAULTS: ConfigShape = {
   invoice_series: { prefix: "INV", next: 1, padding: 5 },
   // Reconciliation variance allowed before a load is flagged (M27). Both 0 = strict.
   recon_tolerance: { amount: 0, pct: 1 },
-  // Max discount % an order may carry without owner approval (Phase 2 / M03 ceiling).
-  discount_ceiling: { pct: 5 },
-  // Cases-on-hand at or below which a SKU is flagged low-stock (M14).
+  // Cases-on-hand at or below which a SKU is flagged low-stock (static fallback, M14).
   low_stock_threshold: { cases: 10 },
+  // Dynamic low-stock: flag when days-of-cover (on-hand ÷ avg daily sales) < this (#14).
+  low_stock_days: { days: 5 },
   // GST %/cess per slab — empty until CA sign-off.
   tax_slabs: {},
 };
