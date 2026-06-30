@@ -62,3 +62,4 @@ prompts-scm
 
 # tsc incremental build cache
 tsconfig.tsbuildinfo
+supabase/_apply_30thJune.sql
