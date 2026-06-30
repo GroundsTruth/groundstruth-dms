@@ -48,8 +48,10 @@ export function computeInvoiceTotals(lines: InvoiceTaxLineInput[]): InvoiceTotal
     const gross = round2(l.qty * l.unitPrice);
     // Extract the taxable value out of the inclusive gross using the combined slab.
     const taxable = round2(gross / (1 + (taxPct + cessPct) / 100));
-    const taxAmount = round2((taxable * taxPct) / 100);
+    // Total tax = gross − taxable (so taxable + tax always reconciles to gross, no paisa
+    // drift). Cess is its share; GST is the remainder.
     const cessAmount = round2((taxable * cessPct) / 100);
+    const taxAmount = round2(gross - taxable - cessAmount);
     return {
       skuId: l.skuId,
       qty: l.qty,

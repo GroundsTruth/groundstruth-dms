@@ -58,10 +58,12 @@ begin
       select * from public.deduct_stock(v_line.sku_id, v_line.qty, p_actor, 'invoice', v_inv_id)
     loop
       -- unit_price is GST-INCLUSIVE; extract the taxable value out of the gross.
+      -- Total tax = gross − taxable (taxable + tax reconciles to gross exactly, no paisa
+      -- drift); cess is its share, GST the remainder.
       v_gross   := round(alloc.qty * v_line.unit_price, 2);
       v_taxable := round(v_gross / (1 + (v_tax_pct + v_cess_pct) / 100), 2);
-      v_tax     := round(v_taxable * v_tax_pct / 100, 2);
       v_cess    := round(v_taxable * v_cess_pct / 100, 2);
+      v_tax     := round(v_gross - v_taxable - v_cess, 2);
 
       insert into public.invoice_lines
         (invoice_id, sku_id, batch_id, hsn, qty, unit_price, tax_pct, tax_amount, cess_pct, cess_amount, line_total)
