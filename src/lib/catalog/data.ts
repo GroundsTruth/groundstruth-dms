@@ -17,7 +17,16 @@ type SkuRow = {
   pack_label: string;
   rate_per_case: number | null;
   is_active: boolean;
+  mrp: number | null;
+  hsn: string | null;
+  tax_slab_pct: number | null;
+  cess_pct: number | null;
+  units_per_case: number | null;
 };
+
+const SKU_COLUMNS =
+  "code,name,category,pack_ml,pack_label,rate_per_case,is_active," +
+  "mrp,hsn,tax_slab_pct,cess_pct,units_per_case";
 
 /**
  * Single accessor for the SKU list. Reads Supabase at request time. Pass
@@ -29,7 +38,7 @@ export async function getSkus(opts?: { includeInactive?: boolean }): Promise<Sku
     const supabase = createAdminClient();
     let query = supabase
       .from("skus")
-      .select("code,name,category,pack_ml,pack_label,rate_per_case,is_active")
+      .select(SKU_COLUMNS)
       .order("code");
     if (!opts?.includeInactive) query = query.eq("is_active", true);
     const { data, error } = await query;
@@ -42,7 +51,7 @@ export async function getSkus(opts?: { includeInactive?: boolean }): Promise<Sku
       console.warn("getSkus: skus table empty, using seed.");
       return SEED_SKUS;
     }
-    return (data as SkuRow[]).map((r) => ({
+    return (data as unknown as SkuRow[]).map((r) => ({
       code: r.code,
       name: r.name,
       category: r.category as Category,
@@ -50,6 +59,11 @@ export async function getSkus(opts?: { includeInactive?: boolean }): Promise<Sku
       packLabel: r.pack_label,
       ratePerCase: r.rate_per_case,
       isActive: r.is_active,
+      mrp: r.mrp,
+      hsn: r.hsn,
+      taxSlabPct: r.tax_slab_pct,
+      cessPct: r.cess_pct,
+      unitsPerCase: r.units_per_case,
     }));
   } catch (err) {
     console.error("getSkus: unexpected error, using seed —", err);
