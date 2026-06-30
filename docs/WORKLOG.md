@@ -13,8 +13,8 @@ without passing kickstart prompts back and forth.
 ## 🚧 In flight — claim before you start (this is how we avoid collisions)
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
-| Aman | `feat/catalog-tax-invoice-spec` | Catalog tax/commercial fields + GST research + INVOICE_SPEC (M10) — from the client sample invoice | `src/lib/catalog/` · `src/components/catalog/` · `scripts/seed-skus.ts` · `docs/INVOICE_SPEC.md` · `/catalog` | 2026-06-30 |
-| Hardik | `30thJunechanges` | **Build-audit fixes — Batches 1–5 DONE** (tax-inclusive, pricing/approval, retailer credit, inventory adjust, sales-capture backend) | `src/lib/{sales,retailers,inventory,config}/**` · `src/components/{invoices,orders,retailers,inventory}/**` · migrations | 2026-06-30 |
+| Aman | — | (catalog-tax/INVOICE_SPEC merged, PR #25) — **next:** Sales-Capture UI (#7) · dashboard live tiles · auth login UI · #18/#20/#24 | UI Kit · Catalog · Dashboard · auth UI | — |
+| Hardik | — | **30thJunechanges PR ready to merge** — all 24 build-audit gaps fixed (Batches 1–5, money path inclusive+exact, applied live). Paused after merge. | transactional spine · sales · retailer · inventory | 2026-06-30 |
 
 > **Aman — starting fresh? Read `docs/AMAN_KICKSTART.md` first.** It has everything Hardik
 > built (done + merged), your lane (Auth UI → Dashboard tiles → UI kit), the assumptions we
@@ -23,10 +23,10 @@ without passing kickstart prompts back and forth.
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
 |-----|-----|-----------|--------|
-| **Aman** | Add **`/inventory`** to the sidebar nav (`src/lib/nav.ts` — your lane). Hardik shipped the page on `feat/inventory-receive` but didn't touch your file. Label "Inventory", after Catalog. | Hardik · 2026-06-28 | ⬜ open |
-| **Aman** | Wire **low-stock tile** on Owner Dashboard (M30). Accessor ready: `getLowStockSkus()` in `src/lib/inventory/data.ts` (returns `SkuStock[]` at/below threshold). Just render the count/list — Hardik won't touch `src/app/(app)/dashboard/**`. | Hardik · 2026-06-28 | ⬜ open |
-| **Aman** | Add **`/orders`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/sales-orders`. Label "Orders", after Inventory. | Hardik · 2026-06-28 | ⬜ open |
-| **Aman** | Add **`/vans`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/van-load`. Label "Van loads", after Orders. | Hardik · 2026-06-28 | ⬜ open |
+| **Aman** | Add **`/inventory`** to the sidebar nav (`src/lib/nav.ts` — your lane). Hardik shipped the page on `feat/inventory-receive` but didn't touch your file. Label "Inventory". | Hardik · 2026-06-28 | ✅ done (all nav links live via seed-and-nav) |
+| **Aman** | Wire **low-stock tile** on Owner Dashboard (M30). Accessor ready: `getLowStockSkus()` in `src/lib/inventory/data.ts` (returns `SkuStock[]` at/below threshold). Render the count/list (low-stock is now DYNAMIC days-of-cover). Hardik won't touch dashboard. | Hardik · 2026-06-28 | ⬜ open |
+| **Aman** | Add **`/orders`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/sales-orders`. Label "Orders". | Hardik · 2026-06-28 | ✅ done (seed-and-nav) |
+| **Aman** | Add **`/vans`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/van-load`. Label "Van loads". | Hardik · 2026-06-28 | ✅ done (seed-and-nav) |
 | **Aman** | ~~Nav missing `/orders` + `/retailers`; `/collections` dead link~~ → **DONE by Hardik with owner's OK** (`feat/seed-and-nav`): added Orders + Retailers, removed dead Collections link (collections live on the invoice Payments panel). Heads-up: I touched `src/lib/nav.ts` (your file) — revert/adjust freely. | Hardik · 2026-06-28 | ✅ done |
 | **Aman** | **Retailer lane (M16/M17) was "Both" — Hardik built it** (merged). Reusable for per-retailer pricing + named-shop invoices later. | Hardik · 2026-06-28 | ✅ done (FYI) |
 | **Aman** | **AUTH/RBAC — review `docs/AUTH_PLAN.md`.** Hardik built the backend (`feat/auth-backend`): `getSessionUser`, `requireRole`, OTP actions (`requestOtp`/`verifyOtp`/`signOut`), middleware. **You build:** `/login` + OTP screen to that contract, and role-hide nav (`allowedRoutesFor(role)`). **Confirm the role→screen matrix** (covers your dashboard/catalog). | Hardik · 2026-06-28 | ⬜ open |
