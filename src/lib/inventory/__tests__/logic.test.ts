@@ -57,3 +57,20 @@ describe("sumOnHand", () => {
     expect(sumOnHand([])).toBe(0);
   });
 });
+
+import { daysOfCover, isLowStockDynamic } from "../logic";
+
+describe("daysOfCover / isLowStockDynamic (audit #14)", () => {
+  it("on-hand ÷ avg daily sales", () => {
+    expect(daysOfCover(100, 20)).toBe(5);
+    expect(daysOfCover(0, 20)).toBe(0);
+  });
+  it("no sales → infinite cover (never low)", () => {
+    expect(daysOfCover(100, 0)).toBe(Number.POSITIVE_INFINITY);
+    expect(isLowStockDynamic(100, 0, 5)).toBe(false);
+  });
+  it("flags when cover < threshold days", () => {
+    expect(isLowStockDynamic(80, 20, 5)).toBe(true); // 4 days < 5
+    expect(isLowStockDynamic(120, 20, 5)).toBe(false); // 6 days
+  });
+});
