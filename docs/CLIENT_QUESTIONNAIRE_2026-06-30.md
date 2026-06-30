@@ -17,6 +17,8 @@ go live. Most have a working default already in the system, so none of this bloc
 - **CA sign-off** on the final per-product **GST % + HSN** (a one-line confirmation from your CA).
 - Quick confirms: is **Gluco Energy** taxed as a **juice** (as in the Catalogue) or an energy
   drink? And does **"Mix – 500 ML"** = Suncrush Mixed Fruit?
+- **Rounding rule** — round each line, or the bill total? And do you ever bill **inter-state**
+  (outside Haryana)? (decides CGST+SGST vs IGST on the invoice).
 
 ### 2. Delivery challan sample
 The file shared was the **Campa product portfolio**, not a delivery challan. Please share a
@@ -27,6 +29,8 @@ You bill under two names — **Falcon Enterprises (Campa Sure)** and **Jaypee En
 (Campa Cola)**. The samples we have both use GSTIN **`06AIMPB2225L2ZE`**. Please confirm:
 - Does **Campa Cola (Jaypee)** bill under the **same GSTIN**, or a **different** one?
 - The exact **legal name + address** to print for each, so the invoice shows the right seller per brand.
+- **Which products go under which entity** — e.g. Campa Cola/Lemon/Orange/CSD → Jaypee, water/Campa
+  Sure → Falcon. Please confirm the **full split** (incl. energy, juice, soda) so each invoice picks the right seller.
 
 ### 4. Logins & go-live
 - **Staff phone numbers** for each person (you mentioned next week) — phone is the login.
@@ -47,6 +51,12 @@ You bill under two names — **Falcon Enterprises (Campa Sure)** and **Jaypee En
 - **Reconciliation tolerance** — how much cash/stock variance is acceptable before it's flagged?
 - **e-invoice (IRN) / e-way bill** — required for this rollout, or skip for now?
 - Any **cans** still missing a selling price in the Catalogue (a few were blank).
+
+### 8. Credit, targets & sign-off
+- **Credit terms** for credit-ledger shops: a **credit limit** per shop, the typical **credit period**
+  (days), and when an account is **overdue** + who should be alerted.
+- **Rep daily targets** — how are they set (per rep / per route, and who decides)? so each rep sees their own.
+- **Per-feature acceptance criteria** — anything specific you'll check before signing off each module.
 
 ---
 

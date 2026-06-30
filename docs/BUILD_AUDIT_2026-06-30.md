@@ -2,7 +2,8 @@
 
 The transactional spine + catalog were built **before** the client's WhatsApp answers + Catalogue
 arrived. This audits the actual code against those now-known requirements. **24 issues confirmed**
-(each verified against the code with file:line): **7 critical · 11 high · 6 medium.**
+(each verified against the code with file:line): **7 critical · 11 high · 6 medium** — plus
+**5 net-new scope items (S1–S5)** the chat surfaced that have no code to be "wrong" yet.
 
 > **Reassurance / blast radius:** nothing has been issued to real customers yet — auth is **dormant**
 > (`NEXT_PUBLIC_AUTH_ENABLED` unset), invoices carry a `tax_provisional` banner, and no real invoice
@@ -67,6 +68,22 @@ wants another) · **[S]cope** newly revealed (client wants it; wasn't in MVP). O
 24. **[A] Owner dashboard (whole-business revenue + all routes) reachable by reps.** *(Aman + rbac)* `rbac.ts:15` grants `/dashboard` to `driver_rep`; `dashboard/page.tsx` ignores role. Reps must see only own route + targets. Fix before wiring live aggregates.
 
 ---
+
+## Additional scope surfaced by the chat (tracked build items, not code-defects)
+These are client requirements with **no existing code to be "wrong"** — they're net-new scope to plan
+(mostly Hardik's sales/inventory lane; some joint). Logged here so they're actioned, not just noted.
+
+- **S1 [Admin panel] (Aman + Hardik).** Admin-only screen to add **seasonal SKUs + schemes/freebies**,
+  hidden from reps. Catalog CRUD exists (`/catalog`, my lane) but is **not role-gated** (TODO-auth) and has
+  no scheme/freebie management. Gate to Owner/Admin once auth lands; scheme mgmt pairs with S2.
+- **S2 [Schemes/freebies engine] (Hardik).** buy-X-get-Y + free goods (zero-value stock deduct **with GST**).
+  Currently only in `MISSING_INPUTS.md:21` as "Phase 2"; client wants it. Needs scheme model + apply-at-order + free-line on invoice.
+- **S3 [B2B order-then-deliver + walk-in wholesale] (Hardik).** A wholesale/corporate channel with
+  **negotiable** pricing alongside van pre-sell. Pairs with the two-price-lists gap (#9) + below-list approval (#5).
+- **S4 [Edit-lock at challan dispatch] (Hardik).** Order edits allowed **only before the delivery challan is
+  printed/dispatched**; after, returns only. Today the lock point is `confirm_and_invoice` (no challan stage — M25 unbuilt).
+- **S5 [Rep daily targets] (Aman + Hardik).** Reps see **own route + own daily targets** (complements #24's
+  margin-hiding). No target field/metric exists in `dashboard/data.ts` — add per-rep target + scoped view.
 
 ## What aligned (don't re-fix)
 3 roles (owner/warehouse/driver_rep) ✓ · **strict FIFO + batch/expiry on receive/deduct** ✓ (matches "strict FIFO") ·
