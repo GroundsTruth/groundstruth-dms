@@ -35,6 +35,8 @@ without passing kickstart prompts back and forth.
 | **Hardik** | **Seller = Falcon Enterprises**, GSTIN `06AIMPB2225L2ZE` (confirmed by Aman, from the sample invoice). Please set `config.seller` to replace the "[GSTIN pending]" placeholder. | Aman · 2026-06-30 | ⬜ open |
 | **Hardik** | **Invoice format unblocked** — client sent a real tax invoice → reverse-engineered in `docs/INVOICE_SPEC.md` (layout, GST-inclusive math, CGST/SGST-vs-IGST, numbering). Use for M21 invoice + M25 challan (was format-blocked). | Aman · 2026-06-30 | ⬜ open |
 | **Both** | **Re-seed HELD:** `scripts/seed-skus.ts` now carries per-SKU tax + is two-pass (non-destructive) but is **not run** — it would overwrite Hardik's live category rates. Run only after the tax reconcile above is agreed. | Aman · 2026-06-30 | ⬜ open |
+| **Hardik** | 🔴 **BUILD AUDIT (2026-06-30) → `docs/BUILD_AUDIT_2026-06-30.md`** — 24 confirmed gaps vs the client's WhatsApp answers/Catalogue (file:line + fixes). Spine items before real billing: **GST math is EXCLUSIVE, must be INCLUSIVE** in BOTH `invoice-tax.ts` AND the `confirm_and_invoice` RPC (the tests assert the wrong math) (#1,#2); below-list **admin-approval** (#5); **credit ledger** (#6); two **price lists** + remove dead `discount_ceiling` (#9,#10); retailer **cash/credit + photo + GPS-capture + owner-name + role-gated approval** (#11,#12,#13,#22,#23); **dynamic low-stock + wastage/adjustment + count screen** (#14,#15,#16); **seller-by-brand + HSN on invoice** (#8,#17); **Soda→18% corrective migration + NULL-guard** (#3,#19). | Aman · 2026-06-30 | ⬜ open |
+| **Both** | 🟠 **Phase-1 "Sales Capture" flow (client's 6/29 priority)** — one driver→shop(+inline onboard)→SKU/qty/**rate/discount**→**payment mode**→preview→invoice journey. Needs Hardik: line-level rate/discount + payment + inline-onboard in schema/actions (#4,#7); Aman: the capture UI. | Aman · 2026-06-30 | ⬜ open |
 
 **Rules that keep us conflict-free:**
 - Edit only the folders your lane owns (`COORDINATION.md`). No overlap → no conflicts.
@@ -65,7 +67,17 @@ without passing kickstart prompts back and forth.
 - Branch cut **fresh off `dev`** (the earlier session ran on a 51-commit-stale branch; only additive work carried
   over, stale doc edits dropped). **101 tests green**, typecheck + build clean.
 - Also added **`docs/CLIENT_QUESTIONNAIRE_2026-06-30.md`** (focused client follow-up).
-- **Next (Aman):** per `AMAN_KICKSTART.md` → **Auth UI** (`/login`) then Owner Dashboard live tiles.
+- **Client WhatsApp export analysed (2026-06-30):** the client answered the full Gap Checklist + sent the
+  product **Catalogue** (MRP/units/GST/HSN per SKU) + dev invoice (legal name **Jaypee Advertisers**, GSTIN
+  `06AIMPB2225L2ZE`). Key reveals: billing is **two trade-names by brand** (Falcon=Campa Sure, Jaypee=Campa
+  Cola); **rates strictly GST-inclusive**; **track individual shops** + GPS/photo onboarding; **batch/expiry +
+  strict FIFO**; low-stock = **<5 days of avg sales**; and a **6/29 scope pivot** to a "Ground-Level Sales
+  Capture" MVP first. Questionnaire updated to Round-2 (only open items).
+- **Build audit vs that context → `docs/BUILD_AUDIT_2026-06-30.md`:** 24 confirmed gaps (7 critical). Headline:
+  **GST computed EXCLUSIVE, must be INCLUSIVE** (engine + RPC + tests). Most are Hardik's spine (queued in
+  cross-lane asks). **Aman fixes applied:** Gluco Energy → Juice/5% (#20); Soda=18% already correct in seed (#3 data).
+- **Next (Aman):** await client's open items (questionnaire) + Hardik's spine fixes; then the joint **Phase-1
+  Sales-Capture UI**. (Auth UI / dashboard tiles still on the list per `AMAN_KICKSTART.md`.)
 
 ### 2026-06-28 · Hardik + Claude · Auth/RBAC backend (M05–M07) + plan (`feat/auth-backend`)
 - **Plan first:** `docs/AUTH_PLAN.md` — Supabase phone-OTP, file-ownership split (Hardik backend /

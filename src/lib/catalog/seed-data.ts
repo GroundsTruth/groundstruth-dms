@@ -22,7 +22,7 @@ import type { Sku } from "./types";
  *   - Carbonated soft drinks w/ sugar (cola/lemon/orange, incl "Zero") → 22021010, 40%, 0
  *   - Soda water (plain Club Soda)                                      → 22011020, 18%, 0
  *   - Energy / caffeinated (Gold Boost, Berry Kick)                     → 22029991, 40%, 0
- *   - Glucose "energy" (Gluco Energy)                                   → 22029990, 40%, 0
+ *   - "Gluco Energy" (client Catalogue classes it as juice)            → 22029929,  5%, 0
  *   - Fruit-juice drinks, non-carbonated (Rasiki / Suncrush)            → 22029929,  5%, 0
  *   - Jaljeera RTD ("Jeera")                                            → 22029990, 40%, 0
  *   - Packaged water (incl. "Water Gold")                               → 22011010,  5%, 0
@@ -78,8 +78,8 @@ export const SEED_SKUS: Sku[] = [
   { code: "SKU036", name: "Rasiki Mango Tetra - 125 ML", category: "Juice", packMl: 125, packLabel: "125 ML", ratePerCase: 277, hsn: "22029929", taxSlabPct: 5, cessPct: 0 },
   { code: "SKU037", name: "Rasiki Mix - 150 ML", category: "Juice", packMl: 150, packLabel: "150 ML", ratePerCase: 215, hsn: "22029929", taxSlabPct: 5, cessPct: 0 },
   { code: "SKU038", name: "Rasiki Nimbu Pani - 150 ML", category: "Juice", packMl: 150, packLabel: "150 ML", ratePerCase: 215, hsn: "22029929", taxSlabPct: 5, cessPct: 0 },
-  // Glucose "energy" (no fruit/milk base) → 22029990, 40%, cess 0
-  { code: "SKU039", name: "Rasiki Gluco Energy - 150 ML", category: "Energy", packMl: 150, packLabel: "150 ML", ratePerCase: 215, hsn: "22029990", taxSlabPct: 40, cessPct: 0 },
+  // "Gluco Energy" — the client Catalogue classifies it as JUICE (not energy) → 22029929, 5%, cess 0
+  { code: "SKU039", name: "Rasiki Gluco Energy - 150 ML", category: "Juice", packMl: 150, packLabel: "150 ML", ratePerCase: 215, hsn: "22029929", taxSlabPct: 5, cessPct: 0 },
   { code: "SKU041", name: "Suncrush Mango - 200 ML", category: "Juice", packMl: 200, packLabel: "200 ML", ratePerCase: 362, hsn: "22029929", taxSlabPct: 5, cessPct: 0 },
   { code: "SKU042", name: "Suncrush Mango - 500 ML", category: "Juice", packMl: 500, packLabel: "500 ML", ratePerCase: 770, hsn: "22029929", taxSlabPct: 5, cessPct: 0 },
   { code: "SKU043", name: "Suncrush Mixed Fruit - 200 ML", category: "Juice", packMl: 200, packLabel: "200 ML", ratePerCase: 362, hsn: "22029929", taxSlabPct: 5, cessPct: 0 },
