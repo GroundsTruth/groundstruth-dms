@@ -34,14 +34,22 @@ const selectCls = cn(
 
 type Draft = {
   name: string;
+  ownerName: string;
   shopName: string;
   phone: string;
   gstin: string;
   route: string;
   address: string;
+  customerType: "cash" | "credit";
+  creditLimit: string;
+  lat: number | null;
+  lng: number | null;
 };
 
-const EMPTY: Draft = { name: "", shopName: "", phone: "", gstin: "", route: "", address: "" };
+const EMPTY: Draft = {
+  name: "", ownerName: "", shopName: "", phone: "", gstin: "", route: "", address: "",
+  customerType: "cash", creditLimit: "", lat: null, lng: null,
+};
 
 export function RetailersClient({ retailers }: { retailers: Retailer[] }) {
   const router = useRouter();
@@ -61,11 +69,16 @@ export function RetailersClient({ retailers }: { retailers: Retailer[] }) {
     setEditId(r.id);
     setDraft({
       name: r.name,
+      ownerName: r.ownerName ?? "",
       shopName: r.shopName ?? "",
       phone: r.phone ?? "",
       gstin: r.gstin ?? "",
       route: r.route ?? "",
       address: r.address ?? "",
+      customerType: (r.customerType as "cash" | "credit") ?? "cash",
+      creditLimit: r.creditLimit ? String(r.creditLimit) : "",
+      lat: r.lat,
+      lng: r.lng,
     });
     setError(null);
     setOpen(true);
@@ -79,15 +92,32 @@ export function RetailersClient({ retailers }: { retailers: Retailer[] }) {
   function save(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    const input = {
-      name: draft.name,
-      shopName: draft.shopName || null,
-      phone: draft.phone || null,
-      gstin: draft.gstin || null,
-      route: draft.route || null,
-      address: draft.address || null,
-    };
+    // #13: capture GPS on save (best-effort; never blocks onboarding).
+    const geo = new Promise<{ lat: number | null; lng: number | null }>((resolve) => {
+      if (editId || !("geolocation" in navigator)) return resolve({ lat: null, lng: null });
+      navigator.geolocation.getCurrentPosition(
+        (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
+        () => resolve({ lat: null, lng: null }),
+        { timeout: 5000 },
+      );
+    });
     startTransition(async () => {
+      const geoResult = await geo;
+      const lat = editId ? draft.lat : geoResult.lat;
+      const lng = editId ? draft.lng : geoResult.lng;
+      const input = {
+        name: draft.name,
+        ownerName: draft.ownerName || null,
+        shopName: draft.shopName || null,
+        phone: draft.phone || null,
+        gstin: draft.gstin || null,
+        route: draft.route || null,
+        address: draft.address || null,
+        customerType: draft.customerType,
+        creditLimit: draft.creditLimit ? Number(draft.creditLimit) : 0,
+        lat,
+        lng,
+      };
       const res = editId
         ? await updateRetailer(editId, input)
         : await createRetailer(input);
@@ -130,6 +160,9 @@ export function RetailersClient({ retailers }: { retailers: Retailer[] }) {
             <FormField label="Name" required>
               {(p) => <Input {...p} value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />}
             </FormField>
+            <FormField label="Owner name">
+              {(p) => <Input {...p} value={draft.ownerName} onChange={(e) => setDraft({ ...draft, ownerName: e.target.value })} />}
+            </FormField>
             <FormField label="Shop name">
               {(p) => <Input {...p} value={draft.shopName} onChange={(e) => setDraft({ ...draft, shopName: e.target.value })} />}
             </FormField>
@@ -150,7 +183,26 @@ export function RetailersClient({ retailers }: { retailers: Retailer[] }) {
             <FormField label="Address">
               {(p) => <Input {...p} value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} />}
             </FormField>
+            <FormField label="Customer type" hint="Cash auto-approves; credit needs sign-off">
+              {(p) => (
+                <select {...p} value={draft.customerType}
+                  onChange={(e) => setDraft({ ...draft, customerType: e.target.value as "cash" | "credit" })}
+                  className={selectCls}>
+                  <option value="cash">Cash</option>
+                  <option value="credit">Credit</option>
+                </select>
+              )}
+            </FormField>
+            {draft.customerType === "credit" ? (
+              <FormField label="Credit limit (₹)">
+                {(p) => <Input {...p} type="number" min={0} step="any" value={draft.creditLimit}
+                  onChange={(e) => setDraft({ ...draft, creditLimit: e.target.value })} />}
+              </FormField>
+            ) : null}
           </div>
+          {!editId ? (
+            <p className="mt-2 text-xs text-muted-foreground">📍 GPS is captured automatically on save (anti-fraud). Shop photo capture comes with the field app.</p>
+          ) : null}
           {error ? <p className="mt-3 text-sm font-medium text-destructive">{error}</p> : null}
           <FormActions>
             <Button type="button" variant="ghost" onClick={close}>Cancel</Button>

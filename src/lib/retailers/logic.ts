@@ -4,8 +4,11 @@
  * when present (don't block onboarding on a missing optional field).
  */
 
+export type CustomerType = "cash" | "credit";
+
 export type RetailerInput = {
   name: string;
+  ownerName?: string | null;
   shopName?: string | null;
   address?: string | null;
   phone?: string | null;
@@ -13,6 +16,10 @@ export type RetailerInput = {
   route?: string | null;
   lat?: number | null;
   lng?: number | null;
+  customerType?: CustomerType;
+  customerCategory?: "retail" | "wholesale";
+  creditLimit?: number | null;
+  shopPhotoPath?: string | null;
 };
 
 // GSTIN: 2-digit state + 10-char PAN + entity + Z + checksum (15 chars).
@@ -38,6 +45,16 @@ export function validateRetailer(input: RetailerInput): string | null {
     if (!GSTIN_RE.test(input.gstin.trim().toUpperCase())) {
       return "GSTIN looks invalid (expected a 15-character GSTIN).";
     }
+  }
+
+  if (input.customerType && input.customerType !== "cash" && input.customerType !== "credit") {
+    return "Customer type must be cash or credit.";
+  }
+  if (input.creditLimit != null && (Number.isNaN(input.creditLimit) || input.creditLimit < 0)) {
+    return "Credit limit must be 0 or more.";
+  }
+  if (input.customerType === "credit" && (input.creditLimit ?? 0) <= 0) {
+    return "A credit customer needs a credit limit greater than 0.";
   }
 
   return null;

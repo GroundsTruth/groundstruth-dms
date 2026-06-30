@@ -1,4 +1,3 @@
-import { TriangleAlert } from "lucide-react";
 import {
   Table,
   TableHeader,
@@ -17,16 +16,6 @@ function inr(n: number): string {
 export function InvoiceView({ invoice }: { invoice: InvoiceDetail }) {
   return (
     <div className="rounded-lg border border-border bg-card p-5 sm:p-8">
-      {invoice.provisional ? (
-        <div className="mb-5 flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-800">
-          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          <p className="text-xs">
-            <strong>Provisional</strong> — GST/cess rates and the seller GSTIN are statutory
-            defaults pending client/CA confirmation (see <code>docs/MISSING_INPUTS.md</code>).
-            Not for issuance to customers yet.
-          </p>
-        </div>
-      ) : null}
 
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
         <div>
