@@ -51,12 +51,13 @@ export function InvoiceView({ invoice }: { invoice: InvoiceDetail }) {
           <TableHeader>
             <TableRow>
               <TableHead>SKU</TableHead>
+              <TableHead>HSN</TableHead>
               <TableHead className="text-right">Qty</TableHead>
-              <TableHead className="text-right">Rate</TableHead>
+              <TableHead className="text-right">Billing (incl)</TableHead>
               <TableHead className="text-right">Taxable</TableHead>
               <TableHead className="text-right">GST</TableHead>
               <TableHead className="text-right">Cess</TableHead>
-              <TableHead className="text-right">Total</TableHead>
+              <TableHead className="text-right">Net</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -65,11 +66,10 @@ export function InvoiceView({ invoice }: { invoice: InvoiceDetail }) {
                 <TableCell>
                   <span className="font-mono text-xs">{l.code}</span> — {l.name}
                 </TableCell>
+                <TableCell className="font-mono text-xs text-muted-foreground">{l.hsn ?? "—"}</TableCell>
                 <TableCell className="text-right tabular-nums">{l.qty}</TableCell>
                 <TableCell className="text-right tabular-nums">{inr(l.unitPrice)}</TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {inr(l.qty * l.unitPrice)}
-                </TableCell>
+                <TableCell className="text-right tabular-nums">{inr(l.taxable)}</TableCell>
                 <TableCell className="text-right tabular-nums">
                   {inr(l.taxAmount)} <span className="text-muted-foreground">({l.taxPct}%)</span>
                 </TableCell>
@@ -86,19 +86,27 @@ export function InvoiceView({ invoice }: { invoice: InvoiceDetail }) {
       <div className="mt-4 flex justify-end">
         <dl className="w-64 space-y-1 text-sm">
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Subtotal</dt>
+            <dt className="text-muted-foreground">Taxable value</dt>
             <dd className="tabular-nums">{inr(invoice.subtotal)}</dd>
           </div>
+          {/* Intra-state default → CGST + SGST (each half). Inter-state = IGST (full),
+              wired once the buyer's state code is captured (INVOICE_SPEC §4). */}
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">GST</dt>
-            <dd className="tabular-nums">{inr(invoice.taxTotal)}</dd>
+            <dt className="text-muted-foreground">CGST</dt>
+            <dd className="tabular-nums">{inr(invoice.taxTotal / 2)}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Cess</dt>
-            <dd className="tabular-nums">{inr(invoice.cessTotal)}</dd>
+            <dt className="text-muted-foreground">SGST</dt>
+            <dd className="tabular-nums">{inr(invoice.taxTotal / 2)}</dd>
           </div>
+          {invoice.cessTotal > 0 ? (
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Cess</dt>
+              <dd className="tabular-nums">{inr(invoice.cessTotal)}</dd>
+            </div>
+          ) : null}
           <div className="flex justify-between border-t border-border pt-1 text-base font-semibold">
-            <dt>Total</dt>
+            <dt>Total (incl. GST)</dt>
             <dd className="tabular-nums">{inr(invoice.total)}</dd>
           </div>
         </dl>

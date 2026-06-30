@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | `feat/catalog-tax-invoice-spec` | Catalog tax/commercial fields + GST research + INVOICE_SPEC (M10) — from the client sample invoice | `src/lib/catalog/` · `src/components/catalog/` · `scripts/seed-skus.ts` · `docs/INVOICE_SPEC.md` · `/catalog` | 2026-06-30 |
-| Hardik | — | **Lane complete & merged** (spine M01–M29 + retailers M16/M17 + auth-backend M05–M07). Paused. Remaining = Aman UI / client data — see `docs/MISSING_INPUTS.md` §B. | transactional spine · retailers · auth backend | — |
+| Hardik | `30thJunechanges` | **Build-audit fixes — Batch 1 (tax correctness):** inclusive GST math (TS + RPC), Soda 18%, HSN on invoice, CGST/SGST split | `src/lib/sales/**` · `src/components/invoices/**` · new migration | 2026-06-30 |
 
 > **Aman — starting fresh? Read `docs/AMAN_KICKSTART.md` first.** It has everything Hardik
 > built (done + merged), your lane (Auth UI → Dashboard tiles → UI kit), the assumptions we
@@ -49,6 +49,21 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-06-30 · Hardik + Claude · build-audit Batch 1 — tax correctness (`30thJunechanges`)
+Working `docs/BUILD_AUDIT_2026-06-30.md` (Hardik-lane) + `docs/INVOICE_SPEC.md`. **Batch 1 = money correctness:**
+- **#1 GST is INCLUSIVE (TS engine):** `invoice-tax.ts` now extracts tax (`taxable = gross/(1+rate)`),
+  not adds it. Rewrote `invoice-tax.test.ts` to the client sample (70×₹120 incl 5% → taxable 8000, GST 400, total 8400).
+- **#2 Same fix in the money path (RPC):** migration `20260630134832` rewrites `confirm_and_invoice` to
+  mirror the inclusive math; `money-path.acceptance.test.ts` updated. UI ↔ DB agree.
+- **#3 Soda → 18%** (was 40%): corrective `update` in the migration + **applied live** (SKU018).
+- **#8 HSN on invoice:** `invoice_lines.hsn` column (migration) + RPC snapshots it + `/invoices/[id]` shows
+  the HSN column. Plus **CGST/SGST split** (intra-state; IGST once buyer state captured — §4).
+- **103 tests green**, typecheck + build clean.
+- ⏳ **Apply `20260630134832_invoice_inclusive_tax_hsn.sql`** in SQL Editor (alter + function; Soda already live).
+- ⚠️ Existing demo invoices (INV00001/2) keep their old exclusive snapshots — re-run `seed:demo` after applying for an inclusive one.
+- **Replies to Aman's asks:** #34 tax-reconcile → **Soda now 18% live**; per-SKU HSN/Jeera reconcile still pending your `seed-data.ts` source-of-truth (don't re-seed over my rates without agreeing). #38 audit → Batch 1 done; Batches 2–5 next.
+- **Next (me):** Batch 2 pricing/approval (#4 rate+discount on lines, #5 below-list approval, #9 two price lists, #10 kill discount_ceiling).
 
 ### 2026-06-30 · Aman + Claude · Catalog tax fields + GST research + Invoice spec (`feat/catalog-tax-invoice-spec`)
 - **Client sample invoice arrived** (`Invoice-7210376259.pdf`) — the artefact MISSING_INPUTS #1 needed.

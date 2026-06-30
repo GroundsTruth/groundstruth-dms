@@ -30,8 +30,10 @@ export type InvoiceDetail = {
   lines: {
     code: string;
     name: string;
+    hsn: string | null;
     qty: number;
     unitPrice: number;
+    taxable: number;
     taxPct: number;
     taxAmount: number;
     cessPct: number;
@@ -89,7 +91,7 @@ export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
     const [linesRes, orderRes, sellerRes, provRes] = await Promise.all([
       supabase
         .from("invoice_lines")
-        .select("sku_id,qty,unit_price,tax_pct,tax_amount,cess_pct,cess_amount,line_total")
+        .select("sku_id,hsn,qty,unit_price,tax_pct,tax_amount,cess_pct,cess_amount,line_total")
         .eq("invoice_id", id),
       inv.order_id
         ? supabase.from("orders").select("route").eq("id", inv.order_id).maybeSingle()
@@ -130,8 +132,11 @@ export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
         return {
           code: sku.code,
           name: sku.name,
+          hsn: l.hsn ?? null,
           qty: Number(l.qty),
           unitPrice: Number(l.unit_price),
+          // taxable = inclusive line gross − tax − cess (the ex-tax value).
+          taxable: Number(l.line_total) - Number(l.tax_amount) - Number(l.cess_amount),
           taxPct: Number(l.tax_pct),
           taxAmount: Number(l.tax_amount),
           cessPct: Number(l.cess_pct),

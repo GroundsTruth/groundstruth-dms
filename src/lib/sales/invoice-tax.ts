@@ -1,10 +1,11 @@
 /**
- * Invoice tax engine (M21) — pure, unit-tested. Computes per-line GST + cess and
- * invoice totals from rates supplied per line (tax_slab_pct / cess_pct, sourced from
- * skus). Rates are PROVISIONAL until client/CA confirm (see docs/MISSING_INPUTS.md);
- * the math here doesn't change when the values do. Place-of-supply default is
- * intra-state (a single GST amount; CGST/SGST split is a display concern on the PDF).
- * Mirrors the confirm_and_invoice RPC so server + UI agree.
+ * Invoice tax engine (M21) — pure, unit-tested. GST is **INCLUSIVE**: the unitPrice is
+ * the billing price WITH tax, and tax is EXTRACTED, not added on top
+ * (docs/INVOICE_SPEC.md §3). Per line: gross = qty × price; taxable = gross / (1 +
+ * (gst+cess)/100); gst/cess are each their %-of-taxable; lineTotal = gross. So the
+ * customer never pays more than the billing price. Rates are PROVISIONAL (pending CA).
+ * CGST/SGST split (intra-state) vs IGST (inter-state) is a render concern off the
+ * buyer's state code (§4). MUST mirror the confirm_and_invoice RPC so UI and DB agree.
  */
 
 export type InvoiceTaxLineInput = {
@@ -43,7 +44,10 @@ export function computeInvoiceTotals(lines: InvoiceTaxLineInput[]): InvoiceTotal
   const out: InvoiceTaxLine[] = lines.map((l) => {
     const taxPct = l.taxPct ?? 0;
     const cessPct = l.cessPct ?? 0;
-    const taxable = round2(l.qty * l.unitPrice);
+    // gross is the inclusive billing amount the customer pays.
+    const gross = round2(l.qty * l.unitPrice);
+    // Extract the taxable value out of the inclusive gross using the combined slab.
+    const taxable = round2(gross / (1 + (taxPct + cessPct) / 100));
     const taxAmount = round2((taxable * taxPct) / 100);
     const cessAmount = round2((taxable * cessPct) / 100);
     return {
@@ -55,12 +59,14 @@ export function computeInvoiceTotals(lines: InvoiceTaxLineInput[]): InvoiceTotal
       taxAmount,
       cessPct,
       cessAmount,
-      lineTotal: round2(taxable + taxAmount + cessAmount),
+      lineTotal: gross, // customer pays the inclusive price, never more
     };
   });
 
   const subtotal = round2(out.reduce((a, l) => a + l.taxable, 0));
   const taxTotal = round2(out.reduce((a, l) => a + l.taxAmount, 0));
   const cessTotal = round2(out.reduce((a, l) => a + l.cessAmount, 0));
-  return { lines: out, subtotal, taxTotal, cessTotal, total: round2(subtotal + taxTotal + cessTotal) };
+  // Total is the sum of the inclusive line grosses (what the customer actually pays).
+  const total = round2(out.reduce((a, l) => a + l.lineTotal, 0));
+  return { lines: out, subtotal, taxTotal, cessTotal, total };
 }

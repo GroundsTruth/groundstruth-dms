@@ -35,13 +35,16 @@ describe("M23 money-path acceptance: order → invoice → auto-deduct", () => {
       { skuId: "s-2", qty: 10, unitPrice: 50, taxPct: 18, cessPct: 0 },
     ];
 
-    // Invoice tax.
+    // Invoice tax — GST-INCLUSIVE (tax extracted from the billing price).
     const inv = computeInvoiceTotals(order);
-    // s-1: taxable 6000, tax 1680, cess 720 → 8400 ; s-2: taxable 500, tax 90 → 590
-    expect(inv.subtotal).toBe(6500);
-    expect(inv.taxTotal).toBe(1770);
-    expect(inv.cessTotal).toBe(720);
-    expect(inv.total).toBe(8990);
+    // s-1: gross 6000 incl 40% → taxable 4285.71, GST 1200, cess 514.29
+    // s-2: gross 500 incl 18% → taxable 423.73, GST 76.27
+    expect(inv.subtotal).toBe(4709.44);
+    expect(inv.taxTotal).toBe(1276.27);
+    expect(inv.cessTotal).toBe(514.29);
+    expect(inv.total).toBe(6500); // customer pays exactly qty × billing price
+    // breakdown reconciles to the inclusive total
+    expect(inv.subtotal + inv.taxTotal + inv.cessTotal).toBeCloseTo(inv.total, 2);
 
     // FIFO deduct each ordered line; record a sale_deduct movement per allocation.
     for (const line of order) {
