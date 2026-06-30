@@ -51,7 +51,7 @@ empty/loading/error/offline states), and a read-only **Owner Dashboard** from se
 | M18 | Price-list rule (SKU × retailer/region) | **DONE** | M10,M16 | merged; `resolvePrice`/`priceFor`/`setPrice` |
 | M19 | Order punch UI + order/order_lines model | **DONE** | M18 | merged; `/orders` punch + `createOrder`, base prices seeded |
 | M20 | Invoice number service (server-side series) | **DONE** | M03 | merged; atomic `next_invoice_no()` |
-| M21 | Invoice generation (tax compute) + view | **DONE** (provisional) | M20 | merged; provisional GST engine + `/invoices/[id]`. **Final PDF/format = client-gated** (MISSING_INPUTS #1–#3) |
+| M21 | Invoice generation (tax compute) + view | **DONE** | M20 | merged; provisional GST engine + `/invoices/[id]`. **Final PDF/format = client-gated** (MISSING_INPUTS #1–#3) |
 | M22 | confirmAndInvoice(): invoice + stock deduct in ONE txn | **DONE** | M21,M13 | merged; atomic RPC (reuses next_invoice_no + deduct_stock) |
 | M23 | Acceptance: order→invoice→auto-deduct | **DONE** | M22 | merged; money-path acceptance test |
 | M24 | Van load-out (qty_out) + load sheet | **DONE** | M11 | merged; atomic `load_van()` + `/vans` |

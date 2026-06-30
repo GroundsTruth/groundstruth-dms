@@ -21,11 +21,12 @@ import {
 export type CreateOrderInput = {
   retailerId?: string | null;
   route?: string | null;
-  lines: { skuId: string; qty: number }[];
+  listType?: "retail" | "wholesale";
+  lines: { skuId: string; qty: number; chargedPrice?: number | null }[];
 };
 
 export type CreateOrderResult =
-  | { ok: true; orderId: string; orderNo: string }
+  | { ok: true; orderId: string; orderNo: string; needsApproval: boolean }
   | { ok: false; error: string };
 
 type AdminClient = ReturnType<typeof createAdminClient>;
@@ -44,16 +45,19 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
   try {
     const supabase = createAdminClient();
 
-    // Resolve a price for each line in this order's context.
+    const listType = input.listType ?? "retail";
+    // Resolve the LIST price per line; the rep may charge below it (→ approval).
     const priced: OrderLineInput[] = await Promise.all(
       input.lines.map(async (l) => ({
         skuId: l.skuId,
         qty: l.qty,
-        unitPrice: await priceFor({
+        listPrice: await priceFor({
           skuId: l.skuId,
           retailerId: input.retailerId ?? null,
           route: input.route ?? null,
+          listType,
         }),
+        chargedPrice: l.chargedPrice ?? null,
       })),
     );
 
@@ -62,6 +66,8 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
 
     const totals = computeOrderTotals(priced);
     const orderNo = await nextOrderNo(supabase);
+    // #5: any below-list line → the whole order waits for admin approval.
+    const status = totals.needsApproval ? "pending_approval" : "draft";
 
     const { data: order, error: orderErr } = await supabase
       .from("orders")
@@ -69,9 +75,9 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
         order_no: orderNo,
         retailer_id: input.retailerId ?? null,
         route: input.route ?? null,
-        status: "draft",
+        status,
         subtotal: totals.subtotal,
-        tax_total: totals.taxTotal,
+        tax_total: 0, // tax extracted at invoice time (inclusive pricing)
         total: totals.total,
       })
       .select("id")
@@ -87,7 +93,9 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
         order_id: order.id,
         sku_id: l.skuId,
         qty: l.qty,
-        unit_price: l.unitPrice,
+        unit_price: l.unitPrice, // charged (GST-inclusive)
+        list_price: l.listPrice,
+        discount_pct: l.discountPct,
         line_total: l.lineTotal,
       })),
     );
@@ -103,13 +111,53 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
       action: "order.create",
       entityTable: "orders",
       entityId: order.id,
-      after: { orderNo, route: input.route ?? null, total: totals.total, lines: totals.lines.length },
+      after: { orderNo, route: input.route ?? null, total: totals.total, lines: totals.lines.length, status },
     });
 
     revalidatePath("/orders");
-    return { ok: true, orderId: order.id, orderNo };
+    return { ok: true, orderId: order.id, orderNo, needsApproval: totals.needsApproval };
   } catch (err) {
     console.error("createOrder: unexpected error —", err);
     return { ok: false, error: "Unexpected error creating the order." };
+  }
+}
+
+/**
+ * Approve / reject a below-list order (audit #5). Approve → 'confirmed' (now
+ * invoiceable); reject → 'cancelled'. TODO(auth): gate to owner once AUTH_ENABLED.
+ */
+export type OrderActionResult = { ok: true } | { ok: false; error: string };
+
+export async function approveOrder(orderId: string): Promise<OrderActionResult> {
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("orders")
+      .update({ status: "confirmed" })
+      .eq("id", orderId)
+      .eq("status", "pending_approval");
+    if (error) return { ok: false, error: "Could not approve the order." };
+    await logAudit({ action: "order.approve", entityTable: "orders", entityId: orderId });
+    revalidatePath("/orders");
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Unexpected error approving the order." };
+  }
+}
+
+export async function rejectOrder(orderId: string): Promise<OrderActionResult> {
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("orders")
+      .update({ status: "cancelled" })
+      .eq("id", orderId)
+      .eq("status", "pending_approval");
+    if (error) return { ok: false, error: "Could not reject the order." };
+    await logAudit({ action: "order.reject", entityTable: "orders", entityId: orderId });
+    revalidatePath("/orders");
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Unexpected error rejecting the order." };
   }
 }

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type Line = { key: number; skuId: string; qty: string };
+type Line = { key: number; skuId: string; qty: string; rate: string };
 
 const selectCls = cn(
   "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm",
@@ -28,18 +28,26 @@ export function PunchForm({ skus }: { skus: OrderableSku[] }) {
   const [ok, setOk] = useState<string | null>(null);
 
   const [route, setRoute] = useState<string>("");
-  const [lines, setLines] = useState<Line[]>([{ key: 1, skuId: "", qty: "" }]);
+  const [lines, setLines] = useState<Line[]>([{ key: 1, skuId: "", qty: "", rate: "" }]);
 
   const priceById = useMemo(
     () => new Map(skus.map((s) => [s.id, s.basePrice])),
     [skus],
   );
 
+  function chargedOf(l: Line): number | null {
+    const list = priceById.get(l.skuId) ?? null;
+    return l.rate ? Number(l.rate) : list;
+  }
+  function belowList(l: Line): boolean {
+    const list = priceById.get(l.skuId);
+    return l.rate !== "" && list != null && Number(l.rate) < list;
+  }
   function lineTotal(l: Line): number | null {
-    const price = priceById.get(l.skuId);
+    const charged = chargedOf(l);
     const qty = Number(l.qty);
-    if (price == null || !qty) return null;
-    return price * qty;
+    if (charged == null || !qty) return null;
+    return charged * qty;
   }
 
   const subtotal = lines.reduce((acc, l) => acc + (lineTotal(l) ?? 0), 0);
@@ -48,13 +56,13 @@ export function PunchForm({ skus }: { skus: OrderableSku[] }) {
     setLines((ls) => ls.map((l) => (l.key === key ? { ...l, ...patch } : l)));
   }
   function addLine() {
-    setLines((ls) => [...ls, { key: Math.max(0, ...ls.map((l) => l.key)) + 1, skuId: "", qty: "" }]);
+    setLines((ls) => [...ls, { key: Math.max(0, ...ls.map((l) => l.key)) + 1, skuId: "", qty: "", rate: "" }]);
   }
   function removeLine(key: number) {
     setLines((ls) => (ls.length === 1 ? ls : ls.filter((l) => l.key !== key)));
   }
   function reset() {
-    setLines([{ key: 1, skuId: "", qty: "" }]);
+    setLines([{ key: 1, skuId: "", qty: "", rate: "" }]);
     setRoute("");
   }
 
@@ -64,7 +72,7 @@ export function PunchForm({ skus }: { skus: OrderableSku[] }) {
     setOk(null);
     const payload = lines
       .filter((l) => l.skuId && Number(l.qty) > 0)
-      .map((l) => ({ skuId: l.skuId, qty: Number(l.qty) }));
+      .map((l) => ({ skuId: l.skuId, qty: Number(l.qty), chargedPrice: l.rate ? Number(l.rate) : null }));
     if (payload.length === 0) {
       setError("Add at least one line with a SKU and quantity.");
       return;
@@ -72,7 +80,11 @@ export function PunchForm({ skus }: { skus: OrderableSku[] }) {
     startTransition(async () => {
       const res = await createOrder({ route: route || null, lines: payload });
       if (res.ok) {
-        setOk(`Order ${res.orderNo} punched (${inr(subtotal)}).`);
+        setOk(
+          res.needsApproval
+            ? `Order ${res.orderNo} punched below list — sent for admin approval.`
+            : `Order ${res.orderNo} punched (${inr(subtotal)}).`,
+        );
         reset();
         router.refresh();
       } else {
@@ -137,8 +149,22 @@ export function PunchForm({ skus }: { skus: OrderableSku[] }) {
                 value={l.qty}
                 onChange={(e) => setLine(l.key, { qty: e.target.value })}
                 placeholder="Qty"
-                className="w-24"
+                className="w-20"
               />
+              <div className="w-24">
+                <Input
+                  aria-label="Rate"
+                  type="number"
+                  min={0}
+                  step="any"
+                  value={l.rate}
+                  onChange={(e) => setLine(l.key, { rate: e.target.value })}
+                  placeholder={price != null ? inr(price) : "Rate"}
+                />
+                {belowList(l) ? (
+                  <p className="mt-1 text-[11px] font-medium text-amber-600">below list → approval</p>
+                ) : null}
+              </div>
               <div className="w-24 pt-2 text-right text-sm tabular-nums">
                 {lt != null ? inr(lt) : "—"}
               </div>

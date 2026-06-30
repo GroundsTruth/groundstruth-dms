@@ -32,6 +32,21 @@ export function lowStockFlag(casesOnHand: number, threshold: number): boolean {
   return casesOnHand <= threshold;
 }
 
+/** Days of stock cover = on-hand ÷ average daily sales. Infinity if no sales (audit #14). */
+export function daysOfCover(onHand: number, avgDailySales: number): number {
+  if (avgDailySales <= 0) return Number.POSITIVE_INFINITY;
+  return onHand / avgDailySales;
+}
+
+/** Dynamic low-stock: fewer than `thresholdDays` of cover left. */
+export function isLowStockDynamic(
+  onHand: number,
+  avgDailySales: number,
+  thresholdDays: number,
+): boolean {
+  return daysOfCover(onHand, avgDailySales) < thresholdDays;
+}
+
 /** Total on-hand quantity across a SKU's batches. */
 export function sumOnHand(batches: { qtyOnHand: number }[]): number {
   return batches.reduce((acc, b) => acc + b.qtyOnHand, 0);

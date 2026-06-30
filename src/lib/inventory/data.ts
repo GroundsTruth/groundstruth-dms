@@ -1,6 +1,8 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getConfig } from "@/lib/config/data";
-import { lowStockFlag } from "./logic";
+import { lowStockFlag, daysOfCover, isLowStockDynamic } from "./logic";
+
+const COVER_WINDOW_DAYS = 30; // window for the avg-daily-sales estimate (#14)
 
 /**
  * Stock-view accessors (M12) — server-side reads, seed-safe (return [] on error so
@@ -14,6 +16,8 @@ export type SkuStock = {
   name: string;
   qtyOnHand: number;
   batchCount: number;
+  avgDailySales: number;
+  daysOfCover: number; // Infinity when there are no recent sales
   lowStock: boolean;
 };
 
@@ -55,10 +59,17 @@ export async function getSkuOptions(): Promise<SkuOption[]> {
 export async function getStockBySku(): Promise<SkuStock[]> {
   try {
     const supabase = createAdminClient();
-    const [batchesRes, skusRes, threshold] = await Promise.all([
+    const sinceIso = new Date(Date.now() - COVER_WINDOW_DAYS * 86400_000).toISOString();
+    const [batchesRes, skusRes, threshold, coverDays, movesRes] = await Promise.all([
       supabase.from("stock_batches").select("sku_id,qty_on_hand"),
       supabase.from("skus").select("id,code,name").eq("is_active", true),
       getConfig("low_stock_threshold"),
+      getConfig("low_stock_days"),
+      supabase
+        .from("stock_movements")
+        .select("sku_id,qty,movement_type")
+        .in("movement_type", ["sale_deduct", "van_out"])
+        .gte("created_at", sinceIso),
     ]);
 
     if (batchesRes.error || skusRes.error) {
@@ -77,16 +88,30 @@ export async function getStockBySku(): Promise<SkuStock[]> {
       totals.set(b.sku_id, cur);
     }
 
+    // Avg daily sales over the window → days-of-cover (#14).
+    const sold = new Map<string, number>();
+    for (const m of movesRes.data ?? []) {
+      sold.set(m.sku_id, (sold.get(m.sku_id) ?? 0) + Number(m.qty));
+    }
+
     return (skusRes.data ?? [])
       .map((s) => {
         const t = totals.get(s.id) ?? { qty: 0, count: 0 };
+        const avgDailySales = (sold.get(s.id) ?? 0) / COVER_WINDOW_DAYS;
+        // Dynamic when there are sales; fall back to the static case threshold otherwise.
+        const lowStock =
+          avgDailySales > 0
+            ? isLowStockDynamic(t.qty, avgDailySales, coverDays.days)
+            : lowStockFlag(t.qty, threshold.cases);
         return {
           skuId: s.id,
           code: s.code,
           name: s.name,
           qtyOnHand: t.qty,
           batchCount: t.count,
-          lowStock: lowStockFlag(t.qty, threshold.cases),
+          avgDailySales,
+          daysOfCover: daysOfCover(t.qty, avgDailySales),
+          lowStock,
         };
       })
       .sort((a, b) => a.code.localeCompare(b.code));

@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/kit/page-header";
 import { KpiCard } from "@/components/kit/kpi-card";
 import { ReceiveForm } from "@/components/inventory/receive-form";
 import { StockBySkuTable, BatchTable } from "@/components/inventory/stock-tables";
+import { AdjustPanel } from "@/components/inventory/adjust-panel";
 
 // Stock is read from Supabase per request — never frozen at build time.
 export const dynamic = "force-dynamic";
@@ -48,6 +49,8 @@ export default async function InventoryPage() {
           <BatchTable rows={batches} />
         </section>
       ) : null}
+
+      <AdjustPanel batches={batches} />
     </>
   );
 }
