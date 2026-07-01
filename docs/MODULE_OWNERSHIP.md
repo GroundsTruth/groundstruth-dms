@@ -4,9 +4,12 @@ Source of sequencing: `dev/11_Delivery_Tracker.xlsx` (tabs Pre-Build + MVP Phase
 This is the clarity mirror for **who builds what**. Status legend: **TODO** ·
 **INPROGRESS** · **DONE** · **BLOCKED** (on client). Update at session end.
 
-_Last updated: 2026-06-28 (Hardik). **Hardik's lane is built + merged** (M01–M29, M16/M17,
-M05–M07 backend). Remaining items are **Aman's UI** (login, dashboard tiles, user mgmt, nav)
-or **client-gated** (invoice format, GST values, M25 challan) — see `docs/MISSING_INPUTS.md`._
+_Last updated: 2026-07-01 (Aman). **Hardik's lane is built + merged** (M01–M29, M16/M17,
+M05–M07 backend) plus **Round-2/3 net-new** (dual seller, brand credit, challan view, schemes
+engine, catalogue ingest, tiered recon). **Aman:** Sales-Capture UI (#7) **DONE**; remaining =
+login UI, dashboard live tiles + role-scope, user mgmt, dual-branding logo, 14 new SKUs. Client-gated:
+M25 challan format, SMS/OTP provider, staff list — see `docs/MISSING_INPUTS.md`. ⚠️ **Migration
+backlog (Batch 1–4 + recon_tiers + schemes) not yet applied to DB** — gates live E2E (`docs/MIGRATIONS.md`)._
 
 ## What Aman has already built (one line)
 Foundation scaffold (Next 15 + Tailwind v3 + shadcn) + **UI Kit / design system**,
@@ -32,10 +35,12 @@ empty/loading/error/offline states), and a read-only **Owner Dashboard** from se
 ### Aman's lane — UI / Catalog / Dashboard
 | ID | Module | Status | Depends on | Notes |
 |----|--------|--------|-----------|-------|
-| M04 | Error/empty/no-network UI states + idempotency | INPROGRESS | P17 | on `feat/ui-kit-states` (pending PR→dev) |
-| M10 | SKU master CRUD + import | INPROGRESS | M03 | live + CRUD done; MRP/HSN/tax/cess pending (client/CA) |
-| M30 | Owner dashboard | INPROGRESS | M29,M27,M14 | read-only from seed; live aggregates pending |
+| M04 | Error/empty/no-network UI states + idempotency | **DONE** | P17 | merged (PR #1); grows per module |
+| M10 | SKU master CRUD + import | **DONE** | M03 | live + CRUD + tax/HSN/MRP/units ingested from client Catalogue. ⬜ add ~14 new SKUs; reclassify Gluco Energy→Juice |
+| #7 | **Sales-Capture UI** (field MVP) | **DONE** | captureSale | `/capture` mobile flow on `feat/aman-mvp-e2e`; route→shop(pick/onboard)→items→payment→invoice |
+| M30 | Owner dashboard | INPROGRESS | M29,M27,M14 | read-only from seed; ⬜ **live tiles** + **role-scope (#24)** |
 | M31 | Daily sales view | INPROGRESS | M30 | from seed; wire to live later |
+| M05/M08/M09 | **Auth login UI** + user mgmt (UI half) | TODO | M07 | `/login` phone→OTP; role-hide nav; user screen. Backend ready (Hardik) |
 
 ### Hardik's lane — transactional spine (anti-leakage core)
 | ID | Module | Status | Depends on | Notes |
@@ -72,18 +77,27 @@ empty/loading/error/offline states), and a read-only **Owner Dashboard** from se
 | M16 | Retailer CRUD + import | Both → **Hardik** | **DONE** | M01 | merged; CRUD + `/retailers` |
 | M17 | Field onboarding form + approval | Both → **Hardik** | **DONE** | M16 | merged; onboard form + pending→approved rule |
 
+### Net-new scope (Round-2/3, client 2026-07-01) — Hardik built
+| Item | Status | Notes |
+|------|--------|-------|
+| S2 | **Schemes/freebies engine** | **DONE** | `/schemes` buy-X-get-Y; freebies auto-apply as ₹0 lines |
+| — | **Dual seller by brand** | **DONE** | Falcon=Campa Sure / Jaypee=Campa Cola; invoice prints entity per product |
+| #6 | **Brand credit ledger + guard** | **DONE** | per-retailer credit limit; guard on capture |
+| M25a | **Delivery challan view** | **DONE** | on-screen challan (`challan-view.tsx`); PDF/format still client-gated |
+| — | **Tiered reconciliation tolerances** | **DONE** | variance tiers instead of a single flat tolerance |
+| — | **Catalogue ingest** | **DONE** | `scripts/ingest-catalogue.mjs` — tax/HSN/MRP/units from client Catalogue |
+
 ### Phase-1 hardening (Both)
 M32 critical-path tests · M33 QA pass · M34 backups/monitoring · M35 pilot · M36 go-live — all TODO.
 
 ---
 
-## Branch state (2026-06-27)
-- `main` == `dev` (identical).
-- `feat/supabase-catalog` — **stale**: behind dev, 0 commits ahead (already merged to main). → **delete**.
-- `feat/ui-kit-states` — **3 commits ahead** of dev, 0 behind → clean fast-forward. → **PR into dev**.
+## Branch state (2026-07-01)
+- `main` behind `dev` — Hardik's spine + build-audit + Round-2/3 merged into `dev` (PRs #24–#27). Sync `dev → main` after E2E.
+- `feat/aman-mvp-e2e` — Aman's active branch off `dev`: Sales-Capture UI (#7) + `/schemes` nav. 120 tests green.
+- **Migration backlog (Batch 1–4 + `recon_tiers` + `schemes`) marked `_pending_`** in `docs/MIGRATIONS.md` — apply in the Supabase SQL Editor before live E2E.
 
-## PR / merge order
-1. **PR #1** `feat/ui-kit-states → dev` (Aman's M04 states + M10 CRUD). Review on Vercel preview, merge.
-2. `dev → main` once preview is green (keeps prod in sync).
-3. Delete stale `feat/supabase-catalog`.
-4. Hardik branches `feat/core-schema` off **dev** → P13 (`docs/SCHEMA.md`) then M01 core migrations → PR into dev.
+## Next moves
+1. Apply the pending migrations (Hardik / SQL Editor) + `.env.local` keys in the run env → unblock live E2E.
+2. Walk the driver + retailer journeys against a seeded DB (`docs/WORKLOG.md` test plan).
+3. Aman: auth login UI → dashboard live tiles + role-scope.

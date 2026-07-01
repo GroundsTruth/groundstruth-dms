@@ -13,8 +13,8 @@ without passing kickstart prompts back and forth.
 ## 🚧 In flight — claim before you start (this is how we avoid collisions)
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
-| Aman | — | (catalog-tax/INVOICE_SPEC merged, PR #25) — **next:** Sales-Capture UI (#7) · dashboard live tiles · auth login UI · #18/#20/#24 | UI Kit · Catalog · Dashboard · auth UI | — |
-| Hardik | `30thJunechanges` | **Build-audit (24 gaps) + client Round-2/3 done** — dual seller, brand credit, challan, schemes engine, catalogue ingest, tiered recon. Ready to merge. | `src/lib/{sales,retailers,inventory,van,schemes,config}/**` · UI · migrations | 2026-07-01 |
+| Aman | `feat/aman-mvp-e2e` | **Sales-Capture UI (#7) rebased onto latest dev + `/schemes` nav.** Doc/tracker refresh (STATUS, MODULE_OWNERSHIP, MIGRATIONS current). **Next:** live E2E of driver+retailer journeys once migrations applied → auth login UI → dashboard live tiles (#24). | `src/app/(app)/capture/` · `src/components/capture/` · `src/lib/nav.ts` · docs | 2026-07-01 |
+| Hardik | `30thJunechanges` (merged → dev, PR #27) | Build-audit (24 gaps) + Round-2/3 done — dual seller, brand credit, challan, schemes, catalogue ingest, tiered recon. ⚠️ **Apply the pending migrations** (Batch 1–4 + recon_tiers + schemes) in the SQL Editor — they gate live E2E. | `src/lib/{sales,retailers,inventory,van,schemes,config}/**` · UI · migrations | 2026-07-01 |
 
 > **Aman — starting fresh? Read `docs/AMAN_KICKSTART.md` first.** It has everything Hardik
 > built (done + merged), your lane (Auth UI → Dashboard tiles → UI kit), the assumptions we
@@ -49,6 +49,26 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-07-01 · Aman + Claude · pull dev + capture rebase + tracker QC + E2E assessment (`feat/aman-mvp-e2e`)
+- **Pulled dev** (Hardik's Round-2/3 merged: dual seller, brand credit, challan view, schemes engine,
+  catalogue ingest, tiered recon). **Rebased the Sales-Capture UI** (`/capture`) onto latest dev — the
+  `captureSale` contract is unchanged, so the screen recompiled clean. Added **`/schemes`** to the nav
+  (Aman todo #0). **typecheck 0 · 120 tests · build green (14 routes).**
+- **Tracker QC** (asked: is everyone keeping docs current?):
+  - ✅ **WORKLOG** + **AMAN_KICKSTART** — current, well-maintained by both.
+  - ❌ **STATUS.md** — was stuck at **2026-06-25 (pre-spine)**, claimed "10 passing tests"; the session-start
+    ritual points at it. **Rewrote it fully** to current reality + an E2E-readiness table.
+  - ⚠️ **MODULE_OWNERSHIP.md** — stale (missing capture #7 + all Round-2/3 net-new). **Refreshed.**
+  - ⚠️ **MIGRATIONS.md** — the two 2026-07-01 migrations (`recon_tiers`, `schemes`) were **unlogged**. **Added them.**
+  - ❌ **`dev/11_Delivery_Tracker.xlsx`** — untouched since **2026-06-25**; effectively abandoned. The markdown
+    WORKLOG is the de-facto tracker. (Decide: retire the xlsx, or regenerate it from the markdown.)
+- **E2E readiness (driver + retailer journeys):** code is green, but **live E2E is gated by two things** —
+  (1) **migration backlog NOT applied** to the DB (Batch 1–4 + recon_tiers + schemes) → `/capture`, approval,
+  credit, adjust, `/schemes` will error at runtime until applied (Hardik / SQL Editor); (2) **`.env.local`
+  keys absent** in the run env (Aman / vault). Auth is dormant (fine for testing; a real go-live gate).
+  Full gate table + the step-by-step journey test script live in `docs/STATUS.md`.
+- **Next:** apply migrations + keys → walk the journeys → auth login UI → dashboard live tiles + role-scope (#24).
 
 ### 2026-07-01 · Hardik + Claude · client Round-2/3 build (`30thJunechanges`)
 Client answered Round-2 + sent updated Catalogue, redesigned challan, dual driver dir, logo, 2 invoices.

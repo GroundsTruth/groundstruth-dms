@@ -1,94 +1,104 @@
 # Status — GroundsTruth DMS
 
-_Last updated: 2026-06-25 (Aman + Claude) — Supabase live; SKU Catalog now persisted + read from the DB._
-Sequencing source of truth is `dev/11_Delivery_Tracker.xlsx`; this is the live,
-agent-readable mirror — update it at the end of every session.
+_Last updated: 2026-07-01 (Aman + Claude) — full refresh after the spine + build-audit +
+Round-2/3 work. The prior copy was stuck at 2026-06-25 (pre-spine); this mirror had drifted
+~6 sessions. `docs/WORKLOG.md` is the running log (newest first); this is the point-in-time
+snapshot + MVP checklist. Update both at session end._
 
 **Legend:** ✅ done · 🟡 in progress · ⬜ todo · 🔒 blocked (on client answer)
 
+## TL;DR — where we are
+- **Transactional spine: COMPLETE + merged.** receive → order → confirm+invoice+FIFO-deduct
+  (atomic) → collect → van load-out → returns → reconcile. All stock/cash moves atomic + audited.
+- **Build-audit (24 gaps vs client's WhatsApp answers): ALL fixed** (GST now **inclusive**, exact;
+  credit ledger; two price lists; below-list approval; dynamic low-stock; wastage/count).
+- **Round-2/3 net-new (2026-07-01): built** — dual seller by brand, brand credit, delivery
+  challan view, schemes/freebies engine, catalogue ingest (tax/HSN/MRP/units live), tiered recon.
+- **Sales-Capture field MVP (#7): UI shipped** (`/capture`) on `feat/aman-mvp-e2e`.
+- **Tests: 120 green** · typecheck 0 · `next build` clean (14 routes).
+- **Not yet live-testable end-to-end** — two gates: (1) **migration backlog not applied** to the
+  DB (Batch 1–4 + the two 2026-07-01 migrations); (2) **`.env.local` keys** needed in the run
+  environment. Auth is dormant (fine for testing; a go-live gate for real driver use). Details ↓.
+
+## E2E readiness (driver + retailer journeys)
+| Gate | State | Owner |
+|------|-------|-------|
+| App builds / typechecks / unit tests | ✅ green (120 tests) | — |
+| Capture UI (`/capture`) on latest dev | ✅ built + compiles | Aman |
+| **DB migrations applied** (Batch 1–4 GST-inclusive/pricing/credit/adjust + `recon_tiers` + `schemes`) | 🔒 **pending** — code expects columns/fns not yet in DB → runtime errors until applied via SQL Editor | Hardik (SQL Editor) |
+| **`.env.local` keys** in run env | 🔒 **absent** in this worktree — no Supabase reachability | Aman (vault) |
+| Seed data (46 SKUs · base prices 37/46 · opening stock · demo flow) | 🟡 partial — SKUs live; verify prices/stock after migrations | Both |
+| Auth login UI (drivers sign in) | ⬜ todo (backend ready, dormant) | Aman |
+| SMS/OTP provider + staff phone numbers | 🔒 client | Client |
+
 ## Pre-build (P)
-- ✅ **P15** — Repo + branch strategy (`feat/* → dev → main`). Private repo
-  `GroundsTruth/groundstruth-dms`, clean history, **zero client data committed**.
-- 🟡 **P16** — Envs / DB / secrets:
-  - ✅ Supabase project **`lmhhxjtvsbjgjdvcifso`** in **Mumbai (`ap-south-1`)** —
-    Data API on, **auto-expose-new-tables OFF**, **auto-RLS on**. `.env.local`
-    wired (git-ignored), connectivity verified.
-  - ✅ Vercel connected (GroundsTruth account) — auto-deploy + PR previews.
-  - ⬜ **Add the 3 Supabase vars to Vercel** (Settings → Environment Variables)
-    so the *deployed* app reaches the DB (until then, deployed Catalog uses the
-    seed fallback).
-- ✅ **P17** — Scaffold app (Next 15 + Tailwind v3 + shadcn) — build green
-- 🟡 **P18** — Design system / UI kit — base shipped; grows with each module
-- 🔒 **P10/P11** — Invoice format CA sign-off + acceptance criteria — client
-- 🔒 **Requirements** — the 3 open client questions (invoicing, retailers-vs-route,
-  batch/expiry)
+- ✅ **P15** — Repo + branch strategy (`feat/* → dev → main`). Private repo, clean history, zero client data committed.
+- 🟡 **P16** — Envs / DB / secrets: ✅ Supabase Mumbai live + connectivity verified · ✅ Vercel connected ·
+  ⬜ **Add the 3 Supabase vars to Vercel** (deployed app still on seed fallback) · ⬜ **apply migration backlog**.
+- ✅ **P17** — Scaffold (Next 15 + Tailwind v3 + shadcn) — build green.
+- 🟡 **P18** — Design system / UI kit — base shipped; grows per module.
+- ✅ **P10** — Invoice format: client sent a real tax invoice → reverse-engineered (`docs/INVOICE_SPEC.md`).
+  Tax/HSN/seller **client-confirmed** (CA gate dropped). 🔒 **M25 challan** still needs a challan-format sample.
+- 🟡 **P11** — Acceptance criteria per feature — still an open client ask (`docs/CLIENT_QUESTIONS_ROUND3.md`).
 
 ## MVP modules (M)
 
 ### Aman's lane
-- 🟡 **UI Kit** (M04 / P18) — responsive `AppShell`, `StatusBadge`, `KpiCard`,
-  `QtyStepper`, `PageHeader`, 14 shadcn primitives (+chart), showcase at `/kit`.
-  ⬜ remaining: form patterns, empty / loading / no-network states.
-- ✅ **SKU Catalog** (M10) — 46 canonical SKUs (cleaned from 52), **canonical name
-  resolver** (`resolveSku`, 10 vitest tests green), responsive screen at `/catalog`.
-  ✅ **DB persistence** — Supabase `skus` table (migration `0001`: RLS + grants +
-  `updated_at` trigger), seeded with all 46; `/catalog` reads it live
-  (`getSkus()` → DB, seed fallback).
-  ✅ **Add/edit/deactivate UI** (server actions + Sheet form; merged via PR #1).
-  🟡 **Tax/commercial fields** (`feat/catalog-tax-invoice-spec`, 2026-06-30) — `hsn`,
-  `taxSlabPct`, `cessPct`, `mrp`, `unitsPerCase` wired end-to-end (type, accessor, actions,
-  form, Tax column + KPI on `/catalog`). **42/46 SKUs GST-classified** from researched
-  post-Sept-2025 rates (40% carbonated/energy · 5% juice/water · 18% soda · cess 0;
-  table + sources in `docs/INVOICE_SPEC.md` §3a). **Client-confirmed correct (2026-06-30).** Billing
-  entity = **Falcon Enterprises** (confirmed). ⬜ remaining: CA sign-off; identify
-  "Mix"/"Power UP"; reconcile rates vs Hardik's live migration (Soda/Jeera); MRP + units/case (client).
-- ✅ **Owner Dashboard** (M30–31) — `/dashboard`: KPI row + Sales-by-route chart +
-  Top SKUs + reconciliation placeholder. Read-only, from seed.
-  ⬜ remaining: live aggregates (after more tables) + real reconciliation (Hardik).
+- 🟡 **UI Kit** (M04 / P18) — `AppShell`, `StatusBadge`, `KpiCard`, `QtyStepper`, `PageHeader`,
+  `FormField`, empty/loading/error/offline states, shadcn primitives; showcase `/kit`. ⬜ remaining: minor form patterns.
+- ✅ **SKU Catalog** (M10) — 46 canonical SKUs + `resolveSku` resolver (10 tests), Supabase-persisted,
+  add/edit/deactivate UI. ✅ **Tax/commercial fields** (`hsn`/`taxSlabPct`/`cessPct`/`mrp`/`unitsPerCase`)
+  wired end-to-end + **client Catalogue ingested live** (2026-07-01). ⬜ remaining: add ~14 new products;
+  reclassify **Gluco Energy → Juice** (tax already 5% live, category enum still 'Energy'); identify "Mix"/"Power UP".
+- ✅ **Sales-Capture UI** (#7 — client's 6/29 priority) — `/capture` mobile-first field flow on
+  `captureSale` backend (route + price-list → shop pick/inline-onboard+GPS → items/qty/rate + live
+  GST-inclusive totals + below-list flag → payment cash/UPI/credit → review → invoice). On `feat/aman-mvp-e2e`.
+- 🟡 **Owner Dashboard** (M30–31) — `/dashboard` KPI row + route chart + top SKUs, read-only from seed.
+  ⬜ remaining: **live tiles** (low-stock via `getLowStockSkus`, sales/invoices/van via accessors) + **role-scope (#24)**.
+- ⬜ **Auth login UI** (M05/M08/M09 UI half) — `/login` phone→OTP→verify to Hardik's contract; role-hide nav
+  (`allowedRoutesFor`); user-management screen. Confirm role→screen matrix (`docs/AUTH_PLAN.md`).
+- ⬜ **Dual-branding logo** on invoice header + app shell (from client `PPT_1.pptx`).
+- ✅ **Nav** — `/schemes` added (2026-07-01); all module links live.
 
-### Hardik's lane — transactional spine
-- ✅ **P13 / M01** — Phase-1 ER schema + core migrations (`feat/core-schema` → merged to
-  `dev`; **applied to Supabase 2026-06-28**, 16 tables live incl. `skus`). 15 new tables
-  in 6 timestamped migrations (`20260628070450`–`455`): core/auth
-  (`users`,`config`,`audit_log`), inventory (`stock_batches`,`stock_movements`),
-  `retailers`, sales (`price_list`,`orders`,`order_lines`,`invoices`,`invoice_lines`),
-  van (`van_loads`,`van_load_lines`,`reconciliations`), `collections`. Tables +
-  constraints only; all on the `skus`/0001 RLS+grant pattern.
-- ✅ **M02 / M03** — AuditService + config layer (merged PR #3; applied). `src/lib/audit/`
-  (`logAudit`, never-throws) + `src/lib/config/` (`getConfig`/`getAllConfig` + defaults) +
-  `config_seed` (5 rows live). 22 tests.
-- ✅ **M11 / M12** — receive stock + stock view (merged PR #4; `receive_stock()` RPC applied).
-  Atomic RPC + `src/lib/inventory/` + `/inventory` page. 32 tests.
-  ⬜ cross-lane: add `/inventory` to `src/lib/nav.ts` (Aman).
-- ✅ **M13** — FIFO deduct service (merged PR #5; `deduct_stock()` RPC applied). Atomic
-  oldest-expiry, all-or-nothing, row locks + `deductStock()` + pure `planFifo`. 39 tests.
-  Used by `confirmAndInvoice()` (M22).
-- 🟡 **M14 / M15** — low-stock accessor + inventory acceptance (`feat/inventory-alerts`, **PR open → `dev`**).
-  `getLowStockSkus()` (M14; dashboard tile = Aman) + `ledger.netFromMovements` + acceptance test
-  (receive→FIFO deduct→balance===ledger net, audited). 44 tests. ⬜ remaining: Aman review + merge;
-  Aman wire low-stock dashboard tile. **Inventory M10–M15 feature-complete.**
-- 🟡 **M18** — price-list rule (`feat/sales-pricelist`, PR open → `dev`). `src/lib/sales/`:
-  `resolvePrice` (retailer>route>base) + `priceFor()` + `setPrice` action. 55 tests. No migration
-  (uses M01 `price_list`). ⬜ remaining: Aman review; seed prices (client rate sheet).
-  M18–M23 order → invoice → **atomic** stock deduct · M24–M28 van load + challan +
-  **reconciliation** · M29 collections.
-- ⬜ M05–M09 Auth & RBAC (shared foundation — coordinate; Supabase Auth + server
-  session client + middleware. `src/lib/supabase/admin.ts` already in place.)
-- **Every new table:** RLS on + explicit `grant` to `service_role` (+ read role)
-  in the migration — see `CLAUDE.md` rule 5. Apply via Supabase SQL Editor.
+### Hardik's lane — transactional spine (all DONE + merged unless noted)
+- ✅ **M01** core schema (16 tables + RPCs, live) · ✅ **M02** audit · ✅ **M03** config.
+- ✅ **M11–M15** inventory: atomic receive + FIFO deduct + stock view + **dynamic low-stock (days-of-cover)** +
+  **wastage/adjust + count** + acceptance. `/inventory`.
+- ✅ **M18–M23** sales: price-list resolver (**two lists: retail/wholesale**), order punch (`/orders`),
+  atomic `next_invoice_no`, **`confirm_and_invoice` — invoice + FIFO deduct in ONE txn, GST-INCLUSIVE + exact** +
+  **below-list → pending_approval** + **HSN on invoice** + CGST/SGST split. `/invoices/[id]`.
+- ✅ **M24–M28** van: atomic `load_van`, `record_returns`, `reconcileVanLoad` (+ **tiered tolerances**). `/vans`, `/vans/[id]`.
+- ✅ **M29** collections + Payments panel. ✅ **M16/M17** retailers: CRUD + onboarding + **cash/credit type +
+  credit ledger + owner + GPS + role-gated approval**.
+- ✅ **Net-new (Round-2/3):** **dual seller by brand** (Falcon=Sure / Jaypee=Cola) · **brand credit guard** ·
+  **delivery challan view** · **schemes/freebies engine** (`/schemes`, buy-X-get-Y auto ₹0 lines) ·
+  **catalogue ingest** (tax/HSN/MRP/units).
+- ✅ **Auth backend (M05–M07):** SSR session client + `middleware.ts` (dormant via `NEXT_PUBLIC_AUTH_ENABLED`) +
+  `getSessionUser`/`requireRole` + `rbac.ts` + OTP actions.
+- 🔒 **M25 challan PDF** — needs a client challan-format sample (challan *view* built).
 
-## Running now
-`npm run dev` → `/` · `/dashboard` (KPIs + route chart) · `/catalog` (46 SKUs from
-Supabase, search + filter) · `/kit`. Responsive on phone + laptop.
-`npm test` → 10 passing (catalog resolver). `npm run build` → green
-(`/catalog` is dynamic / server-rendered; the rest static).
-`node scripts/check-supabase.mjs` → connectivity check ·
-`npx --yes tsx scripts/seed-skus.ts` → re-seed SKUs (idempotent).
+### Shared / joint
+- ⬜ **M08/M09** user-management screen + role-gated acceptance (Aman UI + Hardik `updateUserRole` action).
+- ⬜ **Go-live for auth:** SMS OTP provider (client) + staff list (client) + flip `NEXT_PUBLIC_AUTH_ENABLED`.
+
+## Migration backlog — APPLY before live E2E (see `docs/MIGRATIONS.md`)
+Marked `_pending_` in the ledger (Supabase SQL Editor, in order):
+1. `20260630134832_invoice_inclusive_tax_hsn.sql` — GST-inclusive money path + `invoice_lines.hsn` + Soda→18%.
+2. `20260630140020_pricing_approval.sql` — `order_lines.list_price/discount_pct` · `order_status +pending_approval` · `price_list.list_type` · `retailers.customer_category`.
+3. `20260630141226_retailer_credit_onboarding.sql` — `retailers.customer_type/credit_limit/owner_name/shop_photo_path`.
+4. `20260630142741_adjust_stock_fn.sql` — `adjust_stock()` (wastage/count).
+5. `20260701124019_recon_tiers.sql` — tiered reconciliation tolerances. *(not yet in the ledger)*
+6. `20260701130612_schemes.sql` — schemes table. *(not yet in the ledger)*
+
+> `supabase/_apply_30thJune.sql` consolidates items 1–4 (paste once). Items 5–6 apply separately.
+> **Until applied, `/capture`, approval, credit, adjust, and `/schemes` will error at runtime.**
+
+## Running now (needs `.env.local` + migrations for live data)
+`npm run dev` → `/dashboard /capture /catalog /inventory /orders /vans /invoices /retailers /schemes /kit`.
+`npm test` → **120 passing** · `npm run build` → green (14 routes) · `node scripts/check-supabase.mjs` → connectivity.
+`npm run seed:demo` fills a demo flow · `npx tsx scripts/seed-opening-stock.ts` loads June-1 stock.
 
 ## Next up
-1. **Add Supabase env vars to Vercel**, then open the PR → Vercel **preview** →
-   review → merge to `dev`.
-2. **Auth & RBAC** (shared foundation, coordinate with Hardik): Supabase Auth +
-   server session client (`server.ts`) + session middleware + login via server routes.
-3. Then: finish UI Kit states; first transactional tables (Hardik) follow the same
-   migration + grant pattern.
+1. **Apply the migration backlog** (Hardik / SQL Editor) + **put `.env.local` keys** in the run env → unblock live E2E.
+2. **Walk the driver + retailer journeys** step-by-step (`docs/WORKLOG.md` test plan) against a seeded DB.
+3. **Auth login UI** (so drivers actually sign in) → **dashboard live tiles + role-scope**.

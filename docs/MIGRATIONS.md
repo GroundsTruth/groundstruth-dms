@@ -34,6 +34,8 @@ coordinated + PR-reviewed by the other person.
 | `20260630141226_retailer_credit_onboarding.sql` | `retailers` (+customer_type/credit_limit/owner_name/shop_photo_path) | _pending_ | Hardik | Batch 3 #6/#11/#12/#22. |
 | `20260630142741_adjust_stock_fn.sql` | `adjust_stock()` fn | _pending_ | Hardik | Batch 4 #15/#16 wastage/count. |
 | _(consolidated)_ | all 4 above | _pending_ | Hardik | **`supabase/_apply_30thJune.sql`** = paste-once for the whole branch. |
+| `20260701124019_recon_tiers.sql` | `config` (recon tiers) | _pending_ | Hardik | Round-3: tiered reconciliation tolerances (replaces single flat `recon_tolerance`). |
+| `20260701130612_schemes.sql` | `schemes` | _pending_ | Hardik | Round-3: schemes/freebies engine (buy-X-get-Y). RLS + grants. Backs `/schemes` + auto-freebie ₹0 lines. |
 
 **Apply order (Hardik, once `.env.local` keys are in):** paste `070450`→`070455` in
 sequence in the Supabase SQL Editor (FK-ordered). Each is idempotent — safe to re-run.
