@@ -37,6 +37,7 @@ export type VanLoadDetail = {
     skuId: string;
     code: string;
     name: string;
+    rate: number; // base retail price (for the challan)
     qtyOut: number;
     qtyReturned: number;
     remaining: number;
@@ -67,10 +68,17 @@ export async function getVanLoad(id: string): Promise<VanLoadDetail | null> {
     }
 
     const skuIds = Array.from(new Set((lines ?? []).map((l) => l.sku_id)));
-    const { data: skus } = skuIds.length
-      ? await supabase.from("skus").select("id,code,name").in("id", skuIds)
-      : { data: [] as { id: string; code: string; name: string }[] };
-    const skuById = new Map((skus ?? []).map((s) => [s.id, { code: s.code, name: s.name }]));
+    const [skusRes, priceRes] = await Promise.all([
+      skuIds.length
+        ? supabase.from("skus").select("id,code,name").in("id", skuIds)
+        : Promise.resolve({ data: [] as { id: string; code: string; name: string }[] }),
+      skuIds.length
+        ? supabase.from("price_list").select("sku_id,price").in("sku_id", skuIds)
+            .is("retailer_id", null).is("route", null).eq("list_type", "retail").eq("is_active", true)
+        : Promise.resolve({ data: [] as { sku_id: string; price: number }[] }),
+    ]);
+    const skuById = new Map((skusRes.data ?? []).map((s) => [s.id, { code: s.code, name: s.name }]));
+    const rateById = new Map((priceRes.data ?? []).map((p) => [p.sku_id, Number(p.price)]));
 
     return {
       id: load.id,
@@ -88,6 +96,7 @@ export async function getVanLoad(id: string): Promise<VanLoadDetail | null> {
           skuId: l.sku_id,
           code: sku.code,
           name: sku.name,
+          rate: rateById.get(l.sku_id) ?? 0,
           qtyOut,
           qtyReturned,
           remaining: qtyOut - qtyReturned,

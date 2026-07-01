@@ -11,6 +11,7 @@ export default async function CatalogPage() {
   const skus = await getSkus({ includeInactive: true });
   const active = skus.filter((s) => s.isActive !== false);
   const priced = active.filter((s) => s.ratePerCase != null).length;
+  const taxed = active.filter((s) => s.taxSlabPct != null).length;
   const cats = categoriesOf(active);
 
   return (
@@ -20,7 +21,7 @@ export default async function CatalogPage() {
         subtitle="Cleaned from the Jaypee master list — the canonical product list the whole system joins on."
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <KpiCard label="SKUs" value={String(active.length)} accent />
         <KpiCard
           label="Priced"
@@ -31,6 +32,15 @@ export default async function CatalogPage() {
           label="Needs rate"
           value={String(active.length - priced)}
           sub={<StatusBadge tone="warn">from client</StatusBadge>}
+        />
+        <KpiCard
+          label="Tax set"
+          value={String(taxed)}
+          sub={
+            <StatusBadge tone={taxed === active.length ? "ok" : "warn"}>
+              {taxed === active.length ? "HSN/GST" : "awaiting CA"}
+            </StatusBadge>
+          }
         />
         <KpiCard label="Categories" value={String(cats.length)} />
       </div>

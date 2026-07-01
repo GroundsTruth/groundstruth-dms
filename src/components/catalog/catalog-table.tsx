@@ -27,6 +27,26 @@ function rupees(n: number) {
   return "₹" + n.toLocaleString("en-IN");
 }
 
+/** "GST 5%" / "GST 28% +12% cess", or null when the tax slab isn't set yet. */
+function taxLabel(s: Sku): string | null {
+  if (s.taxSlabPct == null) return null;
+  const cess = s.cessPct != null && s.cessPct > 0 ? ` +${s.cessPct}% cess` : "";
+  return `GST ${s.taxSlabPct}%${cess}`;
+}
+
+function TaxCell({ s }: { s: Sku }) {
+  const tax = taxLabel(s);
+  if (!s.hsn && !tax) {
+    return <span className="text-muted-foreground">—</span>;
+  }
+  return (
+    <div className="leading-tight">
+      {s.hsn ? <span className="font-mono text-xs">{s.hsn}</span> : null}
+      {tax ? <p className="text-xs text-muted-foreground">{tax}</p> : null}
+    </div>
+  );
+}
+
 function StatusCell({ s }: { s: Sku }) {
   if (s.isActive === false) return <StatusBadge tone="neutral">Inactive</StatusBadge>;
   if (s.ratePerCase != null) return <StatusBadge tone="ok">Priced</StatusBadge>;
@@ -228,6 +248,7 @@ export function CatalogTable({
                     <TableHead>Category</TableHead>
                     <TableHead>Pack</TableHead>
                     <TableHead className="text-right">Rate/case</TableHead>
+                    <TableHead>HSN / Tax</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="w-20 text-right">
                       <span className="sr-only">Actions</span>
@@ -249,6 +270,9 @@ export function CatalogTable({
                         ) : (
                           <span className="text-muted-foreground">—</span>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        <TaxCell s={s} />
                       </TableCell>
                       <TableCell>
                         <StatusCell s={s} />
@@ -278,6 +302,13 @@ export function CatalogTable({
                       <span className="font-mono">{s.code}</span> · {s.category} ·{" "}
                       {s.packLabel}
                     </p>
+                    {s.hsn || taxLabel(s) ? (
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {s.hsn ? <span className="font-mono">{s.hsn}</span> : null}
+                        {s.hsn && taxLabel(s) ? " · " : null}
+                        {taxLabel(s)}
+                      </p>
+                    ) : null}
                     <div className="mt-1.5">
                       <StatusCell s={s} />
                     </div>

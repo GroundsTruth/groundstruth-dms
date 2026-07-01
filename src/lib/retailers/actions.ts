@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAudit } from "@/lib/audit/service";
 import { validateRetailer, normalizePhone, type RetailerInput } from "./logic";
+import { getSessionUser, requireRole } from "@/lib/auth/session";
 
 /**
  * Retailer onboarding (M16/M17) — server actions. Create/update with light validation;
@@ -16,6 +17,7 @@ export type RetailerActionResult = { ok: true; id: string } | { ok: false; error
 function toRow(input: RetailerInput) {
   return {
     name: input.name.trim(),
+    owner_name: input.ownerName?.trim() || null,
     shop_name: input.shopName?.trim() || null,
     address: input.address?.trim() || null,
     phone: input.phone ? normalizePhone(input.phone) : null,
@@ -23,6 +25,10 @@ function toRow(input: RetailerInput) {
     route: input.route?.trim() || null,
     lat: input.lat ?? null,
     lng: input.lng ?? null,
+    customer_type: input.customerType ?? "cash",
+    customer_category: input.customerCategory ?? "retail",
+    credit_limit: input.creditLimit ?? 0,
+    shop_photo_path: input.shopPhotoPath ?? null,
   };
 }
 
@@ -31,9 +37,11 @@ export async function createRetailer(input: RetailerInput): Promise<RetailerActi
   if (invalid) return { ok: false, error: invalid };
   try {
     const supabase = createAdminClient();
+    // #11: cash customers auto-approve; credit customers need sign-off.
+    const approval_status = (input.customerType ?? "cash") === "cash" ? "approved" : "pending";
     const { data, error } = await supabase
       .from("retailers")
-      .insert({ ...toRow(input), approval_status: "pending" })
+      .insert({ ...toRow(input), approval_status })
       .select("id")
       .single();
     if (error || !data) {
@@ -68,9 +76,13 @@ export async function updateRetailer(id: string, input: RetailerInput): Promise<
   }
 }
 
-/** Approve a pending retailer, or set back to pending (M17 approval rule). */
+/** Approve a pending retailer, or set back to pending (M17 approval rule).
+ *  #23: gated to owner/warehouse. While auth is dormant (no session), it's allowed; once
+ *  AUTH_ENABLED + a session exists, a non-owner/warehouse caller is rejected. */
 export async function setRetailerApproval(id: string, approved: boolean): Promise<RetailerActionResult> {
   try {
+    const user = await getSessionUser();
+    if (user) requireRole(user, ["owner", "warehouse"]);
     const supabase = createAdminClient();
     const status = approved ? "approved" : "pending";
     const { error } = await supabase.from("retailers").update({ approval_status: status }).eq("id", id);

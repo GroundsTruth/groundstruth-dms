@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAudit } from "@/lib/audit/service";
-import { getConfig } from "@/lib/config/data";
 import { computeReconciliation, type ReconcileResult } from "./reconcile-logic";
 
 /**
@@ -70,18 +69,13 @@ export async function reconcileVanLoad(vanLoadId: string): Promise<ReconcileVanR
       }
     }
 
-    const tol = await getConfig("recon_tolerance"); // { amount, pct }
-    const qtyTolerance = Math.ceil((qtyOut * (tol.pct ?? 0)) / 100);
-    const cashTolerance = tol.amount ?? 0;
-
+    // Tiered tolerances are hardcoded per the client's 2026-07-01 spec (in reconcile-logic).
     const result = computeReconciliation({
       qtyOut,
       qtyReturned,
       soldInvoiced,
       cashExpected,
       cashCollected,
-      qtyTolerance,
-      cashTolerance,
     });
 
     const { error: upErr } = await supabase.from("reconciliations").upsert(
@@ -133,15 +127,21 @@ export async function getReconciliation(vanLoadId: string): Promise<Reconciliati
       .eq("van_load_id", vanLoadId)
       .maybeSingle();
     if (error || !data) return null;
+    const qtyOut = Number(data.qty_out);
+    const variance = Number(data.variance);
+    const cashExpected = Number(data.cash_expected);
+    const cashVariance = Number(data.cash_variance);
     return {
-      qtyOut: Number(data.qty_out),
+      qtyOut,
       qtyReturned: Number(data.qty_returned),
       qtySold: Number(data.qty_sold),
-      variance: Number(data.variance),
-      cashExpected: Number(data.cash_expected),
+      variance,
+      variancePct: qtyOut > 0 ? Math.round((Math.abs(variance) / qtyOut) * 10000) / 100 : 0,
+      cashExpected,
       cashCollected: Number(data.cash_collected),
-      cashVariance: Number(data.cash_variance),
-      status: data.status as "ok" | "flagged",
+      cashVariance,
+      cashVariancePct: cashExpected > 0 ? Math.round((Math.abs(cashVariance) / cashExpected) * 10000) / 100 : 0,
+      status: data.status as "ok" | "warn" | "critical",
       reconciledAt: data.reconciled_at,
     };
   } catch (err) {

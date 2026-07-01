@@ -29,6 +29,11 @@ coordinated + PR-reviewed by the other person.
 | `20260628110658_seed_provisional_tax.sql` | `skus` (tax cols) + `config` (seller) | 2026-06-28 | Hardik | M21. PROVISIONAL GST/cess by category (aerated 28%+12%, water 18%, juice 12%); fills nulls only. Seeds `seller` + `tax_provisional` config. |
 | `20260628110659_confirm_and_invoice_fn.sql` | `confirm_and_invoice()` fn | 2026-06-28 | Hardik | M22. **The money path.** Atomic: `next_invoice_no` + invoice + lines + FIFO `deduct_stock` + tax + order→invoiced, ONE txn, full rollback on shortfall. `execute` to `service_role`. |
 | `20260629150401_fix_provisional_tax_40_5.sql` | `skus` (tax cols) | 2026-06-29 | Hardik | Correct provisional GST per proposal: aerated 40%, water+juice 5% (cess 0). Supersedes 28%+12% from `110658`. Applied live (UPDATE). Still pending CA confirm. |
+| `20260630134832_invoice_inclusive_tax_hsn.sql` | `invoice_lines` (+hsn), `confirm_and_invoice()`, `skus` (Soda) | _pending_ | Hardik | BUILD_AUDIT #1/#2/#3/#8: **GST-inclusive** `confirm_and_invoice` (mirrors `invoice-tax.ts`); `invoice_lines.hsn` snapshot; Soda→18%. Soda already applied live; **apply the alter+function in SQL Editor**. |
+| `20260630140020_pricing_approval.sql` | `order_lines` (+list_price/discount), `order_status` (+pending_approval), `price_list` (+list_type), `retailers` (+customer_category) | _pending_ | Hardik | Batch 2 #4/#5/#9/#21. |
+| `20260630141226_retailer_credit_onboarding.sql` | `retailers` (+customer_type/credit_limit/owner_name/shop_photo_path) | _pending_ | Hardik | Batch 3 #6/#11/#12/#22. |
+| `20260630142741_adjust_stock_fn.sql` | `adjust_stock()` fn | _pending_ | Hardik | Batch 4 #15/#16 wastage/count. |
+| _(consolidated)_ | all 4 above | _pending_ | Hardik | **`supabase/_apply_30thJune.sql`** = paste-once for the whole branch. |
 
 **Apply order (Hardik, once `.env.local` keys are in):** paste `070450`→`070455` in
 sequence in the Supabase SQL Editor (FK-ordered). Each is idempotent — safe to re-run.

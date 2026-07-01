@@ -52,6 +52,24 @@ Lane rule: **don't edit Hardik's folders** (`src/lib/{inventory,sales,van,collec
 
 ## YOUR lane — build these (priority order)
 
+> ⭐ **Updated 2026-07-01 after the client's Round-2/3 answers.** Hardik built a lot more since
+> the first kickstart: **dual seller by brand, brand credit, delivery challan, schemes engine,
+> catalogue ingest (tax/HSN/MRP/units live)**. Your NEW items are #0 below; the rest still stand.
+
+### 0. NEW from client Round-2/3 (2026-07-01) 🔴
+- **Sales-Capture UI (#7 — the client's stated priority).** One screen: driver/van → shop
+  (pick or **inline-onboard**) → SKU/qty/**rate/discount** → **payment mode** → preview → invoice.
+  **Backend is ready** — call `captureSale()` in `src/lib/sales/capture.ts` (it already runs the
+  order → below-list approval → invoice → payment, plus the **brand-credit guard** and **auto-freebies**).
+  You build the screen + preview.
+- **Dual-branding logo.** Add the distributor logo (from the client's `PPT_1.pptx`) to the invoice
+  header (`src/components/invoices/invoice-view.tsx`) + the app shell. The invoice already prints the
+  right **entity name/GSTIN** (Falcon vs Jaypee) per product — just add the logo image.
+- **Nav:** add **`/schemes`** to `src/lib/nav.ts` (admin buy-X-get-Y screen shipped by Hardik).
+- **Catalog:** add the **~14 new products** from the updated Catalogue (extra cans/variants) as SKUs +
+  `seed-data.ts`; and **reclassify Gluco Energy → Juice** (its tax is already 5% live, but the category
+  enum still says 'Energy'). Client-confirmed. See `docs/CLIENT_QUESTIONS_ROUND3.md`.
+
 ### 1. Auth UI (unblocks M05–M09 — highest leverage) 🔴
 Hardik's backend is waiting on your screen. Build to the contract in `docs/AUTH_PLAN.md`:
 - **`src/app/login/**`** — phone input → `requestOtp(phone)` → OTP input → `verifyOtp(phone, token)` → redirect `/dashboard`.
@@ -84,7 +102,12 @@ Finish whatever's pending in your kit (you own `src/components/{ui,kit,layout}/*
 `FormField`, `EmptyState`, etc. — keep them stable (their props are a contract now).
 
 ### 4. Catalog tax/MRP columns (M10 remainder) 🟡
-When the client sends MRP/HSN/units-per-case, surface them on `/catalog` (columns exist on `skus`).
+**MRP/HSN/GST/units-per-case are now ingested live** (from the client Catalogue, 2026-07-01). Just
+make sure `/catalog` surfaces them (columns on `skus`). Add the 14 new products (see #0).
+
+### 5. Dashboard role-scope (#24) 🟡
+Reps must see only their own route + no whole-business revenue. `rbac.ts` grants `/dashboard` to
+`driver_rep`; scope the dashboard's data by the session user's role/route before wiring live aggregates.
 
 ---
 

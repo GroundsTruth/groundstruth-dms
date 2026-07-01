@@ -13,8 +13,8 @@ without passing kickstart prompts back and forth.
 ## 🚧 In flight — claim before you start (this is how we avoid collisions)
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
-| Aman | — | (nothing active — `feat/ui-kit-states` merged via PR #1) | UI Kit · Catalog · Dashboard · foundation | — |
-| Hardik | — | **Lane complete & merged** (spine M01–M29 + retailers M16/M17 + auth-backend M05–M07). Paused. Remaining = Aman UI / client data — see `docs/MISSING_INPUTS.md` §B. | transactional spine · retailers · auth backend | — |
+| Aman | — | (catalog-tax/INVOICE_SPEC merged, PR #25) — **next:** Sales-Capture UI (#7) · dashboard live tiles · auth login UI · #18/#20/#24 | UI Kit · Catalog · Dashboard · auth UI | — |
+| Hardik | `30thJunechanges` | **Build-audit (24 gaps) + client Round-2/3 done** — dual seller, brand credit, challan, schemes engine, catalogue ingest, tiered recon. Ready to merge. | `src/lib/{sales,retailers,inventory,van,schemes,config}/**` · UI · migrations | 2026-07-01 |
 
 > **Aman — starting fresh? Read `docs/AMAN_KICKSTART.md` first.** It has everything Hardik
 > built (done + merged), your lane (Auth UI → Dashboard tiles → UI kit), the assumptions we
@@ -23,14 +23,20 @@ without passing kickstart prompts back and forth.
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
 |-----|-----|-----------|--------|
-| **Aman** | Add **`/inventory`** to the sidebar nav (`src/lib/nav.ts` — your lane). Hardik shipped the page on `feat/inventory-receive` but didn't touch your file. Label "Inventory", after Catalog. | Hardik · 2026-06-28 | ⬜ open |
-| **Aman** | Wire **low-stock tile** on Owner Dashboard (M30). Accessor ready: `getLowStockSkus()` in `src/lib/inventory/data.ts` (returns `SkuStock[]` at/below threshold). Just render the count/list — Hardik won't touch `src/app/(app)/dashboard/**`. | Hardik · 2026-06-28 | ⬜ open |
-| **Aman** | Add **`/orders`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/sales-orders`. Label "Orders", after Inventory. | Hardik · 2026-06-28 | ⬜ open |
-| **Aman** | Add **`/vans`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/van-load`. Label "Van loads", after Orders. | Hardik · 2026-06-28 | ⬜ open |
+| **Aman** | Add **`/inventory`** to the sidebar nav (`src/lib/nav.ts` — your lane). Hardik shipped the page on `feat/inventory-receive` but didn't touch your file. Label "Inventory". | Hardik · 2026-06-28 | ✅ done (all nav links live via seed-and-nav) |
+| **Aman** | Wire **low-stock tile** on Owner Dashboard (M30). Accessor ready: `getLowStockSkus()` in `src/lib/inventory/data.ts` (returns `SkuStock[]` at/below threshold). Render the count/list (low-stock is now DYNAMIC days-of-cover). Hardik won't touch dashboard. | Hardik · 2026-06-28 | ⬜ open |
+| **Aman** | Add **`/orders`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/sales-orders`. Label "Orders". | Hardik · 2026-06-28 | ✅ done (seed-and-nav) |
+| **Aman** | Add **`/vans`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/van-load`. Label "Van loads". | Hardik · 2026-06-28 | ✅ done (seed-and-nav) |
 | **Aman** | ~~Nav missing `/orders` + `/retailers`; `/collections` dead link~~ → **DONE by Hardik with owner's OK** (`feat/seed-and-nav`): added Orders + Retailers, removed dead Collections link (collections live on the invoice Payments panel). Heads-up: I touched `src/lib/nav.ts` (your file) — revert/adjust freely. | Hardik · 2026-06-28 | ✅ done |
 | **Aman** | **Retailer lane (M16/M17) was "Both" — Hardik built it** (merged). Reusable for per-retailer pricing + named-shop invoices later. | Hardik · 2026-06-28 | ✅ done (FYI) |
 | **Aman** | **AUTH/RBAC — review `docs/AUTH_PLAN.md`.** Hardik built the backend (`feat/auth-backend`): `getSessionUser`, `requireRole`, OTP actions (`requestOtp`/`verifyOtp`/`signOut`), middleware. **You build:** `/login` + OTP screen to that contract, and role-hide nav (`allowedRoutesFor(role)`). **Confirm the role→screen matrix** (covers your dashboard/catalog). | Hardik · 2026-06-28 | ⬜ open |
 | **Both** | **Go-live for auth:** flip `NEXT_PUBLIC_AUTH_ENABLED=true` (middleware is dormant till then) once login UI + SMS OTP provider (MISSING_INPUTS #12) are live + users seeded (#11). | Hardik · 2026-06-28 | ⬜ open |
+| **Hardik** | **Tax reconcile (provisional):** my GST research refines your category-level live rates — plain **Soda = 18%** (you set 40%), **Jeera RTD = 40%** (you left 'Other'=18%), and I added per-SKU **HSN codes** (your migration set rates only). Table + sources: `docs/INVOICE_SPEC.md` §3a. Agree, then apply to live. | Aman · 2026-06-30 | ✅ DONE (Hardik 6/30): Soda→18, Jeera→40, per-SKU HSN applied live via seed-skus |
+| **Hardik** | **Seller = Falcon Enterprises**, GSTIN `06AIMPB2225L2ZE` (confirmed by Aman, from the sample invoice). Set in config.seller live. | Aman · 2026-06-30 | ✅ DONE (Hardik 6/30) |
+| **Hardik** | **Invoice format unblocked** — client sent a real tax invoice → reverse-engineered in `docs/INVOICE_SPEC.md` (layout, GST-inclusive math, CGST/SGST-vs-IGST, numbering). Used for M21 inclusive invoice (Batch 1). M25 challan still needs a challan sample. | Aman · 2026-06-30 | ✅ DONE (Hardik 6/30) |
+| **Both** | **Re-seed HELD:** `scripts/seed-skus.ts` now carries per-SKU tax + is two-pass (non-destructive) but is **not run** — it would overwrite Hardik's live category rates. Run 6/30 (client confirmed correct) — per-SKU tax+HSN live. | Aman · 2026-06-30 | ✅ DONE (Hardik 6/30) |
+| **Hardik** | 🔴 **BUILD AUDIT (2026-06-30) → `docs/BUILD_AUDIT_2026-06-30.md`** — 24 confirmed gaps vs the client's WhatsApp answers/Catalogue (file:line + fixes). Spine items before real billing: **GST math is EXCLUSIVE, must be INCLUSIVE** in BOTH `invoice-tax.ts` AND the `confirm_and_invoice` RPC (the tests assert the wrong math) (#1,#2); below-list **admin-approval** (#5); **credit ledger** (#6); two **price lists** + remove dead `discount_ceiling` (#9,#10); retailer **cash/credit + photo + GPS-capture + owner-name + role-gated approval** (#11,#12,#13,#22,#23); **dynamic low-stock + wastage/adjustment + count screen** (#14,#15,#16); **seller-by-brand + HSN on invoice** (#8,#17); **Soda→18% corrective migration + NULL-guard** (#3,#19). **Plus net-new scope S1–S5** (admin panel · schemes · wholesale channel · dispatch edit-lock · rep targets). | Aman · 2026-06-30 | 🟡 24 gaps DONE (Batches 1–5, this PR); S1–S5 net-new = later |
+| **Both** | 🟠 **Phase-1 "Sales Capture" flow (client's 6/29 priority)** — one driver→shop(+inline onboard)→SKU/qty/**rate/discount**→**payment mode**→preview→invoice journey. Needs Hardik: line-level rate/discount + payment + inline-onboard in schema/actions (#4,#7); Aman: the capture UI. | Aman · 2026-06-30 | 🟡 Hardik backend DONE (`captureSale`); Aman builds the screen |
 
 **Rules that keep us conflict-free:**
 - Edit only the folders your lane owns (`COORDINATION.md`). No overlap → no conflicts.
@@ -43,6 +49,96 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-07-01 · Hardik + Claude · client Round-2/3 build (`30thJunechanges`)
+Client answered Round-2 + sent updated Catalogue, redesigned challan, dual driver dir, logo, 2 invoices.
+Assessment + 6 small open items → `docs/CLIENT_QUESTIONS_ROUND3.md`. Built (my lane):
+- **Catalogue ingest** — GST/HSN/MRP/units/prices from the client Catalogue applied live (37 SKUs);
+  **corrects Soda 18→5%, Gluco 40→5% (Juice)**. 14 catalogue rows are NEW products (for Aman).
+- **Tiered reconciliation** — client thresholds (cash <0.1/0.1–0.3/>0.3, stock <0.2/0.2–0.6/>0.6) → ok/warn/critical.
+- **Dual seller by brand** — invoice picks Jaypee (CSD/Soda) vs Falcon (Water/Juice/Energy) by category;
+  both entities in config (Jaypee `06AIMPB2225L2ZE` / Falcon `06FVEPS8609PIZN`). Energy/Juice/Soda split = DEFAULT (Q1).
+- **Brand credit** — Campa Cola (Jaypee) no-credit; Campa Sure (Falcon) ₹1500 cap, gated in createOrder.
+- **Delivery challan (M25)** — printable on `/vans/[id]` to the redesigned layout.
+- **Schemes engine (S2)** — schemes table + `applySchemes` (buy-X-get-Y, cross-SKU) + `/schemes` admin +
+  ₹0 freebie lines auto-added on orders. **captureSale** already wired (inline onboard→order→invoice→pay).
+- **120 tests green.** Apply `supabase/_apply_01July.sql` (recon tiers + schemes) in SQL Editor.
+
+**→ AMAN handoff (your remaining work):**
+- **#7 Sales-Capture UI** — single screen; backend `captureSale()` ready (now includes credit guard + freebies).
+- **`/schemes` nav link** in `src/lib/nav.ts` (page shipped). Also the earlier nav is fine.
+- **Dual-branding LOGO** — add the distributor logo (PPT_1) to the invoice header (`invoice-view.tsx`) + app shell.
+- **14 new catalogue products** — add as SKUs + `seed-data.ts` (cans/variants); reclassify **Gluco category → Juice**
+  (tax already 5% live; enum still 'Energy').
+- **Dashboard live tiles** (M30/M31) + **#24 role-scope dashboard** (reps see own route only) + **Auth login UI** (dormant `AUTH_ENABLED`).
+- Test OTP `1234` — wire into your login screen (verify path; auth is dormant till go-live).
+
+### 2026-06-30 · Hardik + Claude · build-audit Batches 2–5 + CA confirmed (`30thJunechanges`)
+**Client confirmed the tax/HSN/seller data is correct → CA sign-off is NO LONGER a gate.**
+Set `config.seller = Falcon Enterprises` (GSTIN `06AIMPB2225L2ZE`) + `tax_provisional=false` live;
+removed the invoice "provisional" banner; "pending CA / provisional" wording dropped across docs.
+- **Batch 2 — pricing/approval:** order_lines `list_price`+`discount_pct`; punch form Rate input;
+  below-list → `pending_approval` + approve/reject; `confirm_and_invoice` gated; `price_list.list_type`
+  (retail/wholesale) + `retailers.customer_category`; removed dead `discount_ceiling`. (`20260630140020`)
+- **Batch 3 — retailer:** cash/credit `customer_type` (cash auto-approves), `credit_limit`, derived
+  `getRetailerCredit` (#6), `owner_name`, GPS capture on save, `shop_photo_path` (field-app upload later),
+  **role-gated approval** (#23). (`20260630141226`)
+- **Batch 4 — inventory:** dynamic low-stock (days-of-cover < `low_stock_days`), `adjust_stock` RPC
+  (wastage/expiry/count) + `/inventory` count panel. (`20260630142741`)
+- **Batch 5 — sales capture:** `captureSale` backend (inline-onboard → order(rate/discount) → invoice →
+  payment, one call) for Aman's capture screen. #17 two-sellers **dropped** (Falcon is the single confirmed entity).
+- **109 tests green**, typecheck + build clean. **4 migrations to apply** — consolidated SQL handed to Hardik.
+
+**→ AMAN, pick up next (build-audit items in your lane):**
+- **#7 Sales-Capture UI** — single screen (driver→shop/inline-onboard→SKU/qty/rate/discount→payment→preview).
+  Backend ready: `captureSale()` in `src/lib/sales/capture.ts`. **Client's stated priority.**
+- **#18 `brand` column on SKUs** (Campa Sure / Campa Cola) + seed; **#20 reclassify Gluco Energy → Juice 5%**
+  in `seed-data.ts`; **#24 dashboard role-scoping** (reps see only own route — `rbac.ts` already grants `/dashboard`).
+- Owner Dashboard live tiles (M30/M31) + Auth login UI still open (see `docs/AMAN_KICKSTART.md`).
+
+### 2026-06-30 · Hardik + Claude · build-audit Batch 1 — tax correctness (`30thJunechanges`)
+Working `docs/BUILD_AUDIT_2026-06-30.md` (Hardik-lane) + `docs/INVOICE_SPEC.md`. **Batch 1 = money correctness:**
+- **#1 GST is INCLUSIVE (TS engine):** `invoice-tax.ts` now extracts tax (`taxable = gross/(1+rate)`),
+  not adds it. Rewrote `invoice-tax.test.ts` to the client sample (70×₹120 incl 5% → taxable 8000, GST 400, total 8400).
+- **#2 Same fix in the money path (RPC):** migration `20260630134832` rewrites `confirm_and_invoice` to
+  mirror the inclusive math; `money-path.acceptance.test.ts` updated. UI ↔ DB agree.
+- **#3 Soda → 18%** (was 40%): corrective `update` in the migration + **applied live** (SKU018).
+- **#8 HSN on invoice:** `invoice_lines.hsn` column (migration) + RPC snapshots it + `/invoices/[id]` shows
+  the HSN column. Plus **CGST/SGST split** (intra-state; IGST once buyer state captured — §4).
+- **103 tests green**, typecheck + build clean.
+- ⏳ **Apply `20260630134832_invoice_inclusive_tax_hsn.sql`** in SQL Editor (alter + function; Soda already live).
+- ⚠️ Existing demo invoices (INV00001/2) keep their old exclusive snapshots — re-run `seed:demo` after applying for an inclusive one.
+- **Replies to Aman's asks:** #34 tax-reconcile → **Soda now 18% live**; per-SKU HSN/Jeera reconcile still pending your `seed-data.ts` source-of-truth (don't re-seed over my rates without agreeing). #38 audit → Batch 1 done; Batches 2–5 next.
+- **Next (me):** Batch 2 pricing/approval (#4 rate+discount on lines, #5 below-list approval, #9 two price lists, #10 kill discount_ceiling).
+
+### 2026-06-30 · Aman + Claude · Catalog tax fields + GST research + Invoice spec (`feat/catalog-tax-invoice-spec`)
+- **Client sample invoice arrived** (`Invoice-7210376259.pdf`) — the artefact MISSING_INPUTS #1 needed.
+  Reverse-engineered into **`docs/INVOICE_SPEC.md`**: exact layout, **GST-inclusive** tax math (worked
+  example), CGST/SGST-vs-IGST place-of-supply rule, numbering note. Unblocks M21 invoice + M25 challan.
+- **Catalog tax fields surfaced end-to-end (M10):** `hsn`/`taxSlabPct`/`cessPct`/`mrp`/`unitsPerCase` now in
+  the `Sku` type, accessor (`SKU_COLUMNS`), server-action validate/`toRow`, the add/edit Sheet, a Tax column
+  + a "Tax set" KPI on `/catalog`. (Columns already existed on `skus` — no migration.)
+- **Per-SKU GST/HSN researched & seeded (42/46):** multi-agent web research of the post-22-Sep-2025
+  "GST 2.0" rates, adversarially verified with citations (`INVOICE_SPEC.md` §3a). Carbonated + energy = 40%,
+  juice + water = 5%, plain soda = 18%, **cess 0**. "Mix"/"Power UP" left null (unidentifiable). **PROVISIONAL —
+  pending CA.** `seed-data.ts` now the seed-of-record for tax; `scripts/seed-skus.ts` made two-pass (non-destructive).
+- **Client decisions:** billing entity = **Falcon Enterprises** (GSTIN `06AIMPB2225L2ZE`); invoice numbering **deferred** to go-live.
+- **⚠️ Reconcile with Hardik** (cross-lane asks above): research refines his category-level live rates
+  (Soda 18 vs 40, Jeera 40 vs 18) + adds HSN. **Re-seed HELD** until agreed. Falcon → `config.seller` (his lane).
+- Branch cut **fresh off `dev`** (the earlier session ran on a 51-commit-stale branch; only additive work carried
+  over, stale doc edits dropped). **101 tests green**, typecheck + build clean.
+- Also added **`docs/CLIENT_QUESTIONNAIRE_2026-06-30.md`** (focused client follow-up).
+- **Client WhatsApp export analysed (2026-06-30):** the client answered the full Gap Checklist + sent the
+  product **Catalogue** (MRP/units/GST/HSN per SKU) + dev invoice (legal name **Jaypee Advertisers**, GSTIN
+  `06AIMPB2225L2ZE`). Key reveals: billing is **two trade-names by brand** (Falcon=Campa Sure, Jaypee=Campa
+  Cola); **rates strictly GST-inclusive**; **track individual shops** + GPS/photo onboarding; **batch/expiry +
+  strict FIFO**; low-stock = **<5 days of avg sales**; and a **6/29 scope pivot** to a "Ground-Level Sales
+  Capture" MVP first. Questionnaire updated to Round-2 (only open items).
+- **Build audit vs that context → `docs/BUILD_AUDIT_2026-06-30.md`:** 24 confirmed gaps (7 critical). Headline:
+  **GST computed EXCLUSIVE, must be INCLUSIVE** (engine + RPC + tests). Most are Hardik's spine (queued in
+  cross-lane asks). **Aman fixes applied:** Gluco Energy → Juice/5% (#20); Soda=18% already correct in seed (#3 data).
+- **Next (Aman):** await client's open items (questionnaire) + Hardik's spine fixes; then the joint **Phase-1
+  Sales-Capture UI**. (Auth UI / dashboard tiles still on the list per `AMAN_KICKSTART.md`.)
 
 ### 2026-06-28 · Hardik + Claude · Auth/RBAC backend (M05–M07) + plan (`feat/auth-backend`)
 - **Plan first:** `docs/AUTH_PLAN.md` — Supabase phone-OTP, file-ownership split (Hardik backend /

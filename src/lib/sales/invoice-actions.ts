@@ -17,6 +17,17 @@ export type ConfirmInvoiceResult =
 export async function confirmAndInvoice(orderId: string): Promise<ConfirmInvoiceResult> {
   try {
     const supabase = createAdminClient();
+
+    // #5: a below-list order must be approved before it can be invoiced.
+    const { data: ord } = await supabase
+      .from("orders")
+      .select("status")
+      .eq("id", orderId)
+      .maybeSingle();
+    if (ord?.status === "pending_approval") {
+      return { ok: false, error: "This order is below list price and needs admin approval first." };
+    }
+
     const { data, error } = await supabase.rpc("confirm_and_invoice", {
       p_order_id: orderId,
       p_actor: null,

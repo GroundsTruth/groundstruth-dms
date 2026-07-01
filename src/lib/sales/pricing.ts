@@ -6,6 +6,8 @@
  * are ignored. The price_list table (M01) feeds these rules; see ./data.ts.
  */
 
+export type PriceListType = "retail" | "wholesale";
+
 export type PriceRule = {
   skuId: string;
   retailerId: string | null;
@@ -13,12 +15,14 @@ export type PriceRule = {
   price: number;
   effectiveFrom: string; // ISO date
   isActive: boolean;
+  listType?: PriceListType; // audit #9; defaults to retail
 };
 
 export type PriceContext = {
   skuId: string;
   retailerId?: string | null;
   route?: string | null;
+  listType?: PriceListType; // which list (retail/wholesale) applies to this buyer
   asOf?: string; // ISO date; defaults to "today" via the caller
 };
 
@@ -56,10 +60,13 @@ export function resolvePrice(rules: PriceRule[], ctx: PriceContext): number | nu
 
   let best: { spec: number; effectiveFrom: string; price: number } | null = null;
 
+  const wantList = ctx.listType ?? "retail";
+
   for (const rule of rules) {
     if (!rule.isActive) continue;
     if (rule.skuId !== ctx.skuId) continue;
     if (rule.effectiveFrom > asOf) continue;
+    if ((rule.listType ?? "retail") !== wantList) continue; // #9: pick the right list
 
     const spec = specificity(rule, ctx);
     if (spec === 0) continue;

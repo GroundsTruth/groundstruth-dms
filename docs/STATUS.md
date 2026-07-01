@@ -34,7 +34,14 @@ agent-readable mirror — update it at the end of every session.
   ✅ **DB persistence** — Supabase `skus` table (migration `0001`: RLS + grants +
   `updated_at` trigger), seeded with all 46; `/catalog` reads it live
   (`getSkus()` → DB, seed fallback).
-  ⬜ remaining: add/edit UI; MRP/HSN/tax/cess/units-per-case (from client/CA).
+  ✅ **Add/edit/deactivate UI** (server actions + Sheet form; merged via PR #1).
+  🟡 **Tax/commercial fields** (`feat/catalog-tax-invoice-spec`, 2026-06-30) — `hsn`,
+  `taxSlabPct`, `cessPct`, `mrp`, `unitsPerCase` wired end-to-end (type, accessor, actions,
+  form, Tax column + KPI on `/catalog`). **42/46 SKUs GST-classified** from researched
+  post-Sept-2025 rates (40% carbonated/energy · 5% juice/water · 18% soda · cess 0;
+  table + sources in `docs/INVOICE_SPEC.md` §3a). **Client-confirmed correct (2026-06-30).** Billing
+  entity = **Falcon Enterprises** (confirmed). ⬜ remaining: CA sign-off; identify
+  "Mix"/"Power UP"; reconcile rates vs Hardik's live migration (Soda/Jeera); MRP + units/case (client).
 - ✅ **Owner Dashboard** (M30–31) — `/dashboard`: KPI row + Sales-by-route chart +
   Top SKUs + reconciliation placeholder. Read-only, from seed.
   ⬜ remaining: live aggregates (after more tables) + real reconciliation (Hardik).
