@@ -29,9 +29,9 @@ We're proceeding with the build on all confirmed points (summary at the bottom).
    Confirm: (a) freebies **deduct free stock** from inventory (we assume yes), and (b) is the
    free item ever at the **open-bottle** (loose piece) level, or always full cases?
 
-5. **New catalogue products.** Your updated Catalogue has ~14 items not in the original master
+5. **New catalogue products.** Your updated Catalogue has ~14 items not in the original list
    (extra cans/variants, e.g. CSD Can 185/330, Suncrush cans, Rasiki Mixed Fruit). Should we add
-   these as new SKUs now? (We've applied tax/MRP/price to the 37 that matched.)
+   these as new products now? (Tax/MRP/price are already applied to the items already on our list.)
 
 6. **Per-feature acceptance criteria** — anything specific you'll check before signing off each
    module (invoice, reconciliation, van load-out, credit)? Helps us hit "done" first time.
@@ -39,7 +39,6 @@ We're proceeding with the build on all confirmed points (summary at the bottom).
 ## ✅ Captured & building now (no action needed)
 - **Tax final** (from updated Catalogue): CSD/Energy = 40% · Water/Juice/**Soda** = 5% · cess 0;
   per-SKU HSN. **Gluco = Juice 5%**, **"Mix" = Suncrush Mixed Fruit (Juice 5%)**, Jeera = 40%.
-  (This corrects our earlier Soda-18% / Gluco-40%.)
 - **MRP + units-per-case + retail prices** ingested from the Catalogue.
 - **Missing prices** — admin punches them in when that stock lands (no blocker).
 - **Delivery challan** — matching the redesigned layout (Rate/Qty Out/Return/Qty Sale/Discount/Amount).
