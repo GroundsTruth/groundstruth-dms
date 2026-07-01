@@ -3,38 +3,20 @@ import { computeReconciliation } from "../reconcile-logic";
 
 /**
  * M28 acceptance — "variance beyond tolerance flags to owner (+ audit)."
- *
- * Scenario derived from the same figures the service reads: a van loaded 100, returned
- * 20 → 80 physically left the van. Invoices only account for 70 sold → 10 cases
- * unaccounted. With zero tolerance this MUST flag. With the configured tolerance it
- * must NOT flag when the gap is within it.
+ * Van loaded 100, returned 20 → 80 left; invoices account for only 70 → 10 unaccounted
+ * (10% of out) → CRITICAL. A small gap inside tolerance stays ok.
  */
-describe("M28 reconciliation acceptance: variance flags beyond tolerance", () => {
-  it("flags when stock that left the van isn't backed by invoices", () => {
-    const r = computeReconciliation({
-      qtyOut: 100,
-      qtyReturned: 20,
-      soldInvoiced: 70,
-      cashExpected: 7000,
-      cashCollected: 7000,
-      qtyTolerance: 0,
-      cashTolerance: 0,
-    });
+describe("M28 reconciliation acceptance: tiered variance flags", () => {
+  it("unaccounted stock beyond tolerance → critical", () => {
+    const r = computeReconciliation({ qtyOut: 100, qtyReturned: 20, soldInvoiced: 70, cashExpected: 7000, cashCollected: 7000 });
     expect(r.variance).toBe(10);
-    expect(r.status).toBe("flagged");
+    expect(r.status).toBe("critical");
   });
 
-  it("does not flag a small gap inside tolerance", () => {
-    const r = computeReconciliation({
-      qtyOut: 100,
-      qtyReturned: 20,
-      soldInvoiced: 78,
-      cashExpected: 7800,
-      cashCollected: 7800,
-      qtyTolerance: 5,
-      cashTolerance: 0,
-    });
-    expect(r.variance).toBe(2);
+  it("tiny gap inside tolerance → ok", () => {
+    const r = computeReconciliation({ qtyOut: 1000, qtyReturned: 20, soldInvoiced: 979, cashExpected: 7800, cashCollected: 7800 });
+    // physicalSold 980 vs 979 → variance 1 = 0.1% of out (< 0.2) → ok
+    expect(r.variance).toBe(1);
     expect(r.status).toBe("ok");
   });
 });
