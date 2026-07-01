@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/kit/page-header";
 import { StatusBadge, type StatusTone } from "@/components/kit/status-badge";
 import { ReturnsForm } from "@/components/vans/returns-form";
 import { ReconcilePanel } from "@/components/vans/reconcile-panel";
+import { ChallanView } from "@/components/vans/challan-view";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,7 @@ export default async function VanLoadDetailPage({
       />
 
       <ReturnsForm load={load} />
+      <ChallanView load={load} />
       <ReconcilePanel vanLoadId={load.id} existing={reconciliation} />
     </>
   );

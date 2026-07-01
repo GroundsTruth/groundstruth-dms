@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { invoiceSellerEntity } from "./seller";
 
 /**
  * Invoice read accessors (M21) — server-side, seed-safe. No nested joins.
@@ -88,7 +89,7 @@ export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
       return null;
     }
 
-    const [linesRes, orderRes, sellerRes, provRes] = await Promise.all([
+    const [linesRes, orderRes, jaypeeRes, falconRes, sellerRes] = await Promise.all([
       supabase
         .from("invoice_lines")
         .select("sku_id,hsn,qty,unit_price,tax_pct,tax_amount,cess_pct,cess_amount,line_total")
@@ -96,18 +97,22 @@ export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
       inv.order_id
         ? supabase.from("orders").select("route").eq("id", inv.order_id).maybeSingle()
         : Promise.resolve({ data: null }),
-      supabase.from("config").select("value").eq("key", "seller").maybeSingle(),
-      supabase.from("config").select("value").eq("key", "tax_provisional").maybeSingle(),
+      supabase.from("config").select("value").eq("key", "seller_jaypee").maybeSingle(),
+      supabase.from("config").select("value").eq("key", "seller_falcon").maybeSingle(),
+      supabase.from("config").select("value").eq("key", "seller").maybeSingle(), // legacy fallback
     ]);
 
     const lines = linesRes.data ?? [];
     const skuIds = Array.from(new Set(lines.map((l) => l.sku_id)));
     const { data: skus } = skuIds.length
-      ? await supabase.from("skus").select("id,code,name").in("id", skuIds)
-      : { data: [] as { id: string; code: string; name: string }[] };
-    const skuById = new Map((skus ?? []).map((s) => [s.id, { code: s.code, name: s.name }]));
+      ? await supabase.from("skus").select("id,code,name,category").in("id", skuIds)
+      : { data: [] as { id: string; code: string; name: string; category: string }[] };
+    const skuById = new Map((skus ?? []).map((s) => [s.id, { code: s.code, name: s.name, category: s.category }]));
 
-    const sv = (sellerRes.data?.value ?? {}) as Partial<Record<string, string>>;
+    // Dual entity: pick the seller by the products on the invoice (client 2026-07-01).
+    const entity = invoiceSellerEntity(lines.map((l) => skuById.get(l.sku_id)?.category ?? "Other"));
+    const sv = ((entity === "falcon" ? falconRes.data?.value : jaypeeRes.data?.value)
+      ?? sellerRes.data?.value ?? {}) as Partial<Record<string, string>>;
     const seller: Seller = {
       name: sv.name ?? SELLER_FALLBACK.name,
       gstin: sv.gstin ?? SELLER_FALLBACK.gstin,
@@ -125,7 +130,7 @@ export async function getInvoice(id: string): Promise<InvoiceDetail | null> {
       taxTotal: Number(inv.tax_total),
       cessTotal: Number(inv.cess_total),
       total: Number(inv.total),
-      provisional: provRes.data?.value === true,
+      provisional: false,
       seller,
       lines: lines.map((l) => {
         const sku = skuById.get(l.sku_id) ?? { code: "—", name: "Unknown SKU" };

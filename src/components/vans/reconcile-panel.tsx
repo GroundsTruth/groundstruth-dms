@@ -56,11 +56,16 @@ export function ReconcilePanel({
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Status</span>
-            {row.status === "flagged" ? (
-              <StatusBadge tone="bad">Flagged — variance beyond tolerance</StatusBadge>
+            {row.status === "critical" ? (
+              <StatusBadge tone="bad">Critical — variance over threshold</StatusBadge>
+            ) : row.status === "warn" ? (
+              <StatusBadge tone="warn">Warning — variance in review band</StatusBadge>
             ) : (
               <StatusBadge tone="ok">Reconciled — within tolerance</StatusBadge>
             )}
+            <span className="text-xs text-muted-foreground">
+              stock {row.variancePct}% · cash {row.cashVariancePct}%
+            </span>
           </div>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
             <div><dt className="text-muted-foreground">Out</dt><dd className="tabular-nums">{row.qtyOut}</dd></div>

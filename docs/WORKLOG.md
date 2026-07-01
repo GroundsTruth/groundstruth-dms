@@ -14,7 +14,7 @@ without passing kickstart prompts back and forth.
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
 | Aman | — | (catalog-tax/INVOICE_SPEC merged, PR #25) — **next:** Sales-Capture UI (#7) · dashboard live tiles · auth login UI · #18/#20/#24 | UI Kit · Catalog · Dashboard · auth UI | — |
-| Hardik | — | **30thJunechanges PR ready to merge** — all 24 build-audit gaps fixed (Batches 1–5, money path inclusive+exact, applied live). Paused after merge. | transactional spine · sales · retailer · inventory | 2026-06-30 |
+| Hardik | `30thJunechanges` | **Build-audit (24 gaps) + client Round-2/3 done** — dual seller, brand credit, challan, schemes engine, catalogue ingest, tiered recon. Ready to merge. | `src/lib/{sales,retailers,inventory,van,schemes,config}/**` · UI · migrations | 2026-07-01 |
 
 > **Aman — starting fresh? Read `docs/AMAN_KICKSTART.md` first.** It has everything Hardik
 > built (done + merged), your lane (Auth UI → Dashboard tiles → UI kit), the assumptions we
@@ -49,6 +49,29 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-07-01 · Hardik + Claude · client Round-2/3 build (`30thJunechanges`)
+Client answered Round-2 + sent updated Catalogue, redesigned challan, dual driver dir, logo, 2 invoices.
+Assessment + 6 small open items → `docs/CLIENT_QUESTIONS_ROUND3.md`. Built (my lane):
+- **Catalogue ingest** — GST/HSN/MRP/units/prices from the client Catalogue applied live (37 SKUs);
+  **corrects Soda 18→5%, Gluco 40→5% (Juice)**. 14 catalogue rows are NEW products (for Aman).
+- **Tiered reconciliation** — client thresholds (cash <0.1/0.1–0.3/>0.3, stock <0.2/0.2–0.6/>0.6) → ok/warn/critical.
+- **Dual seller by brand** — invoice picks Jaypee (CSD/Soda) vs Falcon (Water/Juice/Energy) by category;
+  both entities in config (Jaypee `06AIMPB2225L2ZE` / Falcon `06FVEPS8609PIZN`). Energy/Juice/Soda split = DEFAULT (Q1).
+- **Brand credit** — Campa Cola (Jaypee) no-credit; Campa Sure (Falcon) ₹1500 cap, gated in createOrder.
+- **Delivery challan (M25)** — printable on `/vans/[id]` to the redesigned layout.
+- **Schemes engine (S2)** — schemes table + `applySchemes` (buy-X-get-Y, cross-SKU) + `/schemes` admin +
+  ₹0 freebie lines auto-added on orders. **captureSale** already wired (inline onboard→order→invoice→pay).
+- **120 tests green.** Apply `supabase/_apply_01July.sql` (recon tiers + schemes) in SQL Editor.
+
+**→ AMAN handoff (your remaining work):**
+- **#7 Sales-Capture UI** — single screen; backend `captureSale()` ready (now includes credit guard + freebies).
+- **`/schemes` nav link** in `src/lib/nav.ts` (page shipped). Also the earlier nav is fine.
+- **Dual-branding LOGO** — add the distributor logo (PPT_1) to the invoice header (`invoice-view.tsx`) + app shell.
+- **14 new catalogue products** — add as SKUs + `seed-data.ts` (cans/variants); reclassify **Gluco category → Juice**
+  (tax already 5% live; enum still 'Energy').
+- **Dashboard live tiles** (M30/M31) + **#24 role-scope dashboard** (reps see own route only) + **Auth login UI** (dormant `AUTH_ENABLED`).
+- Test OTP `1234` — wire into your login screen (verify path; auth is dormant till go-live).
 
 ### 2026-06-30 · Hardik + Claude · build-audit Batches 2–5 + CA confirmed (`30thJunechanges`)
 **Client confirmed the tax/HSN/seller data is correct → CA sign-off is NO LONGER a gate.**
