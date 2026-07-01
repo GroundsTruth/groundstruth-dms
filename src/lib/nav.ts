@@ -1,11 +1,13 @@
 import {
   LayoutDashboard,
+  ShoppingCart,
   Package,
   Boxes,
   ClipboardList,
   Truck,
   ReceiptText,
   Store,
+  Gift,
   Palette,
   type LucideIcon,
 } from "lucide-react";
@@ -24,11 +26,13 @@ export type NavItem = {
  */
 export const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Capture sale", href: "/capture", icon: ShoppingCart },
   { label: "Catalog", href: "/catalog", icon: Package },
   { label: "Inventory", href: "/inventory", icon: Boxes },
   { label: "Orders", href: "/orders", icon: ClipboardList },
   { label: "Van Load", href: "/vans", icon: Truck },
   { label: "Invoices", href: "/invoices", icon: ReceiptText },
   { label: "Retailers", href: "/retailers", icon: Store },
+  { label: "Schemes", href: "/schemes", icon: Gift },
   { label: "UI Kit", href: "/kit", icon: Palette },
 ];
