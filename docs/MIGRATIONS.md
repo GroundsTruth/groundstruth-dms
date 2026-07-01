@@ -33,9 +33,9 @@ coordinated + PR-reviewed by the other person.
 | `20260630140020_pricing_approval.sql` | `order_lines` (+list_price/discount), `order_status` (+pending_approval), `price_list` (+list_type), `retailers` (+customer_category) | _pending_ | Hardik | Batch 2 #4/#5/#9/#21. |
 | `20260630141226_retailer_credit_onboarding.sql` | `retailers` (+customer_type/credit_limit/owner_name/shop_photo_path) | _pending_ | Hardik | Batch 3 #6/#11/#12/#22. |
 | `20260630142741_adjust_stock_fn.sql` | `adjust_stock()` fn | _pending_ | Hardik | Batch 4 #15/#16 wastage/count. |
-| _(consolidated)_ | all 4 above | _pending_ | Hardik | **`supabase/_apply_30thJune.sql`** = paste-once for the whole branch. |
-| `20260701124019_recon_tiers.sql` | `config` (recon tiers) | _pending_ | Hardik | Round-3: tiered reconciliation tolerances (replaces single flat `recon_tolerance`). |
+| `20260701124019_recon_tiers.sql` | `recon_status` enum (+warn/+critical) | _pending_ | Hardik | Round-3: tiered reconciliation tolerances (was ok/flagged). |
 | `20260701130612_schemes.sql` | `schemes` | _pending_ | Hardik | Round-3: schemes/freebies engine (buy-X-get-Y). RLS + grants. Backs `/schemes` + auto-freebie ₹0 lines. |
+| **`supabase/_apply_pending.sql`** | **all 6 pending above** | _pending_ | Aman | ⭐ **Paste-once** for the whole backlog (generated 2026-07-01, dependency-ordered, idempotent). Use this in the SQL Editor, then mark each row Applied. _(The old `_apply_30thJune.sql` referenced elsewhere was never created — superseded by this.)_ |
 
 **Apply order (Hardik, once `.env.local` keys are in):** paste `070450`→`070455` in
 sequence in the Supabase SQL Editor (FK-ordered). Each is idempotent — safe to re-run.
