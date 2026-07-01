@@ -24,12 +24,16 @@ We're proceeding with the build on all confirmed points (summary at the bottom).
    bill **outside Haryana** (inter-state)? (Decides CGST+SGST vs IGST.) Default we're using:
    per-line rounding, intra-state CGST+SGST (matches your samples).
 
-4. **Schemes/freebies — Phase 1 or Phase 2?** Your examples are clear (case-level: 1 case 1.5L
-   water free on 10 cases; cross-SKU piece-level: 1 case Suncrush Mango 200ml free on 2 cases
-   CSD 1L). We'll build an **admin-configurable scheme engine** (case + open-bottle, cross-SKU,
-   Campa-pushed). Confirm you want this **in Phase 1**, or after go-live.
+4. **Schemes — BUILT (confirm mechanics).** We've built the admin-configurable buy-X-get-Y
+   engine (cross-SKU, case-level; freebies added as ₹0 lines) — your two examples model directly.
+   Confirm: (a) freebies **deduct free stock** from inventory (we assume yes), and (b) is the
+   free item ever at the **open-bottle** (loose piece) level, or always full cases?
 
-5. **Per-feature acceptance criteria** — anything specific you'll check before signing off each
+5. **New catalogue products.** Your updated Catalogue has ~14 items not in the original master
+   (extra cans/variants, e.g. CSD Can 185/330, Suncrush cans, Rasiki Mixed Fruit). Should we add
+   these as new SKUs now? (We've applied tax/MRP/price to the 37 that matched.)
+
+6. **Per-feature acceptance criteria** — anything specific you'll check before signing off each
    module (invoice, reconciliation, van load-out, credit)? Helps us hit "done" first time.
 
 ## ✅ Captured & building now (no action needed)
