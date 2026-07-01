@@ -13,7 +13,7 @@ without passing kickstart prompts back and forth.
 ## 🚧 In flight — claim before you start (this is how we avoid collisions)
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
-| Aman | `feat/aman-mvp-e2e` | **Sales-Capture UI (#7) rebased onto latest dev + `/schemes` nav.** Doc/tracker refresh (STATUS, MODULE_OWNERSHIP, MIGRATIONS current). **Next:** live E2E of driver+retailer journeys once migrations applied → auth login UI → dashboard live tiles (#24). | `src/app/(app)/capture/` · `src/components/capture/` · `src/lib/nav.ts` · docs | 2026-07-01 |
+| Aman | `feat/aman-mvp-e2e` | **Capture (#7) rebased + `/schemes` nav + AUTH LOGIN UI + role-nav + DASHBOARD live tiles/role-scope (#24).** Tracker refresh (STATUS/MODULE_OWNERSHIP/MIGRATIONS current) + `_apply_pending.sql` + E2E test plan. **Next (needs client/DB):** apply migrations + keys → walk journeys. **Blocked:** 14 new SKUs (need Catalogue file). | `src/app/(app)/{capture,dashboard,login}/` · `src/components/{capture,auth,layout}/` · `src/lib/{nav,dashboard}` · docs | 2026-07-01 |
 | Hardik | `30thJunechanges` (merged → dev, PR #27) | Build-audit (24 gaps) + Round-2/3 done — dual seller, brand credit, challan, schemes, catalogue ingest, tiered recon. ⚠️ **Apply the pending migrations** (Batch 1–4 + recon_tiers + schemes) in the SQL Editor — they gate live E2E. | `src/lib/{sales,retailers,inventory,van,schemes,config}/**` · UI · migrations | 2026-07-01 |
 
 > **Aman — starting fresh? Read `docs/AMAN_KICKSTART.md` first.** It has everything Hardik
@@ -70,7 +70,19 @@ without passing kickstart prompts back and forth.
   credit, adjust, `/schemes` will error at runtime until applied (Hardik / SQL Editor); (2) **`.env.local`
   keys absent** in the run env (Aman / vault). Auth is dormant (fine for testing; a real go-live gate).
   Full gate table + the step-by-step journey test script live in `docs/STATUS.md`.
-- **Next:** apply migrations + keys → walk the journeys → auth login UI → dashboard live tiles + role-scope (#24).
+- **Then built (Aman lane, all green — typecheck 0 · 120 tests · build):**
+  - **Auth login UI** — `/login` phone→OTP→verify to Hardik's contract (E164 normalize, resend/change-number);
+    app shell now **role-aware** ((app)/layout resolves `getSessionUser` → `navItemsForRole` filters nav +
+    real **sign-out**; null user shows all so dormant-auth dev stays open). **Confirmed the role→screen matrix**
+    (AUTH_PLAN). Raised 2 asks to Hardik: gate `/capture`+`/schemes` in rbac.ts, wire `requireRole` into actions.
+  - **Dashboard live tiles + role-scope (#24)** — `getDashboardSummary` composes invoices/collections/low-stock/
+    vans/orders accessors (seed-safe, whole-summary SEED fallback, `source` flag); owner sees financials +
+    route/top-SKU, warehouse/driver_rep get the operational view; live low-stock reorder list for all.
+  - **`supabase/_apply_pending.sql`** — the paste-once for the whole migration backlog (was referenced in docs
+    but never created). Hand to whoever runs the SQL Editor.
+- **Blocked:** the **14 new catalogue SKUs** need the source file (`Catalogue Cola.xlsx`/`scratch_catalogue.json`,
+  not in repo) — won't fabricate HSN/MRP/prices. Gluco→Juice already done in seed (SKU039).
+- **Next:** apply migrations + keys (Hardik/Aman) → **walk the driver+retailer journeys** (`docs/E2E_TEST_PLAN.md`).
 
 ### 2026-07-01 · Hardik + Claude · client Round-2/3 build (`30thJunechanges`)
 Client answered Round-2 + sent updated Catalogue, redesigned challan, dual driver dir, logo, 2 invoices.

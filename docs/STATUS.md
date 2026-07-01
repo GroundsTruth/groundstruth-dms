@@ -28,7 +28,7 @@ snapshot + MVP checklist. Update both at session end._
 | **DB migrations applied** (Batch 1–4 GST-inclusive/pricing/credit/adjust + `recon_tiers` + `schemes`) | 🔒 **pending** — code expects columns/fns not yet in DB → runtime errors until applied via SQL Editor | Hardik (SQL Editor) |
 | **`.env.local` keys** in run env | 🔒 **absent** in this worktree — no Supabase reachability | Aman (vault) |
 | Seed data (46 SKUs · base prices 37/46 · opening stock · demo flow) | 🟡 partial — SKUs live; verify prices/stock after migrations | Both |
-| Auth login UI (drivers sign in) | ⬜ todo (backend ready, dormant) | Aman |
+| Auth login UI (drivers sign in) | ✅ built (`/login`, dormant until `AUTH_ENABLED` + SMS provider) | Aman |
 | SMS/OTP provider + staff phone numbers | 🔒 client | Client |
 
 ## Pre-build (P)
@@ -53,10 +53,13 @@ snapshot + MVP checklist. Update both at session end._
 - ✅ **Sales-Capture UI** (#7 — client's 6/29 priority) — `/capture` mobile-first field flow on
   `captureSale` backend (route + price-list → shop pick/inline-onboard+GPS → items/qty/rate + live
   GST-inclusive totals + below-list flag → payment cash/UPI/credit → review → invoice). On `feat/aman-mvp-e2e`.
-- 🟡 **Owner Dashboard** (M30–31) — `/dashboard` KPI row + route chart + top SKUs, read-only from seed.
-  ⬜ remaining: **live tiles** (low-stock via `getLowStockSkus`, sales/invoices/van via accessors) + **role-scope (#24)**.
-- ⬜ **Auth login UI** (M05/M08/M09 UI half) — `/login` phone→OTP→verify to Hardik's contract; role-hide nav
-  (`allowedRoutesFor`); user-management screen. Confirm role→screen matrix (`docs/AUTH_PLAN.md`).
+- ✅ **Owner Dashboard live tiles + role-scope (#24)** (M30–31) — `/dashboard` composes live accessors
+  (invoices/collections → revenue/collected/pending, low-stock list, vans active, orders-to-approve) with a
+  seed fallback (`source` flag); owner sees financials, warehouse/driver_rep get the operational view.
+  ⬜ remaining: per-SKU sales aggregate (topSkus/unitsSold still illustrative).
+- ✅ **Auth login UI** (M05 UI half) — `/login` phone→OTP→verify to Hardik's contract; app shell role-hides nav
+  via `navItemsForRole`; real sign-out; matrix confirmed. ⬜ remaining: **M08 user-management screen**;
+  go-live (SMS provider + `AUTH_ENABLED` flip). ⬜ Hardik: gate `/capture`+`/schemes` in rbac.ts + `requireRole`.
 - ⬜ **Dual-branding logo** on invoice header + app shell (from client `PPT_1.pptx`).
 - ✅ **Nav** — `/schemes` added (2026-07-01); all module links live.
 
