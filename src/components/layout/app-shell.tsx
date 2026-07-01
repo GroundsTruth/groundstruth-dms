@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
-import { Menu } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useTransition, type ReactNode } from "react";
+import { Menu, LogOut } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS } from "@/lib/nav";
+import { navItemsForRole, type NavItem } from "@/lib/nav";
+import { signOut } from "@/lib/auth/actions";
+import type { AppRole } from "@/lib/auth/rbac";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -24,6 +26,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+/** Minimal identity the shell needs — the server layout passes it (null when dormant). */
+export type ShellUser = { name: string; role: AppRole } | null;
+
+const ROLE_LABEL: Record<AppRole, string> = {
+  owner: "Owner",
+  warehouse: "Warehouse",
+  driver_rep: "Driver / Rep",
+};
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 function Brand() {
   return (
     <Link href="/" className="flex items-center gap-2.5 px-5 py-4">
@@ -38,11 +56,17 @@ function Brand() {
   );
 }
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function NavLinks({
+  items,
+  onNavigate,
+}: {
+  items: NavItem[];
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   return (
     <nav className="flex flex-col gap-1 px-3">
-      {NAV_ITEMS.map((item) => {
+      {items.map((item) => {
         const active =
           pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;
@@ -67,8 +91,30 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  user,
+}: {
+  children: ReactNode;
+  user?: ShellUser;
+}) {
   const [open, setOpen] = useState(false);
+  const [signingOut, startSignOut] = useTransition();
+  const router = useRouter();
+
+  // Role-filter the nav. Null user (auth dormant / not signed in) → show everything.
+  const items = navItemsForRole(user?.role ?? null);
+
+  const displayName = user?.name ?? "Demo user";
+  const roleLine = user ? ROLE_LABEL[user.role] : "Auth off · demo";
+
+  function handleSignOut() {
+    startSignOut(async () => {
+      await signOut();
+      router.push("/login");
+      router.refresh();
+    });
+  }
 
   return (
     <div className="min-h-screen bg-background lg:grid lg:grid-cols-[16rem_1fr]">
@@ -76,7 +122,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside className="hidden border-r bg-card lg:flex lg:flex-col">
         <Brand />
         <div className="mt-2 flex-1 overflow-y-auto pb-4">
-          <NavLinks />
+          <NavLinks items={items} />
         </div>
         <div className="border-t px-5 py-3 text-[11px] text-muted-foreground">
           Web app · phone &amp; laptop
@@ -102,7 +148,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <SheetTitle className="sr-only">Navigation</SheetTitle>
               <Brand />
               <div className="mt-2">
-                <NavLinks onNavigate={() => setOpen(false)} />
+                <NavLinks items={items} onNavigate={() => setOpen(false)} />
               </div>
             </SheetContent>
           </Sheet>
@@ -118,21 +164,30 @@ export function AppShell({ children }: { children: ReactNode }) {
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-secondary text-xs font-semibold text-primary">
-                      AN
+                      {initials(displayName)}
                     </AvatarFallback>
                   </Avatar>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-52">
                 <DropdownMenuLabel>
-                  Aman
+                  {displayName}
                   <span className="block text-xs font-normal text-muted-foreground">
-                    Owner · demo
+                    {roleLine}
                   </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Sign out</DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    handleSignOut();
+                  }}
+                  disabled={signingOut}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {signingOut ? "Signing out…" : "Sign out"}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

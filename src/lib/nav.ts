@@ -11,6 +11,7 @@ import {
   Palette,
   type LucideIcon,
 } from "lucide-react";
+import { canAccess, type AppRole } from "@/lib/auth/rbac";
 
 export type NavItem = {
   label: string;
@@ -36,3 +37,15 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Schemes", href: "/schemes", icon: Gift },
   { label: "UI Kit", href: "/kit", icon: Palette },
 ];
+
+/**
+ * Nav items this role may see. Mirrors `canAccess` (rbac.ts) exactly — unlisted routes
+ * (e.g. `/capture`, `/schemes`, `/kit`) are visible to any signed-in user. When `role`
+ * is null (auth dormant, or not signed in) we show everything so the app stays usable
+ * before the login lockdown is flipped on. Middleware is the real gate; this only hides
+ * links the user couldn't open anyway.
+ */
+export function navItemsForRole(role: AppRole | null): NavItem[] {
+  if (!role) return NAV_ITEMS;
+  return NAV_ITEMS.filter((item) => canAccess(role, item.href));
+}
