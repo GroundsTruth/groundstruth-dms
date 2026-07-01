@@ -9,6 +9,11 @@ import {
   computeOrderTotals,
   type OrderLineInput,
 } from "./order-logic";
+import { invoiceSellerEntity } from "./seller";
+import { creditCheck } from "./credit";
+import { getRetailerCredit } from "@/lib/retailers/data";
+import { getActiveSchemes } from "@/lib/schemes/data";
+import { applySchemes } from "@/lib/schemes/logic";
 
 /**
  * Punch an order (M19). Resolves each line's price via priceFor (route/retailer
@@ -65,6 +70,33 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
     if (invalid) return { ok: false, error: invalid };
 
     const totals = computeOrderTotals(priced);
+
+    // Brand credit guard (client 2026-07-01): credit customers can't buy Campa Cola
+    // (Jaypee) on credit; Campa Sure (Falcon) credit is capped at ₹1,500.
+    if (input.retailerId) {
+      const { data: ret } = await supabase
+        .from("retailers")
+        .select("customer_type,credit_limit")
+        .eq("id", input.retailerId)
+        .maybeSingle();
+      if (ret?.customer_type === "credit") {
+        const { data: catRows } = await supabase
+          .from("skus")
+          .select("category")
+          .in("id", input.lines.map((l) => l.skuId));
+        const entity = invoiceSellerEntity((catRows ?? []).map((c) => c.category));
+        const credit = await getRetailerCredit(input.retailerId);
+        const check = creditCheck({
+          entity,
+          customerType: "credit",
+          outstanding: credit.outstanding,
+          orderTotal: totals.total,
+          creditLimit: Number(ret.credit_limit ?? 0),
+        });
+        if (!check.ok) return { ok: false, error: check.reason };
+      }
+    }
+
     const orderNo = await nextOrderNo(supabase);
     // #5: any below-list line → the whole order waits for admin approval.
     const status = totals.needsApproval ? "pending_approval" : "draft";
@@ -88,8 +120,14 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
       return { ok: false, error: "Could not create the order. Please try again." };
     }
 
-    const { error: linesErr } = await supabase.from("order_lines").insert(
-      totals.lines.map((l) => ({
+    // Freebies (S2): ₹0 lines from active schemes (buy X → get Y, cross-SKU allowed).
+    const freebies = applySchemes(
+      input.lines.map((l) => ({ skuId: l.skuId, qty: l.qty })),
+      await getActiveSchemes(),
+    );
+
+    const { error: linesErr } = await supabase.from("order_lines").insert([
+      ...totals.lines.map((l) => ({
         order_id: order.id,
         sku_id: l.skuId,
         qty: l.qty,
@@ -98,7 +136,16 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
         discount_pct: l.discountPct,
         line_total: l.lineTotal,
       })),
-    );
+      ...freebies.map((f) => ({
+        order_id: order.id,
+        sku_id: f.skuId,
+        qty: f.qty,
+        unit_price: 0, // free
+        list_price: 0,
+        discount_pct: 100,
+        line_total: 0,
+      })),
+    ]);
 
     if (linesErr) {
       // Roll back the header so we never leave an order without its lines.
