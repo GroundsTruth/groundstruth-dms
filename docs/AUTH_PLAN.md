@@ -54,6 +54,16 @@ Login screen: phone input → `requestOtp` → OTP input → `verifyOtp` → red
 _This is a starting point — Aman, adjust what warehouse/driver-rep see on **your** screens
 (dashboard/catalog). The code map (`rbac.ts`) is the single source; changing it is a one-liner._
 
+### ✅ Aman confirmed the matrix (2026-07-01)
+The proposed matrix is **accepted as-is** for the MVP. Login UI + role-aware nav built against it
+(`navItemsForRole` mirrors `canAccess`). **Two routes shipped after this plan are not yet in the
+`rbac.ts` map**, so they're currently "unlisted → visible to any signed-in user":
+- **`/capture`** — should be **owner + driver_rep** (the field-sales screen; warehouse doesn't sell).
+- **`/schemes`** — should be **owner only** (admin config; Campa pushes offers).
+
+Nav visibility degrades safely (both stay visible for now), but middleware won't *enforce* them until
+they're in the map. → **Cross-lane ask to Hardik** (rbac.ts is his file): add those two prefixes. One-liner each.
+
 ## Enforcement
 - **Middleware:** no session + not on `/login` → redirect `/login`. Signed in but role not
   allowed for the path → redirect `/dashboard` (or a 403 page).
