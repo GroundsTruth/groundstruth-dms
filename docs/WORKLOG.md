@@ -13,7 +13,7 @@ without passing kickstart prompts back and forth.
 ## 🚧 In flight — claim before you start (this is how we avoid collisions)
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
-| Aman | `feat/aman-mvp-e2e` | Capture (#7) + `/schemes` nav + AUTH LOGIN UI + role-nav + DASHBOARD live tiles/role-scope (#24). **NEW 7/02:** dual-branding logo slot · catalog MRP/units columns · **M08 user-mgmt `/users`** (list/role/active) · consolidated client-questions + MVP-remaining docs · E2E doc. **Next (needs client/DB):** migrations applied → walk `docs/E2E.md`. **Blocked:** 14 new SKUs (client Q9). | `src/app/(app)/{capture,dashboard,login,users}/` · `src/components/{capture,auth,layout,catalog,users}/` · `src/lib/{nav,dashboard,users}` · docs | 2026-07-02 |
+| Aman | `feat/e2e-bugfixes` | **Client bug round FIXED** (validation everywhere · CSD taxonomy · 7/1 Catalogue resync +10 SKUs · HSN prefill · route chart · explainers · GPS · entity logos live on shell+invoice) + WhatsApp export re-read (answers ingested → MVP_REMAINING/CLIENT_QUESTIONS_OPEN v2). **Next:** merge → run `seed-skus` + Supabase auth manual steps → full E2E re-pass. | `src/components/**` (form fixes cross-lane, flagged) · `src/lib/{form,catalog,dashboard}` · docs | 2026-07-02 |
 | Hardik | `feat/rbac-gate-capture-schemes` (off dev) | RBAC gate `/capture`+`/schemes` in `rbac.ts` (clears Aman's 2 asks). **Next:** wire `requireRole` into mutating actions + `created_by`; resolve Soda GST conflict. ⚠️ **Apply the pending migrations** (Batch 1–4 + recon_tiers + schemes) in the SQL Editor — they gate live E2E. | `src/lib/auth/**` · `src/lib/{sales,retailers,inventory,van,schemes,config}/**` · UI · migrations | 2026-07-02 |
 
 > **Aman — starting fresh? Read `docs/AMAN_KICKSTART.md` first.** It has everything Hardik
@@ -23,7 +23,8 @@ without passing kickstart prompts back and forth.
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
 |-----|-----|-----------|--------|
-| **Hardik** | 🔴 **Confirm the live Soda GST rate** — `docs/CLIENT_QUESTIONS_OPEN.md` A4 flags a conflict: Round-3 notes say **Soda = 5%**, the audit/INVOICE_SPEC set **18%**. Your tax lane. Resolve before we trust demo invoice tax (client Q4 asks them too). | Aman · 2026-07-02 | ⬜ open |
+| **Hardik** | 🔴 **ANSWERED: Soda = 5%** (7/1 Catalogue + the client's Jaypee sample invoice bills Club Soda at CGST 2.5 + SGST 2.5). Water 18→5, Juice 12→5 too. Seed/code updated on `feat/e2e-bugfixes` — **resync LIVE rates** (seed-skus run covers `skus`; check config/migration leftovers + demo invoices keep old snapshots). | Aman · 2026-07-02 | ⬜ RESYNC live |
+| **Hardik** | 🆕 **Client-answer work items H3–H9 → `docs/MVP_REMAINING.md`**: van↔order linkage for van-aware capture (Phase-1 "driver/van selection") · schemes piece-level/open-bottle freebies · challan v2 (salesman/driver/helper + UPI/Cash/**CNG-expense** settlement footer) · per-retailer Campa Sure pricing UI · invoice bank/UPI/QR block per entity · seed users (⚠ phone 9289151748 duplicated — client Q3) · verify recon tiers (cash .1/.3, stock .2/.6). Heads-up: I touched your form components for the validation bug round (receive/load/returns/punch/adjust/retailers/payment/schemes) — mechanical, all tests green, review in PR. | Aman · 2026-07-02 | ⬜ open |
 | **Hardik** | **M08 user mutations** — I built working `updateUserRole`/`setUserActive` in **`src/lib/users/**`** (new folder, so I didn't touch your `auth/` lane) to make `/users` work now. Relocate into `src/lib/auth` + add `requireRole("owner")` when auth flips. | Aman · 2026-07-02 | ⬜ FYI |
 | **Hardik** | **RBAC gate `/capture` + `/schemes`** in `src/lib/auth/rbac.ts` — both are currently unlisted (visible to every role). Suggest `/capture` → owner+driver_rep, `/schemes` → owner. Your file. | Aman · 2026-07-02 | ✅ DONE (Hardik 7/02, `feat/rbac-gate-capture-schemes`): `/capture`→owner+driver_rep · `/schemes`→owner · +4 rbac tests |
 | **Aman** | Add **`/inventory`** to the sidebar nav (`src/lib/nav.ts` — your lane). Hardik shipped the page on `feat/inventory-receive` but didn't touch your file. Label "Inventory". | Hardik · 2026-06-28 | ✅ done (all nav links live via seed-and-nav) |
@@ -54,6 +55,26 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-07-02 (eve) · Aman + Claude · client bug round + WhatsApp re-read (`feat/e2e-bugfixes`)
+- **Bug doc (13 screenshots) → all my-lane + mechanical cross-lane items FIXED** in 3 commits:
+  (1) validation everywhere — new pure `src/lib/form/validators.ts` + kit `PhoneInput`/`IntInput`/
+  `DecimalInput`; qty text/13-digit, phone-10, vehicle-12, mfg≤expiry, bounded date pickers,
+  no raw ids in errors, GPS says why it failed; retailer phone/route now REQUIRED (+shop/address
+  on admin form). (2) catalog — **CSD taxonomy** (client's), **HSN+GST prefill by category**,
+  **7/1 Catalogue resync** (Soda→5%!, HSN fixes, price updates, renames, +10 new SKUs SKU053–062,
+  resolver aliases for old feed names). (3) UI — route chart zero-filled (no purple slab),
+  low-stock/count explainers, variance %, "Delivered" rename.
+- **WhatsApp export deep re-read** (Follow-up doc, 7/1 Catalogue, redesigned challan, FINAL driver
+  directory, Jaypee sample invoice): 10 of our 24 questions answered, 8 partial → docs rewritten
+  (`MVP_REMAINING.md` = who-does-what incl. new H3–H9; `CLIENT_QUESTIONS_OPEN.md` v2 = only 8 left).
+  Key: Soda 5% · "JAYPEE ADVERTISERS" naming conflict · Falcon GSTIN I-vs-1 · phone collision in
+  driver list · piece-level freebies · challan = settlement sheet w/ CNG expense · test OTP 1234 OK.
+- **Dual branding DONE:** both entity logos extracted from PPT_1 → `public/brand/{falcon,jaypee}.png`;
+  invoice header picks by seller entity; shell shows both marks.
+- **Verified:** typecheck 0 · **134 tests** · build clean.
+- **Manual next (Aman):** merge → `npx tsx scripts/seed-skus.ts` (live taxonomy/rates) → Supabase
+  Phone provider + test numbers (OTP 1234) → full `docs/E2E.md` re-pass.
 
 ### 2026-07-02 · Hardik + Claude · RBAC gate `/capture` + `/schemes` (`feat/rbac-gate-capture-schemes`)
 - Cleared Aman's two open cross-lane asks (my file `src/lib/auth/rbac.ts`): both routes were

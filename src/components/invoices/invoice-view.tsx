@@ -20,7 +20,12 @@ export function InvoiceView({ invoice }: { invoice: InvoiceDetail }) {
 
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
         <div className="flex items-start gap-3">
-          <BrandLogo box="h-12 w-12" alt={invoice.seller.name} />
+          <BrandLogo
+            entity={/jaypee/i.test(invoice.seller.name) ? "jaypee" : /falcon/i.test(invoice.seller.name) ? "falcon" : null}
+            box="h-12 w-auto max-w-44"
+            rounded=""
+            alt={invoice.seller.name}
+          />
           <div>
             <h2 className="text-lg font-bold">{invoice.seller.name}</h2>
             <p className="text-sm text-muted-foreground">{invoice.seller.address}</p>

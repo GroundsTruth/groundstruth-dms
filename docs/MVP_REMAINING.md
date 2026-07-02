@@ -1,93 +1,76 @@
 # Campa DMS — what's left for the MVP (Aman + Hardik)
 
-_2026-07-02. One place that says: what's **done**, what's **remaining**, who **owns** it, and
-what it **depends on**. Read with `docs/WORKLOG.md` (running log) + `docs/CLIENT_QUESTIONS_OPEN.md`
-(client asks). Status legend: ✅ done · 🟡 in progress · ⬜ todo · 🔒 blocked (client/config) · ⏭️ post-MVP._
+_2026-07-02 (evening) — refreshed after the client bug round (screenshot doc) + the FULL
+WhatsApp-export re-read ("Follow up, remaining stuff.docx" answers, 7/1 Catalogue, redesigned
+challan, final Driver_Directory, Jaypee sample invoice). Status: ✅ done · 🟡 in progress ·
+⬜ todo · 🔒 blocked · ⏭️ post-MVP. Branch: `feat/e2e-bugfixes` (off dev)._
 
-## What "MVP" means here
-A driver/rep can, on a phone: **log in → capture a sale (existing or new shop) → get a GST invoice →
-take payment (cash/UPI/credit)**; the warehouse can **receive + load vans + reconcile**; the owner can
-**see live numbers, approve below-list prices, run schemes, and manage credit** — all atomic + audited,
-on live Supabase data.
+## Today's bug round — FIXED on `feat/e2e-bugfixes` (Aman)
+All from the client's testing doc, verified (typecheck 0 · 134 tests · build clean):
+input validation everywhere (qty text/13-digit, phone 10-digit, vehicle 12-char, mfg≤expiry,
+bounded date pickers) · HSN+GST **prefill by category** in Add-SKU · category taxonomy →
+client's (**Cola/Lemon/Orange merged into CSD**) · 7/1 **Catalogue resync** in seed (Soda→5%,
+Energy/Juice HSNs, price updates, renames, **+10 new SKUs** SKU053–062) · route chart fixed
+(zero-filled routes, no purple slab) · low-stock criteria + physical-count explainers ·
+"Still out"→"Delivered" · variance shown in % · no raw ids in errors · GPS failure now says
+exactly why (https/permission/timeout) · retailer mandatory fields (phone/shop/route/address) ·
+**both entity logos live** (`public/brand/falcon.png` + `jaypee.png` from PPT_1; invoice header
+should pick by seller — see A6).
 
----
+## ⚠️ Client answers that changed facts (from the export re-read)
+- **Soda GST = 5%** (7/1 Catalogue + Jaypee sample invoice bills Club Soda at 2.5+2.5). Code/seed
+  updated; **live DB rates must be resynced** (H1). Water 18→5 and Juice 12→5 likewise.
+- **Jaypee prints as "JAYPEE ADVERTISERS"** (both invoices), 4th Floor 1404 DLF Phase-4,
+  Gurugram 122009, GSTIN `06AIMPB2225L2ZE` — but the follow-up doc says "Jaypee **Enterprises**" → confirm (Q1).
+- **Falcon GSTIN `06FVEPS8609PIZN`** — 13th char "I" is almost certainly digit **1**; verify on
+  the GST portal before printing (Q2).
+- **Test OTP `1234` sanctioned** for Phase 1 + we should **recommend an SMS gateway** (Q-us).
+- **Driver directory FINAL** (13 staff, Jaypee vans 0–6 + Falcon vans 0/A/B/C). ⚠️ **phone
+  9289151748 is assigned twice** (Dharamveer Singh & Hira Lal) — phone = login key; must resolve before seeding (Q3).
+- **Schemes must support OPEN-BOTTLE (piece-level) freebies + cross-SKU** (their ex. 2) — engine is case-level today (H4).
+- **Challan = end-of-day settlement sheet**: crew fields SALESMAN/DRIVER/HELPER, 44 fixed item
+  rows, footer settlement (UPI + Cash + **CNG/Route-Expense** → Total Reconciled vs Net Due) (H5).
+- **Per-retailer pricing for Campa Sure** confirmed (price_list.retailer_id exists — needs UI/flow) (H6).
+- **Invoices need the bank/UPI + Scan-to-Pay block per entity** (both samples): Jaypee Axis
+  a/c 923020024709310 / UPI `9350048556@ptyes`; Falcon Axis a/c 917020034981329 / UPI
+  `falconenterprises@ybl`; IFSC UTIB0001527 (H7).
+- **No fixed daily targets** (S5 confirmed out). Retailer master list = **n/a** (onboard in-field).
 
-## Status snapshot — BUILT & verified (don't rebuild)
-Branch `feat/aman-mvp-e2e` (9 commits ahead of dev, 0 behind, **0 conflicts**; typecheck 0,
-**120 tests**, build clean). Dev has the full spine already merged.
+## Aman — remaining
+| # | Item | Status | Notes |
+|---|------|--------|-------|
+| A1 | **Run the DB resync** `npx tsx scripts/seed-skus.ts` (after merge, machine with `.env.local`) | ⬜ MANUAL | pushes CSD taxonomy + 5% Soda/Water/Juice + new SKUs live |
+| A2 | **Supabase auth setup** (enable Phone provider + test numbers OTP `1234`) | ⬜ MANUAL | then `/login` works end-to-end; Q3 collision first |
+| A3 | Invoice header: pick **falcon/jaypee logo by seller entity** (BrandLogo entity prop) | 🟡 | assets in `public/brand/`; small edit in invoice-view |
+| A4 | Receive **history drill-down** (By-SKU row click → movements) | ⬜ | needs a movements accessor (Hardik data lane) — pair |
+| A5 | UI-kit polish (empty/loading) | 🟡 | low priority |
 
-- **Spine (Hardik, merged):** schema (16 tables + RPCs), audit + config, inventory (receive / FIFO
-  deduct / low-stock / wastage-count), sales (price-list / order punch / atomic `confirm_and_invoice`
-  with **GST-inclusive** math + HSN / two price lists / below-list approval), van (load / returns /
-  **tiered reconciliation**), collections, retailers (cash-credit + GPS + photo + role-gated approval),
-  **dual-seller by brand**, **brand-credit guard**, **delivery challan**, **schemes engine**,
-  **catalogue ingest** (tax/HSN/MRP/units live), `captureSale` backend.
-- **Auth backend (Hardik, merged):** SSR session client, dormant middleware, `getSessionUser` /
-  `requireRole`, `requestOtp` / `verifyOtp` / `signOut`, RBAC map.
-- **UI (Aman, on branch):** `/capture` field flow · `/login` phone→OTP→verify · role-aware nav ·
-  Owner Dashboard **live tiles + role-scope (#24)** · `/schemes` nav · Gluco→Juice reclassify ·
-  E2E runbook + test plan.
+## Hardik — remaining (cross-lane asks in WORKLOG)
+| # | Item | Status | Notes |
+|---|------|--------|-------|
+| H1 | 🔴 **Live tax resync**: Soda/Water/Juice → 5%, Energy HSN 22021090, Juice 22029920, category values → CSD taxonomy | ⬜ | seed script covers `skus`; check `config`/migration leftovers + demo invoices |
+| H2 | **requireRole into mutating actions** + flip `AUTH_ENABLED` when A2 done | ⬜ | login UI + role matrix ready |
+| H3 | **Van linkage for capture** (order/invoice ↔ van_load) → van-aware capture (grey non-van SKUs + remaining-qty), Phase-1 "driver/van selection" | ⬜ | client's ask; schema + captureSale change; Aman does the UI after |
+| H4 | **Schemes: piece-level (open-bottle) + confirm freebies deduct stock** | ⬜ | client ex.2 is per-bottle cross-SKU |
+| H5 | **Challan v2**: SALESMAN/DRIVER/HELPER fields + settlement footer (UPI/Cash/CNG-expense → Total Reconciled) + driver route-expense capture | ⬜ | redesigned chalan.xlsx is authoritative |
+| H6 | **Per-retailer Campa Sure pricing** flow (setPrice retailer scope exists; expose it) | ⬜ | client-confirmed requirement |
+| H7 | **Invoice bank/UPI/QR block per entity** in config + invoice-view | ⬜ | account details above |
+| H8 | **Seed users** from final Driver_Directory once Q3 collision resolved + overdue-credit flag (>3 days) alerting | 🔒 Q3 | |
+| H9 | Reconciliation tiers — verify hardcoded numbers match: cash 0.1/0.3, stock 0.2/0.6 | 🟡 | client re-stated exact tiers |
 
----
+## Client — still genuinely open (ask list = `CLIENT_QUESTIONS_OPEN.md`, updated)
+Q1 Jaypee "Advertisers vs Enterprises" · Q2 Falcon GSTIN I-vs-1 · Q3 duplicate phone 9289151748 ·
+Q4 seller entity for **Energy/Juice** (Soda→Jaypee now evidenced by its invoice) · Q5 rounding
+per-line vs total + inter-state? · Q6 freebies deduct stock? · Q7 opening-stock snapshot + 2 name
+aliases · Q8 acceptance criteria · (Phase-2: deposit ledger).
 
-## Remaining for MVP
+## Go-live path (unchanged shape, fewer blockers)
+1. Merge `feat/e2e-bugfixes` → dev → main; run A1 (seed) + A2 (Supabase auth).
+2. Hardik H1+H2 → **auth on, tax correct** → re-run `docs/E2E.md` full pass (user's plan).
+3. H3–H7 close the field-reality gaps (van-aware capture, challan settlement, piece freebies).
+4. Client Q1–Q3 gate **real printed invoices + user seeding**; SMS gateway (we recommend MSG91
+   or Twilio; test-OTP 1234 until then).
 
-### Aman's lane
-| # | Item | Status | Depends on | Notes |
-|---|------|--------|-----------|-------|
-| A1 | **Dual-branding logo** on invoice header + app shell | 🟡 | **logo asset** (drop `public/brand/logo.png`) | slot BUILT (`BrandLogo`, text fallback); just needs the PNG — `PPT_1.pptx` not in repo |
-| A2 | **M08 user-management screen** (`/users` — list users, assign roles) | 🟡 | Hardik hardens (H2) | UI + accessor + actions BUILT (`src/lib/users/**`); works now; Hardik to relocate into `auth/` + add `requireRole("owner")` |
-| A3 | **14 new catalogue SKUs** (+seed) | 🔒 | client Q9 ("add these?") | don't guess — wait for the yes |
-| A4 | **Catalog: surface MRP / units-per-case columns** on `/catalog` | ✅ | — | MRP column + units/case (desktop + mobile) |
-| A5 | **UI-kit remainder** (empty/loading polish, form patterns) | 🟡 | — | low priority |
-| ✅ | Sales-Capture UI · Login UI · role-nav · Dashboard live tiles + role-scope · `/schemes` nav · Gluco reclassify | ✅ | — | on branch, verified |
-
-### Hardik's lane
-| # | Item | Status | Depends on | Notes |
-|---|------|--------|-----------|-------|
-| H1 | **Wire `requireRole` into mutating actions + flip `NEXT_PUBLIC_AUTH_ENABLED`** (M07) | ⬜ | Aman login UI (done) + role matrix (confirmed) | turns on the lockdown |
-| H2 | **Harden user mutations** (M08) | 🟡 | pairs with A2 (done) | Aman built working `updateUserRole`/`setUserActive` in `src/lib/users/**`; relocate into `auth/` + add `requireRole("owner")` when auth flips |
-| H7 | **RBAC gate `/capture` + `/schemes`** in `rbac.ts` | ⬜ | — | both currently unlisted → visible to all roles; suggest `/capture`→owner+driver_rep, `/schemes`→owner |
-| H3 | **Soda GST rate reconcile** — live value vs client (5% vs 18%) | ⬜ | client Q4 | **affects invoice tax correctness — resolve before trusting demo invoices** |
-| H4 | **Challan layout final** | 🟡 | client Q7 (filled sample, optional) | built to redesigned spec; polish on sample |
-| H5 | **Seed real `users`** from driver directory | 🔒 | client Q19 consent + auth go-live | PII, off git |
-| H6 | **Doc hygiene:** `STATUS.md` + `MODULE_OWNERSHIP.md` were stale (Aman refreshed on branch); keep updating at session end | 🟡 | — | `.xlsx` tracker abandoned → WORKLOG is the live tracker |
-
-### Joint / go-live (blocked on client or config)
-| # | Item | Status | Blocker |
-|---|------|--------|---------|
-| G1 | **Auth go-live** (login actually works + routes locked) | 🔒 | client Q17 SMS gateway **or** Q18 test numbers (OTP 1234) + H1 flip |
-| G2 | **Real GST invoicing** (drop any provisional wording, correct seller block) | 🔒 | client Q1–Q4, Q6 (entity/GSTIN/Soda-rate/numbering) |
-| G3 | **Real pilot on live data** (M35) | 🔒 | client Q15 retailer list + Q20 opening stock |
-| G4 | **M09 acceptance** — each role sees only its screens | ⬜ | after G1 (AUTH_ENABLED on) |
-
----
-
-## Dependency / critical path
-```
-Client Q17/Q18 (SMS gateway OR test numbers) ─┐
-Aman login UI (✅) ───────────────────────────┼─► H1 flip AUTH_ENABLED ─► G4 role acceptance ─► auth go-live (G1)
-Role matrix (✅ confirmed) ───────────────────┘
-A2 user-mgmt UI ─► H2 updateUserRole ─────────► manage roles in-app
-
-Client Q1–Q4/Q6 (entity/GSTIN/Soda/numbering) ─► G2 real invoicing
-Client Q15 retailer list ┐
-Client Q20 opening stock ┴─────────────────────► G3 pilot
-```
-**Nothing blocks the E2E demo (the `docs/E2E.md` role journeys)** — everything there runs on current
-build + safe defaults. The only pre-demo caution is **H3 (Soda rate)** so invoice tax is trustworthy.
-
----
-
-## Explicitly OUT of MVP (log, don't build now)
-- **Net-new scope S1–S5** (from BUILD_AUDIT): S1 admin panel gating · S2 schemes (✅ now built) ·
-  S3 wholesale channel (✅ two price lists) · S4 dispatch edit-lock · S5 rep daily targets
-  (client: **not enforced**).
-- **Phase 2:** returnable bottle/crate **deposit ledger** (client Q24); browser-side realtime; WhatsApp ingestion.
-
----
-
-## Immediate next actions
-1. **Aman:** open PR `feat/aman-mvp-e2e → dev` (clean) → run `docs/E2E.md`.
-2. **Hardik:** confirm **Soda rate** (H3) + finish **H1** once client sends SMS gateway/test numbers.
-3. **Both:** send `CLIENT_QUESTIONS_OPEN.md` to the client; seed staff/retailers/opening-stock when data lands.
+## Explicitly OUT (client-confirmed)
+Daily targets (S5) · retailer master import (none exists) · realtime · WhatsApp-feed ingestion
+(app replaces the flow for Phase 1) · deposit ledger (Phase 2).

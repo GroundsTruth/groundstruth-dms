@@ -123,8 +123,13 @@ export function AppShell({
         <div className="mt-2 flex-1 overflow-y-auto pb-4">
           <NavLinks items={items} />
         </div>
-        <div className="border-t px-5 py-3 text-[11px] text-muted-foreground">
-          Web app · phone &amp; laptop
+        <div className="space-y-2 border-t px-5 py-3">
+          {/* Dual branding (client 7/1): both distributor identities visible in-app. */}
+          <div className="flex items-center gap-3">
+            <BrandLogo entity="falcon" box="h-5 w-auto" rounded="" alt="Falcon Enterprises" />
+            <BrandLogo entity="jaypee" box="h-5 w-auto" rounded="" alt="Jaypee" />
+          </div>
+          <p className="text-[11px] text-muted-foreground">Web app · phone &amp; laptop</p>
         </div>
       </aside>
 
