@@ -20,8 +20,11 @@ should pick by seller — see A6).
 ## ⚠️ Client answers that changed facts (from the export re-read)
 - **Soda GST = 5%** (7/1 Catalogue + Jaypee sample invoice bills Club Soda at 2.5+2.5). Code/seed
   updated; **live DB rates must be resynced** (H1). Water 18→5 and Juice 12→5 likewise.
-- **Jaypee prints as "JAYPEE ADVERTISERS"** (both invoices), 4th Floor 1404 DLF Phase-4,
-  Gurugram 122009, GSTIN `06AIMPB2225L2ZE` — but the follow-up doc says "Jaypee **Enterprises**" → confirm (Q1).
+- **Jaypee = "JAYPEE ADVERTISERS" — CONFIRMED 7/02** (client's Maps listing + both invoices).
+  GSTIN `06AIMPB2225L2ZE`, registered office 4th Floor 1404 DLF Phase-4 122009. **NEW 7/02:
+  warehouse legal address = 248U, South City I, Sector 41, Gurugram 122001** (now printed on
+  the challan). Residual Q1: which address on tax invoices (default: registered office).
+  → **Hardik H7a: set `config.seller_jaypee.name = "Jaypee Advertisers"` live** (if it says Enterprises).
 - **Falcon GSTIN `06FVEPS8609PIZN`** — 13th char "I" is almost certainly digit **1**; verify on
   the GST portal before printing (Q2).
 - **Test OTP `1234` sanctioned** for Phase 1 + we should **recommend an SMS gateway** (Q-us).

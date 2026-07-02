@@ -23,8 +23,13 @@ export function ChallanView({ load }: { load: VanLoadDetail }) {
     <div className="mt-6 rounded-lg border border-border bg-card p-5 sm:p-8">
       <div className="border-b border-border pb-3 text-center">
         <h2 className="text-lg font-bold uppercase tracking-wide">Delivery Challan</h2>
+        {/* Legal name per the client's Maps listing + invoices (7/02: "JAYPEE ADVERTISERS");
+            warehouse legal address per the client's 7/02 message. */}
         <p className="text-xs text-muted-foreground">
-          Falcon / Jaypee Enterprises · Gurugram, Haryana
+          Jaypee Advertisers / Falcon Enterprises
+        </p>
+        <p className="text-xs text-muted-foreground">
+          248U, South City I, Sector 41, Gurugram, Haryana 122001
         </p>
       </div>
 

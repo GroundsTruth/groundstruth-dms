@@ -7,9 +7,11 @@ is fine just reply "ok"._
 
 ## ⭐ Still needed
 
-1. **Jaypee's exact legal name.** Your invoices print **"JAYPEE ADVERTISERS"** (4th Floor 1404,
-   DLF Phase-4, Gurugram 122009), but the follow-up doc says "Jaypee **Enterprises**". Which name
-   must print on tax invoices? *(Default: JAYPEE ADVERTISERS, as on your sample invoice.)*
+1. ~~Jaypee's exact legal name~~ → **RESOLVED 7/02**: your Maps listing + invoices agree on
+   **JAYPEE ADVERTISERS**; warehouse legal address noted (248U, South City I, Sector 41,
+   Gurugram 122001). One residual: on **tax invoices**, should the seller address be the
+   registered office (4th Floor 1404, DLF Phase-4, 122009 — as on your sample) or the
+   warehouse (248U Sector 41)? *(Default: registered office on invoices, warehouse on challans.)*
 
 2. **Falcon GSTIN check.** We have `06FVEPS8609PIZN` — is the 13th character the letter **I** or
    the digit **1** (`06FVEPS8609P1ZN`)? One glance at the GST portal settles it; it must be exact
