@@ -13,7 +13,7 @@ without passing kickstart prompts back and forth.
 ## 🚧 In flight — claim before you start (this is how we avoid collisions)
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
-| Aman | `feat/aman-mvp-e2e` | Capture (#7) + `/schemes` nav + AUTH LOGIN UI + role-nav + DASHBOARD live tiles/role-scope (#24). **NEW 7/02:** dual-branding logo slot · catalog MRP/units columns · **M08 user-mgmt `/users`** (list/role/active) · consolidated client-questions + MVP-remaining docs · E2E RUNBOOK. **Next (needs client/DB):** migrations applied → walk `docs/E2E_RUNBOOK.md`. **Blocked:** 14 new SKUs (client Q9). | `src/app/(app)/{capture,dashboard,login,users}/` · `src/components/{capture,auth,layout,catalog,users}/` · `src/lib/{nav,dashboard,users}` · docs | 2026-07-02 |
+| Aman | `feat/aman-mvp-e2e` | Capture (#7) + `/schemes` nav + AUTH LOGIN UI + role-nav + DASHBOARD live tiles/role-scope (#24). **NEW 7/02:** dual-branding logo slot · catalog MRP/units columns · **M08 user-mgmt `/users`** (list/role/active) · consolidated client-questions + MVP-remaining docs · E2E doc. **Next (needs client/DB):** migrations applied → walk `docs/E2E.md`. **Blocked:** 14 new SKUs (client Q9). | `src/app/(app)/{capture,dashboard,login,users}/` · `src/components/{capture,auth,layout,catalog,users}/` · `src/lib/{nav,dashboard,users}` · docs | 2026-07-02 |
 | Hardik | `30thJunechanges` (merged → dev, PR #27) | Build-audit (24 gaps) + Round-2/3 done — dual seller, brand credit, challan, schemes, catalogue ingest, tiered recon. ⚠️ **Apply the pending migrations** (Batch 1–4 + recon_tiers + schemes) in the SQL Editor — they gate live E2E. | `src/lib/{sales,retailers,inventory,van,schemes,config}/**` · UI · migrations | 2026-07-01 |
 
 > **Aman — starting fresh? Read `docs/AMAN_KICKSTART.md` first.** It has everything Hardik
@@ -56,7 +56,7 @@ without passing kickstart prompts back and forth.
 ## Log (newest first)
 
 ### 2026-07-02 · Aman + Claude · readiness report + logo/catalog/user-mgmt (`feat/aman-mvp-e2e`)
-- **Docs:** `docs/E2E_RUNBOOK.md` (chronological setup→journeys), `docs/CLIENT_QUESTIONS_OPEN.md`
+- **Docs:** `docs/E2E.md` (chronological setup→journeys), `docs/CLIENT_QUESTIONS_OPEN.md`
   (single consolidated client ask-list — archived the two older questionnaires under `docs/archive/`),
   `docs/MVP_REMAINING.md` (built-vs-remaining by owner + dependency graph).
 - **Readiness verdict:** branch clean-merges to dev (0 conflicts), typecheck 0, **120 tests**, build clean.
@@ -100,7 +100,7 @@ without passing kickstart prompts back and forth.
     but never created). Hand to whoever runs the SQL Editor.
 - **Blocked:** the **14 new catalogue SKUs** need the source file (`Catalogue Cola.xlsx`/`scratch_catalogue.json`,
   not in repo) — won't fabricate HSN/MRP/prices. Gluco→Juice already done in seed (SKU039).
-- **Next:** apply migrations + keys (Hardik/Aman) → **walk the driver+retailer journeys** (`docs/E2E_TEST_PLAN.md`).
+- **Next:** apply migrations + keys (Hardik/Aman) → **walk the driver+retailer journeys** (`docs/E2E.md`).
 
 ### 2026-07-01 · Hardik + Claude · client Round-2/3 build (`30thJunechanges`)
 Client answered Round-2 + sent updated Catalogue, redesigned challan, dual driver dir, logo, 2 invoices.

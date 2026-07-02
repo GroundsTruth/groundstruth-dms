@@ -74,7 +74,7 @@ Client Q1–Q4/Q6 (entity/GSTIN/Soda/numbering) ─► G2 real invoicing
 Client Q15 retailer list ┐
 Client Q20 opening stock ┴─────────────────────► G3 pilot
 ```
-**Nothing blocks the E2E demo (Phases 1–6 of `E2E_RUNBOOK.md`)** — everything there runs on current
+**Nothing blocks the E2E demo (the `docs/E2E.md` role journeys)** — everything there runs on current
 build + safe defaults. The only pre-demo caution is **H3 (Soda rate)** so invoice tax is trustworthy.
 
 ---
@@ -88,6 +88,6 @@ build + safe defaults. The only pre-demo caution is **H3 (Soda rate)** so invoic
 ---
 
 ## Immediate next actions
-1. **Aman:** open PR `feat/aman-mvp-e2e → dev` (clean) → run `E2E_RUNBOOK.md` Phases 0–6.
+1. **Aman:** open PR `feat/aman-mvp-e2e → dev` (clean) → run `docs/E2E.md`.
 2. **Hardik:** confirm **Soda rate** (H3) + finish **H1** once client sends SMS gateway/test numbers.
 3. **Both:** send `CLIENT_QUESTIONS_OPEN.md` to the client; seed staff/retailers/opening-stock when data lands.
