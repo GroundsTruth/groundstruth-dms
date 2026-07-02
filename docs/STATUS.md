@@ -15,7 +15,7 @@ snapshot + MVP checklist. Update both at session end._
 - **Round-2/3 net-new (2026-07-01): built** — dual seller by brand, brand credit, delivery
   challan view, schemes/freebies engine, catalogue ingest (tax/HSN/MRP/units live), tiered recon.
 - **Sales-Capture field MVP (#7): UI shipped** (`/capture`) on `feat/aman-mvp-e2e`.
-- **Tests: 120 green** · typecheck 0 · `next build` clean (14 routes).
+- **Tests: 122 green** · typecheck 0 · `next build` clean (14 routes).
 - **Not yet live-testable end-to-end** — two gates: (1) **migration backlog not applied** to the
   DB (Batch 1–4 + the two 2026-07-01 migrations); (2) **`.env.local` keys** needed in the run
   environment. Auth is dormant (fine for testing; a go-live gate for real driver use). Details ↓.
@@ -23,7 +23,7 @@ snapshot + MVP checklist. Update both at session end._
 ## E2E readiness (driver + retailer journeys)
 | Gate | State | Owner |
 |------|-------|-------|
-| App builds / typechecks / unit tests | ✅ green (120 tests) | — |
+| App builds / typechecks / unit tests | ✅ green (122 tests) | — |
 | Capture UI (`/capture`) on latest dev | ✅ built + compiles | Aman |
 | **DB migrations applied** (Batch 1–4 GST-inclusive/pricing/credit/adjust + `recon_tiers` + `schemes`) | 🔒 **pending** — code expects columns/fns not yet in DB → runtime errors until applied via SQL Editor | Hardik (SQL Editor) |
 | **`.env.local` keys** in run env | 🔒 **absent** in this worktree — no Supabase reachability | Aman (vault) |
@@ -59,7 +59,8 @@ snapshot + MVP checklist. Update both at session end._
   ⬜ remaining: per-SKU sales aggregate (topSkus/unitsSold still illustrative).
 - ✅ **Auth login UI** (M05 UI half) — `/login` phone→OTP→verify to Hardik's contract; app shell role-hides nav
   via `navItemsForRole`; real sign-out; matrix confirmed. ⬜ remaining: **M08 user-management screen**;
-  go-live (SMS provider + `AUTH_ENABLED` flip). ⬜ Hardik: gate `/capture`+`/schemes` in rbac.ts + `requireRole`.
+  go-live (SMS provider + `AUTH_ENABLED` flip). ✅ Hardik gated `/capture`+`/schemes` in rbac.ts (7/02);
+  ⬜ Hardik: wire `requireRole` into mutating actions + `created_by`.
 - ⬜ **Dual-branding logo** on invoice header + app shell (from client `PPT_1.pptx`).
 - ✅ **Nav** — `/schemes` added (2026-07-01); all module links live.
 
@@ -98,7 +99,7 @@ Marked `_pending_` in the ledger (Supabase SQL Editor, in order):
 
 ## Running now (needs `.env.local` + migrations for live data)
 `npm run dev` → `/dashboard /capture /catalog /inventory /orders /vans /invoices /retailers /schemes /kit`.
-`npm test` → **120 passing** · `npm run build` → green (14 routes) · `node scripts/check-supabase.mjs` → connectivity.
+`npm test` → **122 passing** · `npm run build` → green (14 routes) · `node scripts/check-supabase.mjs` → connectivity.
 `npm run seed:demo` fills a demo flow · `npx tsx scripts/seed-opening-stock.ts` loads June-1 stock.
 
 ## Next up
