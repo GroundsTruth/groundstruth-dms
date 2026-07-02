@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { PackagePlus } from "lucide-react";
 import { receiveStockAction } from "@/lib/inventory/actions";
 import type { SkuOption } from "@/lib/inventory/data";
+import { parseCases, dateOrderError } from "@/lib/form/validators";
 import { FormField, FormActions } from "@/components/kit/form-field";
+import { IntInput } from "@/components/kit/validated-inputs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -38,11 +40,22 @@ export function ReceiveForm({ skus }: { skus: SkuOption[] }) {
     e.preventDefault();
     setError(null);
     setOk(null);
+    // Validate before the server round-trip so field mistakes get a specific message.
+    const parsed = parseCases(qty);
+    if (!parsed.ok) {
+      setError(parsed.error);
+      return;
+    }
+    const dateErr = dateOrderError(mfgDate || null, expiryDate || null);
+    if (dateErr) {
+      setError(dateErr);
+      return;
+    }
     startTransition(async () => {
       const res = await receiveStockAction({
         skuId,
         batchNo,
-        qty: Number(qty),
+        qty: parsed.value,
         mfgDate: mfgDate || null,
         expiryDate: expiryDate || null,
       });
@@ -102,15 +115,12 @@ export function ReceiveForm({ skus }: { skus: SkuOption[] }) {
           )}
         </FormField>
 
-        <FormField label="Quantity (cases)" required>
+        <FormField label="Quantity (cases)" required hint="Whole cases — up to 10,000 per entry">
           {(p) => (
-            <Input
+            <IntInput
               {...p}
-              type="number"
-              min={1}
-              step="any"
               value={qty}
-              onChange={(e) => setQty(e.target.value)}
+              onValueChange={setQty}
               placeholder="0"
             />
           )}
@@ -121,17 +131,19 @@ export function ReceiveForm({ skus }: { skus: SkuOption[] }) {
             <Input
               {...p}
               type="date"
+              min={mfgDate || undefined}
               value={expiryDate}
               onChange={(e) => setExpiryDate(e.target.value)}
             />
           )}
         </FormField>
 
-        <FormField label="Manufacture date" hint="Optional">
+        <FormField label="Manufacture date" hint="Optional — on or before expiry">
           {(p) => (
             <Input
               {...p}
               type="date"
+              max={expiryDate || undefined}
               value={mfgDate}
               onChange={(e) => setMfgDate(e.target.value)}
             />

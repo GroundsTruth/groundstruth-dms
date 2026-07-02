@@ -19,6 +19,8 @@ import type { Retailer } from "@/lib/retailers/data";
 import { FormField } from "@/components/kit/form-field";
 import { QtyStepper } from "@/components/kit/qty-stepper";
 import { StatusBadge } from "@/components/kit/status-badge";
+import { PhoneInput, DecimalInput } from "@/components/kit/validated-inputs";
+import { phoneError } from "@/lib/form/validators";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -179,18 +181,45 @@ export function CaptureClient({
       setGeoMsg("Location not available on this device.");
       return;
     }
+    // Browsers only allow geolocation on HTTPS (or localhost) — the #1 cause of
+    // "GPS not working" in the field. Say so instead of a generic failure.
+    if (typeof window !== "undefined" && window.isSecureContext === false) {
+      setGeoMsg("Location needs a secure (https) connection — open the app via its https link.");
+      return;
+    }
+    const onError = (err: GeolocationPositionError) => {
+      if (err.code === err.PERMISSION_DENIED) {
+        setGeoMsg("Location is blocked — allow location for this site in the browser settings, then retry.");
+      } else if (err.code === err.TIMEOUT) {
+        // High-accuracy GPS can time out indoors — retry once with network-level accuracy.
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            setGeoMsg("Location captured ✓ (approximate)");
+          },
+          () => setGeoMsg("Couldn't get a fix — move to open sky or near a window and retry."),
+          { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
+        );
+      } else {
+        setGeoMsg("Couldn't get location — check that location/GPS is on, then retry.");
+      }
+    };
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setGeoMsg("Location captured ✓");
       },
-      () => setGeoMsg("Couldn't get location — allow location access and retry."),
-      { enableHighAccuracy: true, timeout: 10000 },
+      onError,
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
     );
   }
 
   // ── validation to enter preview ──
-  const shopReady = shopMode === "existing" ? retailerId !== "" : nName.trim() !== "";
+  // New shops need phone + route too (validateRetailer requires them — client rule).
+  const shopReady =
+    shopMode === "existing"
+      ? retailerId !== ""
+      : nName.trim() !== "" && phoneError(nPhone, true) === null && route !== "";
   const canReview = shopReady && validLines.length > 0 && !pending;
 
   const shopLabel = shopMode === "existing"
@@ -418,8 +447,8 @@ export function CaptureClient({
               <FormField label="Owner name">
                 {(p) => <Input {...p} value={nOwner} onChange={(e) => setNOwner(e.target.value)} className="h-11" />}
               </FormField>
-              <FormField label="Owner phone">
-                {(p) => <Input {...p} inputMode="numeric" value={nPhone} onChange={(e) => setNPhone(e.target.value)} className="h-11" />}
+              <FormField label="Owner phone" required error={phoneError(nPhone) ?? undefined}>
+                {(p) => <PhoneInput {...p} value={nPhone} onValueChange={setNPhone} className="h-11" />}
               </FormField>
             </div>
             <FormField label="GSTIN" hint="optional">
@@ -477,11 +506,10 @@ export function CaptureClient({
                   <div className="mt-3 flex items-center justify-between gap-3">
                     <QtyStepper value={l.qty} min={1} onChange={(q) => setLine(l.key, { qty: q })} />
                     <div className="w-28">
-                      <Input
+                      <DecimalInput
                         aria-label="Rate"
-                        inputMode="decimal"
                         value={l.rate}
-                        onChange={(e) => setLine(l.key, { rate: e.target.value })}
+                        onValueChange={(v) => setLine(l.key, { rate: v })}
                         placeholder={price != null ? inr(price) : "Rate"}
                         className="h-11 text-right"
                       />
@@ -525,11 +553,10 @@ export function CaptureClient({
           <div className="mt-3 space-y-3">
             <FormField label="Amount collected" hint={`default ${inr(subtotal)}`}>
               {(p) => (
-                <Input
+                <DecimalInput
                   {...p}
-                  inputMode="decimal"
                   value={payAmount}
-                  onChange={(e) => setPayAmount(e.target.value)}
+                  onValueChange={setPayAmount}
                   placeholder={String(subtotal)}
                   className="h-11"
                 />

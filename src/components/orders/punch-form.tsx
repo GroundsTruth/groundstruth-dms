@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2, ClipboardList } from "lucide-react";
 import { createOrder } from "@/lib/sales/orders-actions";
 import { ROUTES, type OrderableSku } from "@/lib/sales/orders-data";
+import { parseCases } from "@/lib/form/validators";
 import { FormField, FormActions } from "@/components/kit/form-field";
-import { Input } from "@/components/ui/input";
+import { IntInput, DecimalInput } from "@/components/kit/validated-inputs";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -70,9 +71,19 @@ export function PunchForm({ skus }: { skus: OrderableSku[] }) {
     e.preventDefault();
     setError(null);
     setOk(null);
-    const payload = lines
-      .filter((l) => l.skuId && Number(l.qty) > 0)
-      .map((l) => ({ skuId: l.skuId, qty: Number(l.qty), chargedPrice: l.rate ? Number(l.rate) : null }));
+    const active = lines.filter((l) => l.skuId && l.qty.trim() !== "");
+    for (const l of active) {
+      const parsed = parseCases(l.qty);
+      if (!parsed.ok) {
+        setError(parsed.error);
+        return;
+      }
+    }
+    const payload = active.map((l) => ({
+      skuId: l.skuId,
+      qty: Number(l.qty),
+      chargedPrice: l.rate ? Number(l.rate) : null,
+    }));
     if (payload.length === 0) {
       setError("Add at least one line with a SKU and quantity.");
       return;
@@ -141,24 +152,18 @@ export function PunchForm({ skus }: { skus: OrderableSku[] }) {
                   </p>
                 ) : null}
               </div>
-              <Input
+              <IntInput
                 aria-label="Quantity"
-                type="number"
-                min={1}
-                step="any"
                 value={l.qty}
-                onChange={(e) => setLine(l.key, { qty: e.target.value })}
+                onValueChange={(v) => setLine(l.key, { qty: v })}
                 placeholder="Qty"
                 className="w-20"
               />
               <div className="w-24">
-                <Input
+                <DecimalInput
                   aria-label="Rate"
-                  type="number"
-                  min={0}
-                  step="any"
                   value={l.rate}
-                  onChange={(e) => setLine(l.key, { rate: e.target.value })}
+                  onValueChange={(v) => setLine(l.key, { rate: v })}
                   placeholder={price != null ? inr(price) : "Rate"}
                 />
                 {belowList(l) ? (

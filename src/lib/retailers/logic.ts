@@ -1,7 +1,8 @@
 /**
- * Retailer validation (M16/M17) — pure, unit-tested. Only the name is required; the
- * field-onboarding form captures the rest as available. Phone/GSTIN are light-checked
- * when present (don't block onboarding on a missing optional field).
+ * Retailer validation (M16/M17) — pure, unit-tested. Client rule (bug round
+ * 2026-07-02): phone + route are mandatory on every shop (both flows supply them);
+ * address is additionally required on the admin onboard form (enforced there —
+ * the field capture flow has no address input). GSTIN stays optional, light-checked.
  */
 
 export type CustomerType = "cash" | "credit";
@@ -34,12 +35,15 @@ export function normalizePhone(phone: string): string {
 export function validateRetailer(input: RetailerInput): string | null {
   if (!input.name?.trim()) return "Retailer name is required.";
 
-  if (input.phone) {
+  if (!input.phone?.trim()) return "Phone number is required.";
+  {
     const digits = normalizePhone(input.phone);
     if (digits.length < 10 || digits.length > 12) {
       return "Phone number looks invalid (need 10 digits).";
     }
   }
+
+  if (!input.route?.trim()) return "Route / beat is required.";
 
   if (input.gstin) {
     if (!GSTIN_RE.test(input.gstin.trim().toUpperCase())) {

@@ -103,12 +103,16 @@ export function LoginForm() {
                 <Input
                   {...p}
                   type="tel"
-                  inputMode="tel"
+                  inputMode="numeric"
                   autoComplete="tel"
                   autoFocus
                   placeholder="98765 43210"
+                  maxLength={12}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) =>
+                    // digits only; 12 allows a pasted 91-prefixed number (toE164 handles it)
+                    setPhone(e.target.value.replace(/\D/g, "").slice(0, 12))
+                  }
                   className="h-11 pl-9 text-base"
                 />
               </div>

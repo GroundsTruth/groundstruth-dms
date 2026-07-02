@@ -51,6 +51,14 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
     const supabase = createAdminClient();
 
     const listType = input.listType ?? "retail";
+    // One upfront SKU-meta fetch: labels for human error messages (never raw ids)
+    // + categories for the brand-credit guard below.
+    const { data: skuMeta } = await supabase
+      .from("skus")
+      .select("id,code,name,category")
+      .in("id", input.lines.map((l) => l.skuId));
+    const metaById = new Map((skuMeta ?? []).map((s) => [s.id as string, s]));
+
     // Resolve the LIST price per line; the rep may charge below it (→ approval).
     const priced: OrderLineInput[] = await Promise.all(
       input.lines.map(async (l) => ({
@@ -63,6 +71,10 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
           listType,
         }),
         chargedPrice: l.chargedPrice ?? null,
+        label: (() => {
+          const m = metaById.get(l.skuId);
+          return m ? `${m.code} — ${m.name}` : undefined;
+        })(),
       })),
     );
 
@@ -80,11 +92,9 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
         .eq("id", input.retailerId)
         .maybeSingle();
       if (ret?.customer_type === "credit") {
-        const { data: catRows } = await supabase
-          .from("skus")
-          .select("category")
-          .in("id", input.lines.map((l) => l.skuId));
-        const entity = invoiceSellerEntity((catRows ?? []).map((c) => c.category));
+        const entity = invoiceSellerEntity(
+          (skuMeta ?? []).map((s) => s.category as string),
+        );
         const credit = await getRetailerCredit(input.retailerId);
         const check = creditCheck({
           entity,

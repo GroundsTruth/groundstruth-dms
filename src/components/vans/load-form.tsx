@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2, Truck } from "lucide-react";
 import { loadVan } from "@/lib/van/loads";
 import { ROUTES } from "@/lib/sales/orders-data";
+import { parseCases, sanitizeVehicle, VEHICLE_MAX_CHARS } from "@/lib/form/validators";
 import { FormField, FormActions } from "@/components/kit/form-field";
+import { IntInput } from "@/components/kit/validated-inputs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -52,9 +54,15 @@ export function LoadForm({ skus }: { skus: VanSku[] }) {
     e.preventDefault();
     setError(null);
     setOk(null);
-    const payload = lines
-      .filter((l) => l.skuId && Number(l.qty) > 0)
-      .map((l) => ({ skuId: l.skuId, qty: Number(l.qty) }));
+    const active = lines.filter((l) => l.skuId && l.qty.trim() !== "");
+    for (const l of active) {
+      const parsed = parseCases(l.qty);
+      if (!parsed.ok) {
+        setError(parsed.error);
+        return;
+      }
+    }
+    const payload = active.map((l) => ({ skuId: l.skuId, qty: Number(l.qty) }));
     if (payload.length === 0) {
       setError("Add at least one line with a SKU and quantity.");
       return;
@@ -95,9 +103,15 @@ export function LoadForm({ skus }: { skus: VanSku[] }) {
             </select>
           )}
         </FormField>
-        <FormField label="Vehicle" hint="Optional — van number / driver name">
+        <FormField label="Vehicle number" hint={`Optional — registration, max ${VEHICLE_MAX_CHARS} characters`}>
           {(p) => (
-            <Input {...p} value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder="e.g. MH-04-AB-1234" />
+            <Input
+              {...p}
+              value={vehicle}
+              onChange={(e) => setVehicle(sanitizeVehicle(e.target.value))}
+              maxLength={VEHICLE_MAX_CHARS}
+              placeholder="e.g. MH04AB1234"
+            />
           )}
         </FormField>
       </div>
@@ -128,13 +142,10 @@ export function LoadForm({ skus }: { skus: VanSku[] }) {
                   </p>
                 ) : null}
               </div>
-              <Input
+              <IntInput
                 aria-label="Quantity"
-                type="number"
-                min={1}
-                step="any"
                 value={l.qty}
-                onChange={(e) => setLine(l.key, { qty: e.target.value })}
+                onValueChange={(v) => setLine(l.key, { qty: v })}
                 placeholder="Qty"
                 className="w-24"
               />

@@ -12,6 +12,8 @@ import {
 import type { Retailer } from "@/lib/retailers/data";
 import { ROUTES } from "@/lib/sales/orders-data";
 import { FormField, FormActions } from "@/components/kit/form-field";
+import { PhoneInput, DecimalInput } from "@/components/kit/validated-inputs";
+import { phoneError } from "@/lib/form/validators";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/kit/status-badge";
@@ -92,6 +94,12 @@ export function RetailersClient({ retailers }: { retailers: Retailer[] }) {
   function save(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    // Client rule (2026-07-02): phone, shop name, route/beat and address are mandatory.
+    const phoneErr = phoneError(draft.phone, true);
+    if (phoneErr) return setError(phoneErr);
+    if (!draft.shopName.trim()) return setError("Shop name is required.");
+    if (!draft.route) return setError("Route / beat is required.");
+    if (!draft.address.trim()) return setError("Address is required.");
     // #13: capture GPS on save (best-effort; never blocks onboarding).
     const geo = new Promise<{ lat: number | null; lng: number | null }>((resolve) => {
       if (editId || !("geolocation" in navigator)) return resolve({ lat: null, lng: null });
@@ -163,16 +171,16 @@ export function RetailersClient({ retailers }: { retailers: Retailer[] }) {
             <FormField label="Owner name">
               {(p) => <Input {...p} value={draft.ownerName} onChange={(e) => setDraft({ ...draft, ownerName: e.target.value })} />}
             </FormField>
-            <FormField label="Shop name">
+            <FormField label="Shop name" required>
               {(p) => <Input {...p} value={draft.shopName} onChange={(e) => setDraft({ ...draft, shopName: e.target.value })} />}
             </FormField>
-            <FormField label="Phone">
-              {(p) => <Input {...p} value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: e.target.value })} placeholder="10-digit" />}
+            <FormField label="Phone" required error={phoneError(draft.phone) ?? undefined}>
+              {(p) => <PhoneInput {...p} value={draft.phone} onValueChange={(v) => setDraft({ ...draft, phone: v })} />}
             </FormField>
             <FormField label="GSTIN" hint="Optional — 15 characters">
               {(p) => <Input {...p} value={draft.gstin} onChange={(e) => setDraft({ ...draft, gstin: e.target.value })} />}
             </FormField>
-            <FormField label="Route / beat">
+            <FormField label="Route / beat" required>
               {(p) => (
                 <select {...p} value={draft.route} onChange={(e) => setDraft({ ...draft, route: e.target.value })} className={selectCls}>
                   <option value="">No route</option>
@@ -180,7 +188,7 @@ export function RetailersClient({ retailers }: { retailers: Retailer[] }) {
                 </select>
               )}
             </FormField>
-            <FormField label="Address">
+            <FormField label="Address" required>
               {(p) => <Input {...p} value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} />}
             </FormField>
             <FormField label="Customer type" hint="Cash auto-approves; credit needs sign-off">
@@ -194,9 +202,9 @@ export function RetailersClient({ retailers }: { retailers: Retailer[] }) {
               )}
             </FormField>
             {draft.customerType === "credit" ? (
-              <FormField label="Credit limit (₹)">
-                {(p) => <Input {...p} type="number" min={0} step="any" value={draft.creditLimit}
-                  onChange={(e) => setDraft({ ...draft, creditLimit: e.target.value })} />}
+              <FormField label="Credit limit (₹)" hint="Campa Sure credit: ₹1,000–1,500 per shop">
+                {(p) => <DecimalInput {...p} value={draft.creditLimit}
+                  onValueChange={(v) => setDraft({ ...draft, creditLimit: v })} />}
               </FormField>
             ) : null}
           </div>

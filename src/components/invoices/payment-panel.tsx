@@ -7,6 +7,7 @@ import { recordCollection } from "@/lib/collections/actions";
 import type { CollectionRow } from "@/lib/collections/data";
 import type { CollectionMode } from "@/lib/collections/logic";
 import { FormField } from "@/components/kit/form-field";
+import { DecimalInput } from "@/components/kit/validated-inputs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/kit/status-badge";
@@ -100,8 +101,8 @@ export function PaymentPanel({
         <form onSubmit={onSubmit} className="grid items-end gap-3 sm:grid-cols-[1fr_auto_1fr_auto]">
           <FormField label="Amount">
             {(p) => (
-              <Input {...p} type="number" min={1} step="any" value={amount}
-                onChange={(e) => setAmount(e.target.value)} placeholder="0" />
+              <DecimalInput {...p} value={amount}
+                onValueChange={setAmount} placeholder="0" />
             )}
           </FormField>
           <FormField label="Mode">

@@ -12,6 +12,7 @@ export type OrderLineInput = {
   qty: number;
   listPrice: number | null; // resolved from the price list (null = unpriced → blocked)
   chargedPrice?: number | null; // rep-entered; defaults to listPrice
+  label?: string; // human name ("SKU042 — Suncrush Mango") for error messages — never show raw ids
 };
 
 export type PricedOrderLine = {
@@ -43,7 +44,7 @@ export function validateOrderLines(lines: OrderLineInput[]): string | null {
       return "Every line needs a quantity greater than 0.";
     }
     if (l.listPrice == null) {
-      return `No price set for SKU ${l.skuId}. Set a price before ordering it.`;
+      return `No price set for ${l.label ?? "one of the items"} — set a price in the catalog before ordering it.`;
     }
     const charged = l.chargedPrice ?? l.listPrice;
     if (typeof charged !== "number" || Number.isNaN(charged) || charged < 0) {

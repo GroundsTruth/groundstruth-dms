@@ -3,6 +3,8 @@
  * stock math shared by the receive service, the stock-view accessor, and tests.
  */
 
+import { MAX_QTY_CASES } from "../form/validators";
+
 export type ReceiveInput = {
   skuId: string;
   batchNo: string;
@@ -18,6 +20,9 @@ export function validateReceive(input: ReceiveInput): string | null {
   if (!input.batchNo?.trim()) return "A batch number is required.";
   if (typeof input.qty !== "number" || Number.isNaN(input.qty) || input.qty <= 0) {
     return "Quantity must be greater than 0.";
+  }
+  if (input.qty > MAX_QTY_CASES) {
+    return `Quantity looks too large — the limit per receive is ${MAX_QTY_CASES.toLocaleString("en-IN")} cases.`;
   }
   if (input.mfgDate && input.expiryDate) {
     if (new Date(input.expiryDate).getTime() < new Date(input.mfgDate).getTime()) {

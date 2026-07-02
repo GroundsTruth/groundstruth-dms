@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Undo2 } from "lucide-react";
 import { recordReturns } from "@/lib/van/returns";
 import type { VanLoadDetail } from "@/lib/van/data";
-import { Input } from "@/components/ui/input";
+import { IntInput } from "@/components/kit/validated-inputs";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -40,7 +40,7 @@ export function ReturnsForm({ load }: { load: VanLoadDetail }) {
 
     const over = returns.find((r) => r.qty > r.remaining);
     if (over) {
-      setError("A return is more than what's still out on the van.");
+      setError("A return can't be more than the delivered (not-yet-returned) quantity.");
       return;
     }
     if (returns.length === 0) {
@@ -77,7 +77,7 @@ export function ReturnsForm({ load }: { load: VanLoadDetail }) {
               <TableHead>SKU</TableHead>
               <TableHead className="text-right">Out</TableHead>
               <TableHead className="text-right">Returned</TableHead>
-              <TableHead className="text-right">Still out</TableHead>
+              <TableHead className="text-right">Delivered</TableHead>
               <TableHead className="text-right">Return now</TableHead>
             </TableRow>
           </TableHeader>
@@ -91,14 +91,10 @@ export function ReturnsForm({ load }: { load: VanLoadDetail }) {
                 <TableCell className="text-right tabular-nums">{l.qtyReturned}</TableCell>
                 <TableCell className="text-right tabular-nums">{l.remaining}</TableCell>
                 <TableCell className="text-right">
-                  <Input
+                  <IntInput
                     aria-label={`Return qty for ${l.code}`}
-                    type="number"
-                    min={0}
-                    max={l.remaining}
-                    step="any"
                     value={qtys[l.lineId] ?? ""}
-                    onChange={(e) => setQtys((q) => ({ ...q, [l.lineId]: e.target.value }))}
+                    onValueChange={(v) => setQtys((q) => ({ ...q, [l.lineId]: v }))}
                     disabled={l.remaining <= 0}
                     placeholder="0"
                     className="ml-auto w-24"

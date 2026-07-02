@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ClipboardCheck } from "lucide-react";
 import { adjustStock } from "@/lib/inventory/adjust";
 import type { BatchRow } from "@/lib/inventory/data";
+import { IntInput } from "@/components/kit/validated-inputs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,10 +51,16 @@ export function AdjustPanel({ batches }: { batches: BatchRow[] }) {
 
   return (
     <section className="mt-8 rounded-lg border border-border bg-card p-4 sm:p-5">
-      <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
+      <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold">
         <ClipboardCheck className="h-4 w-4 text-muted-foreground" aria-hidden />
         Physical count / adjustment
       </h2>
+      <p className="mb-4 text-xs text-muted-foreground">
+        <span className="font-medium">System</span> = cases the ledger says are on hand for
+        that batch. Enter what you physically <span className="font-medium">counted</span> —
+        the difference posts as an adjustment (short count = wastage/expiry, negative;
+        extra = correction, positive). Every adjustment is audited.
+      </p>
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -73,9 +80,10 @@ export function AdjustPanel({ batches }: { batches: BatchRow[] }) {
                 <TableCell>{b.batchNo}</TableCell>
                 <TableCell className="text-right tabular-nums">{b.qtyOnHand}</TableCell>
                 <TableCell className="text-right">
-                  <Input type="number" step="any" min={0} className="ml-auto w-24"
+                  <IntInput aria-label={`Counted quantity for ${b.code} batch ${b.batchNo}`}
+                    className="ml-auto w-24"
                     value={counts[b.id] ?? ""} placeholder={String(b.qtyOnHand)}
-                    onChange={(e) => setCounts((c) => ({ ...c, [b.id]: e.target.value }))} />
+                    onValueChange={(v) => setCounts((c) => ({ ...c, [b.id]: v }))} />
                 </TableCell>
                 <TableCell>
                   <Input className="w-36" placeholder="wastage / expiry…"
