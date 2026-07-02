@@ -35,10 +35,10 @@ Branch `feat/aman-mvp-e2e` (9 commits ahead of dev, 0 behind, **0 conflicts**; t
 ### Aman's lane
 | # | Item | Status | Depends on | Notes |
 |---|------|--------|-----------|-------|
-| A1 | **Dual-branding logo** on invoice header + app shell | ⬜ | asset in `PPT_1.pptx` (have it) | cosmetic; invoice already prints correct entity name/GSTIN |
-| A2 | **M08 user-management screen** (`/users` — list users, assign roles) | ⬜ | Hardik `updateUserRole` (H2) | needed only for auth lockdown, not the demo |
+| A1 | **Dual-branding logo** on invoice header + app shell | 🟡 | **logo asset** (drop `public/brand/logo.png`) | slot BUILT (`BrandLogo`, text fallback); just needs the PNG — `PPT_1.pptx` not in repo |
+| A2 | **M08 user-management screen** (`/users` — list users, assign roles) | 🟡 | Hardik hardens (H2) | UI + accessor + actions BUILT (`src/lib/users/**`); works now; Hardik to relocate into `auth/` + add `requireRole("owner")` |
 | A3 | **14 new catalogue SKUs** (+seed) | 🔒 | client Q9 ("add these?") | don't guess — wait for the yes |
-| A4 | **Catalog: surface MRP / units-per-case columns** on `/catalog` | 🟡 | — | data is ingested; just display |
+| A4 | **Catalog: surface MRP / units-per-case columns** on `/catalog` | ✅ | — | MRP column + units/case (desktop + mobile) |
 | A5 | **UI-kit remainder** (empty/loading polish, form patterns) | 🟡 | — | low priority |
 | ✅ | Sales-Capture UI · Login UI · role-nav · Dashboard live tiles + role-scope · `/schemes` nav · Gluco reclassify | ✅ | — | on branch, verified |
 
@@ -46,7 +46,8 @@ Branch `feat/aman-mvp-e2e` (9 commits ahead of dev, 0 behind, **0 conflicts**; t
 | # | Item | Status | Depends on | Notes |
 |---|------|--------|-----------|-------|
 | H1 | **Wire `requireRole` into mutating actions + flip `NEXT_PUBLIC_AUTH_ENABLED`** (M07) | ⬜ | Aman login UI (done) + role matrix (confirmed) | turns on the lockdown |
-| H2 | **`updateUserRole` action** (M08) | ⬜ | pairs with A2 | small |
+| H2 | **Harden user mutations** (M08) | 🟡 | pairs with A2 (done) | Aman built working `updateUserRole`/`setUserActive` in `src/lib/users/**`; relocate into `auth/` + add `requireRole("owner")` when auth flips |
+| H7 | **RBAC gate `/capture` + `/schemes`** in `rbac.ts` | ⬜ | — | both currently unlisted → visible to all roles; suggest `/capture`→owner+driver_rep, `/schemes`→owner |
 | H3 | **Soda GST rate reconcile** — live value vs client (5% vs 18%) | ⬜ | client Q4 | **affects invoice tax correctness — resolve before trusting demo invoices** |
 | H4 | **Challan layout final** | 🟡 | client Q7 (filled sample, optional) | built to redesigned spec; polish on sample |
 | H5 | **Seed real `users`** from driver directory | 🔒 | client Q19 consent + auth go-live | PII, off git |

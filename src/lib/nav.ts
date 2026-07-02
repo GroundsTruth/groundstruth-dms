@@ -8,6 +8,7 @@ import {
   ReceiptText,
   Store,
   Gift,
+  UsersRound,
   Palette,
   type LucideIcon,
 } from "lucide-react";
@@ -35,6 +36,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Invoices", href: "/invoices", icon: ReceiptText },
   { label: "Retailers", href: "/retailers", icon: Store },
   { label: "Schemes", href: "/schemes", icon: Gift },
+  { label: "Users", href: "/users", icon: UsersRound },
   { label: "UI Kit", href: "/kit", icon: Palette },
 ];
 

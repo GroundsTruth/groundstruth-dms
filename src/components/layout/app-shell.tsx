@@ -11,6 +11,7 @@ import { signOut } from "@/lib/auth/actions";
 import type { AppRole } from "@/lib/auth/rbac";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { BrandLogo } from "@/components/layout/brand-logo";
 import {
   Sheet,
   SheetContent,
@@ -45,9 +46,7 @@ function initials(name: string): string {
 function Brand() {
   return (
     <Link href="/" className="flex items-center gap-2.5 px-5 py-4">
-      <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-        C
-      </span>
+      <BrandLogo box="h-8 w-8" />
       <div className="leading-tight">
         <p className="text-sm font-semibold">Campa DMS</p>
         <p className="text-[11px] text-muted-foreground">GroundsTruth</p>
