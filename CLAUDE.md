@@ -80,4 +80,7 @@ live production OOH platform we reuse patterns and components from).
   live. Keys in `.env.local` only — **TODO: add the 3 vars to Vercel** for the
   deployed app.
 
-See `docs/COORDINATION.md` for ownership + workflow, `docs/STATUS.md` for state.
+See `docs/COORDINATION.md` for ownership + workflow, `docs/STATUS.md` for state,
+`docs/E2E.md` for the single end-to-end test script (setup → per-role exact steps →
+cross-role lifecycle), and `docs/MVP_REMAINING.md` + `docs/CLIENT_QUESTIONS_OPEN.md`
+for what's left to build and what's still needed from the client.

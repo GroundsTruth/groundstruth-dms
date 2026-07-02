@@ -7,6 +7,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import type { InvoiceDetail } from "@/lib/sales/invoice-data";
+import { BrandLogo } from "@/components/layout/brand-logo";
 
 function inr(n: number): string {
   return `₹${n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -18,10 +19,13 @@ export function InvoiceView({ invoice }: { invoice: InvoiceDetail }) {
     <div className="rounded-lg border border-border bg-card p-5 sm:p-8">
 
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
-        <div>
-          <h2 className="text-lg font-bold">{invoice.seller.name}</h2>
-          <p className="text-sm text-muted-foreground">{invoice.seller.address}</p>
-          <p className="text-sm text-muted-foreground">GSTIN: {invoice.seller.gstin}</p>
+        <div className="flex items-start gap-3">
+          <BrandLogo box="h-12 w-12" alt={invoice.seller.name} />
+          <div>
+            <h2 className="text-lg font-bold">{invoice.seller.name}</h2>
+            <p className="text-sm text-muted-foreground">{invoice.seller.address}</p>
+            <p className="text-sm text-muted-foreground">GSTIN: {invoice.seller.gstin}</p>
+          </div>
         </div>
         <div className="text-right">
           <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">

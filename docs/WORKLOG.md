@@ -13,8 +13,8 @@ without passing kickstart prompts back and forth.
 ## 🚧 In flight — claim before you start (this is how we avoid collisions)
 | Who | Branch | Module / task | Lane folders | Since |
 |-----|--------|---------------|--------------|-------|
-| Aman | — | (catalog-tax/INVOICE_SPEC merged, PR #25) — **next:** Sales-Capture UI (#7) · dashboard live tiles · auth login UI · #18/#20/#24 | UI Kit · Catalog · Dashboard · auth UI | — |
-| Hardik | `30thJunechanges` | **Build-audit (24 gaps) + client Round-2/3 done** — dual seller, brand credit, challan, schemes engine, catalogue ingest, tiered recon. Ready to merge. | `src/lib/{sales,retailers,inventory,van,schemes,config}/**` · UI · migrations | 2026-07-01 |
+| Aman | `feat/aman-mvp-e2e` | Capture (#7) + `/schemes` nav + AUTH LOGIN UI + role-nav + DASHBOARD live tiles/role-scope (#24). **NEW 7/02:** dual-branding logo slot · catalog MRP/units columns · **M08 user-mgmt `/users`** (list/role/active) · consolidated client-questions + MVP-remaining docs · E2E doc. **Next (needs client/DB):** migrations applied → walk `docs/E2E.md`. **Blocked:** 14 new SKUs (client Q9). | `src/app/(app)/{capture,dashboard,login,users}/` · `src/components/{capture,auth,layout,catalog,users}/` · `src/lib/{nav,dashboard,users}` · docs | 2026-07-02 |
+| Hardik | `30thJunechanges` (merged → dev, PR #27) | Build-audit (24 gaps) + Round-2/3 done — dual seller, brand credit, challan, schemes, catalogue ingest, tiered recon. ⚠️ **Apply the pending migrations** (Batch 1–4 + recon_tiers + schemes) in the SQL Editor — they gate live E2E. | `src/lib/{sales,retailers,inventory,van,schemes,config}/**` · UI · migrations | 2026-07-01 |
 
 > **Aman — starting fresh? Read `docs/AMAN_KICKSTART.md` first.** It has everything Hardik
 > built (done + merged), your lane (Auth UI → Dashboard tiles → UI kit), the assumptions we
@@ -23,6 +23,9 @@ without passing kickstart prompts back and forth.
 ## 📌 Pending cross-lane asks — read before you start a session (clear the line when done)
 | For | Ask | Raised by | Status |
 |-----|-----|-----------|--------|
+| **Hardik** | 🔴 **Confirm the live Soda GST rate** — `docs/CLIENT_QUESTIONS_OPEN.md` A4 flags a conflict: Round-3 notes say **Soda = 5%**, the audit/INVOICE_SPEC set **18%**. Your tax lane. Resolve before we trust demo invoice tax (client Q4 asks them too). | Aman · 2026-07-02 | ⬜ open |
+| **Hardik** | **M08 user mutations** — I built working `updateUserRole`/`setUserActive` in **`src/lib/users/**`** (new folder, so I didn't touch your `auth/` lane) to make `/users` work now. Relocate into `src/lib/auth` + add `requireRole("owner")` when auth flips. | Aman · 2026-07-02 | ⬜ FYI |
+| **Hardik** | **RBAC gate `/capture` + `/schemes`** in `src/lib/auth/rbac.ts` — both are currently unlisted (visible to every role). Suggest `/capture` → owner+driver_rep, `/schemes` → owner. Your file. | Aman · 2026-07-02 | ⬜ open |
 | **Aman** | Add **`/inventory`** to the sidebar nav (`src/lib/nav.ts` — your lane). Hardik shipped the page on `feat/inventory-receive` but didn't touch your file. Label "Inventory". | Hardik · 2026-06-28 | ✅ done (all nav links live via seed-and-nav) |
 | **Aman** | Wire **low-stock tile** on Owner Dashboard (M30). Accessor ready: `getLowStockSkus()` in `src/lib/inventory/data.ts` (returns `SkuStock[]` at/below threshold). Render the count/list (low-stock is now DYNAMIC days-of-cover). Hardik won't touch dashboard. | Hardik · 2026-06-28 | ⬜ open |
 | **Aman** | Add **`/orders`** to the sidebar nav (`src/lib/nav.ts` — your lane). Page shipped on `feat/sales-orders`. Label "Orders". | Hardik · 2026-06-28 | ✅ done (seed-and-nav) |
@@ -36,7 +39,9 @@ without passing kickstart prompts back and forth.
 | **Hardik** | **Invoice format unblocked** — client sent a real tax invoice → reverse-engineered in `docs/INVOICE_SPEC.md` (layout, GST-inclusive math, CGST/SGST-vs-IGST, numbering). Used for M21 inclusive invoice (Batch 1). M25 challan still needs a challan sample. | Aman · 2026-06-30 | ✅ DONE (Hardik 6/30) |
 | **Both** | **Re-seed HELD:** `scripts/seed-skus.ts` now carries per-SKU tax + is two-pass (non-destructive) but is **not run** — it would overwrite Hardik's live category rates. Run 6/30 (client confirmed correct) — per-SKU tax+HSN live. | Aman · 2026-06-30 | ✅ DONE (Hardik 6/30) |
 | **Hardik** | 🔴 **BUILD AUDIT (2026-06-30) → `docs/BUILD_AUDIT_2026-06-30.md`** — 24 confirmed gaps vs the client's WhatsApp answers/Catalogue (file:line + fixes). Spine items before real billing: **GST math is EXCLUSIVE, must be INCLUSIVE** in BOTH `invoice-tax.ts` AND the `confirm_and_invoice` RPC (the tests assert the wrong math) (#1,#2); below-list **admin-approval** (#5); **credit ledger** (#6); two **price lists** + remove dead `discount_ceiling` (#9,#10); retailer **cash/credit + photo + GPS-capture + owner-name + role-gated approval** (#11,#12,#13,#22,#23); **dynamic low-stock + wastage/adjustment + count screen** (#14,#15,#16); **seller-by-brand + HSN on invoice** (#8,#17); **Soda→18% corrective migration + NULL-guard** (#3,#19). **Plus net-new scope S1–S5** (admin panel · schemes · wholesale channel · dispatch edit-lock · rep targets). | Aman · 2026-06-30 | 🟡 24 gaps DONE (Batches 1–5, this PR); S1–S5 net-new = later |
-| **Both** | 🟠 **Phase-1 "Sales Capture" flow (client's 6/29 priority)** — one driver→shop(+inline onboard)→SKU/qty/**rate/discount**→**payment mode**→preview→invoice journey. Needs Hardik: line-level rate/discount + payment + inline-onboard in schema/actions (#4,#7); Aman: the capture UI. | Aman · 2026-06-30 | 🟡 Hardik backend DONE (`captureSale`); Aman builds the screen |
+| **Both** | 🟠 **Phase-1 "Sales Capture" flow (client's 6/29 priority)** — one driver→shop(+inline onboard)→SKU/qty/**rate/discount**→**payment mode**→preview→invoice journey. Needs Hardik: line-level rate/discount + payment + inline-onboard in schema/actions (#4,#7); Aman: the capture UI. | Aman · 2026-06-30 | ✅ DONE — Hardik `captureSale` + Aman `/capture` mobile flow (`feat/aman-mvp-e2e`) |
+| **Hardik** | **Add `/capture` + `/schemes` to `rbac.ts` route map** (your file). They shipped after AUTH_PLAN so they're "unlisted → any signed-in user" — nav degrades safely but middleware won't enforce. Proposed: `/capture` → owner+driver_rep · `/schemes` → owner. One-liner each. Aman **confirmed the rest of the matrix** (AUTH_PLAN §matrix). | Aman · 2026-07-01 | ⬜ open |
+| **Hardik** | **Wire `requireRole` into mutating actions** + stamp `created_by` = session user id (AUTH_PLAN build-order 3). Aman's login UI + role-nav are live; enforcement is your half. Needs the OTP provider + `AUTH_ENABLED` flip to fully go-live. | Aman · 2026-07-01 | ⬜ open |
 
 **Rules that keep us conflict-free:**
 - Edit only the folders your lane owns (`COORDINATION.md`). No overlap → no conflicts.
@@ -49,6 +54,53 @@ without passing kickstart prompts back and forth.
 ---
 
 ## Log (newest first)
+
+### 2026-07-02 · Aman + Claude · readiness report + logo/catalog/user-mgmt (`feat/aman-mvp-e2e`)
+- **Docs:** `docs/E2E.md` (chronological setup→journeys), `docs/CLIENT_QUESTIONS_OPEN.md`
+  (single consolidated client ask-list — archived the two older questionnaires under `docs/archive/`),
+  `docs/MVP_REMAINING.md` (built-vs-remaining by owner + dependency graph).
+- **Readiness verdict:** branch clean-merges to dev (0 conflicts), typecheck 0, **120 tests**, build clean.
+  Doc-hygiene QC: STATUS.md + MODULE_OWNERSHIP.md were stale (refreshed on branch); `.xlsx` tracker frozen at 6/25.
+- **Built (3):** (1) **dual-branding logo slot** — `BrandLogo` in app shell + invoice header, renders
+  `public/brand/logo.png` with a text fallback (drop the PNG in — no code change; asset not yet in repo);
+  (2) **catalog MRP + units/case columns** on `/catalog` (desktop + mobile); (3) **M08 user-management**
+  `/users` (owner-gated) — list staff, change role, activate/deactivate, audited; accessor+actions in new
+  `src/lib/users/**` (didn't touch Hardik's `auth/` lane).
+- **Corrected earlier over-claim:** the 14 new SKUs are NOT added (still 46) — correctly blocked on client Q9;
+  only Gluco→Juice landed.
+- **Next (Aman):** run the E2E runbook once you're on the branch; fold shop-photo into capture later.
+
+### 2026-07-01 · Aman + Claude · pull dev + capture rebase + tracker QC + E2E assessment (`feat/aman-mvp-e2e`)
+- **Pulled dev** (Hardik's Round-2/3 merged: dual seller, brand credit, challan view, schemes engine,
+  catalogue ingest, tiered recon). **Rebased the Sales-Capture UI** (`/capture`) onto latest dev — the
+  `captureSale` contract is unchanged, so the screen recompiled clean. Added **`/schemes`** to the nav
+  (Aman todo #0). **typecheck 0 · 120 tests · build green (14 routes).**
+- **Tracker QC** (asked: is everyone keeping docs current?):
+  - ✅ **WORKLOG** + **AMAN_KICKSTART** — current, well-maintained by both.
+  - ❌ **STATUS.md** — was stuck at **2026-06-25 (pre-spine)**, claimed "10 passing tests"; the session-start
+    ritual points at it. **Rewrote it fully** to current reality + an E2E-readiness table.
+  - ⚠️ **MODULE_OWNERSHIP.md** — stale (missing capture #7 + all Round-2/3 net-new). **Refreshed.**
+  - ⚠️ **MIGRATIONS.md** — the two 2026-07-01 migrations (`recon_tiers`, `schemes`) were **unlogged**. **Added them.**
+  - ❌ **`dev/11_Delivery_Tracker.xlsx`** — untouched since **2026-06-25**; effectively abandoned. The markdown
+    WORKLOG is the de-facto tracker. (Decide: retire the xlsx, or regenerate it from the markdown.)
+- **E2E readiness (driver + retailer journeys):** code is green, but **live E2E is gated by two things** —
+  (1) **migration backlog NOT applied** to the DB (Batch 1–4 + recon_tiers + schemes) → `/capture`, approval,
+  credit, adjust, `/schemes` will error at runtime until applied (Hardik / SQL Editor); (2) **`.env.local`
+  keys absent** in the run env (Aman / vault). Auth is dormant (fine for testing; a real go-live gate).
+  Full gate table + the step-by-step journey test script live in `docs/STATUS.md`.
+- **Then built (Aman lane, all green — typecheck 0 · 120 tests · build):**
+  - **Auth login UI** — `/login` phone→OTP→verify to Hardik's contract (E164 normalize, resend/change-number);
+    app shell now **role-aware** ((app)/layout resolves `getSessionUser` → `navItemsForRole` filters nav +
+    real **sign-out**; null user shows all so dormant-auth dev stays open). **Confirmed the role→screen matrix**
+    (AUTH_PLAN). Raised 2 asks to Hardik: gate `/capture`+`/schemes` in rbac.ts, wire `requireRole` into actions.
+  - **Dashboard live tiles + role-scope (#24)** — `getDashboardSummary` composes invoices/collections/low-stock/
+    vans/orders accessors (seed-safe, whole-summary SEED fallback, `source` flag); owner sees financials +
+    route/top-SKU, warehouse/driver_rep get the operational view; live low-stock reorder list for all.
+  - **`supabase/_apply_pending.sql`** — the paste-once for the whole migration backlog (was referenced in docs
+    but never created). Hand to whoever runs the SQL Editor.
+- **Blocked:** the **14 new catalogue SKUs** need the source file (`Catalogue Cola.xlsx`/`scratch_catalogue.json`,
+  not in repo) — won't fabricate HSN/MRP/prices. Gluco→Juice already done in seed (SKU039).
+- **Next:** apply migrations + keys (Hardik/Aman) → **walk the driver+retailer journeys** (`docs/E2E.md`).
 
 ### 2026-07-01 · Hardik + Claude · client Round-2/3 build (`30thJunechanges`)
 Client answered Round-2 + sent updated Catalogue, redesigned challan, dual driver dir, logo, 2 invoices.

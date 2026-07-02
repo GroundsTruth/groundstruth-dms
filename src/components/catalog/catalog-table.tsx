@@ -247,6 +247,7 @@ export function CatalogTable({
                     <TableHead>Product</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Pack</TableHead>
+                    <TableHead className="text-right">MRP</TableHead>
                     <TableHead className="text-right">Rate/case</TableHead>
                     <TableHead>HSN / Tax</TableHead>
                     <TableHead>Status</TableHead>
@@ -263,7 +264,21 @@ export function CatalogTable({
                       </TableCell>
                       <TableCell className="font-medium">{s.name}</TableCell>
                       <TableCell className="text-muted-foreground">{s.category}</TableCell>
-                      <TableCell className="tabular-nums">{s.packLabel}</TableCell>
+                      <TableCell className="tabular-nums">
+                        {s.packLabel}
+                        {s.unitsPerCase != null ? (
+                          <span className="block text-xs text-muted-foreground">
+                            {s.unitsPerCase}/case
+                          </span>
+                        ) : null}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {s.mrp != null ? (
+                          rupees(s.mrp)
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right tabular-nums">
                         {s.ratePerCase != null ? (
                           rupees(s.ratePerCase)
@@ -301,6 +316,7 @@ export function CatalogTable({
                     <p className="mt-0.5 text-xs text-muted-foreground">
                       <span className="font-mono">{s.code}</span> · {s.category} ·{" "}
                       {s.packLabel}
+                      {s.unitsPerCase != null ? ` · ${s.unitsPerCase}/case` : ""}
                     </p>
                     {s.hsn || taxLabel(s) ? (
                       <p className="mt-0.5 text-xs text-muted-foreground">
@@ -314,9 +330,16 @@ export function CatalogTable({
                     </div>
                   </button>
                   <div className="flex shrink-0 flex-col items-end gap-1.5">
-                    <p className="text-base font-semibold tabular-nums">
-                      {s.ratePerCase != null ? rupees(s.ratePerCase) : "—"}
-                    </p>
+                    <div className="text-right leading-tight">
+                      <p className="text-base font-semibold tabular-nums">
+                        {s.ratePerCase != null ? rupees(s.ratePerCase) : "—"}
+                      </p>
+                      {s.mrp != null ? (
+                        <p className="text-xs text-muted-foreground tabular-nums">
+                          MRP {rupees(s.mrp)}
+                        </p>
+                      ) : null}
+                    </div>
                     <RowActions s={s} onEdit={openEdit} onToggle={toggleActive} />
                   </div>
                 </CardContent>
