@@ -16,10 +16,12 @@ const ROUTE_ACCESS: { prefix: string; roles: AppRole[] }[] = [
   { prefix: "/catalog", roles: ["owner", "warehouse", "driver_rep"] },
   { prefix: "/inventory", roles: ["owner", "warehouse"] },
   { prefix: "/orders", roles: ["owner", "driver_rep"] },
+  { prefix: "/capture", roles: ["owner", "driver_rep"] },
   { prefix: "/vans", roles: ["owner", "warehouse", "driver_rep"] },
   { prefix: "/invoices", roles: ["owner", "warehouse", "driver_rep"] },
   { prefix: "/collections", roles: ["owner", "driver_rep"] },
   { prefix: "/retailers", roles: ["owner", "driver_rep"] },
+  { prefix: "/schemes", roles: ["owner"] },
   { prefix: "/users", roles: ["owner"] },
 ];
 

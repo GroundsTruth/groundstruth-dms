@@ -3,7 +3,7 @@ import { canAccess, allowedRoutesFor } from "../rbac";
 
 describe("canAccess", () => {
   it("owner can access every app route", () => {
-    for (const p of ["/dashboard", "/inventory", "/orders", "/vans", "/invoices", "/collections", "/retailers", "/users"]) {
+    for (const p of ["/dashboard", "/inventory", "/orders", "/capture", "/vans", "/invoices", "/collections", "/retailers", "/schemes", "/users"]) {
       expect(canAccess("owner", p)).toBe(true);
     }
   });
@@ -21,6 +21,18 @@ describe("canAccess", () => {
     expect(canAccess("driver_rep", "/retailers")).toBe(true);
     expect(canAccess("driver_rep", "/inventory")).toBe(false);
     expect(canAccess("driver_rep", "/users")).toBe(false);
+  });
+
+  it("capture is owner + driver_rep only (warehouse blocked)", () => {
+    expect(canAccess("owner", "/capture")).toBe(true);
+    expect(canAccess("driver_rep", "/capture")).toBe(true);
+    expect(canAccess("warehouse", "/capture")).toBe(false);
+  });
+
+  it("schemes is owner-only (admin-configurable)", () => {
+    expect(canAccess("owner", "/schemes")).toBe(true);
+    expect(canAccess("warehouse", "/schemes")).toBe(false);
+    expect(canAccess("driver_rep", "/schemes")).toBe(false);
   });
 
   it("matches nested paths by prefix (/vans/123 → /vans rule)", () => {
