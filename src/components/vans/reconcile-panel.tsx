@@ -73,13 +73,17 @@ export function ReconcilePanel({
             <div><dt className="text-muted-foreground">Invoiced</dt><dd className="tabular-nums">{row.qtySold}</dd></div>
             <div>
               <dt className="text-muted-foreground">Stock variance</dt>
-              <dd className={`tabular-nums ${row.variance !== 0 ? "font-semibold text-destructive" : ""}`}>{row.variance}</dd>
+              <dd className={`tabular-nums ${row.variance !== 0 ? "font-semibold text-destructive" : ""}`}>
+                {row.variance} <span className="text-xs font-normal text-muted-foreground">({row.variancePct}%)</span>
+              </dd>
             </div>
             <div><dt className="text-muted-foreground">Cash expected</dt><dd className="tabular-nums">{inr(row.cashExpected)}</dd></div>
             <div><dt className="text-muted-foreground">Cash collected</dt><dd className="tabular-nums">{inr(row.cashCollected)}</dd></div>
             <div>
               <dt className="text-muted-foreground">Cash variance</dt>
-              <dd className={`tabular-nums ${row.cashVariance !== 0 ? "font-semibold text-destructive" : ""}`}>{inr(row.cashVariance)}</dd>
+              <dd className={`tabular-nums ${row.cashVariance !== 0 ? "font-semibold text-destructive" : ""}`}>
+                {inr(row.cashVariance)} <span className="text-xs font-normal text-muted-foreground">({row.cashVariancePct}%)</span>
+              </dd>
             </div>
           </dl>
           <p className="text-xs text-muted-foreground">

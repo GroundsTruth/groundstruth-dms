@@ -29,7 +29,8 @@ export function RouteSalesChart({
           tickFormatter={(v: string) => v.replace("Route ", "R")}
         />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <Bar dataKey="sales" fill="var(--color-sales)" radius={[6, 6, 0, 0]} />
+        {/* maxBarSize keeps 1–2 routes with data from rendering as full-width slabs */}
+        <Bar dataKey="sales" fill="var(--color-sales)" radius={[6, 6, 0, 0]} maxBarSize={48} />
       </BarChart>
     </ChartContainer>
   );

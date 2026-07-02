@@ -1,6 +1,6 @@
 import { getLowStockSkus } from "@/lib/inventory/data";
 import { getRecentInvoices } from "@/lib/sales/invoice-data";
-import { getRecentOrders } from "@/lib/sales/orders-data";
+import { getRecentOrders, ROUTES } from "@/lib/sales/orders-data";
 import { getVanLoads } from "@/lib/van/data";
 import { getCollections } from "@/lib/collections/data";
 
@@ -100,15 +100,16 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     const pending = Math.max(0, revenue - collected);
 
     // Route sales from invoiced/confirmed orders (orders carry the route; invoices don't).
-    const routeMap = new Map<string, number>();
+    // ALL routes are shown, zero-filled — with data on only 1–2 routes the chart
+    // otherwise collapses into a couple of full-width bars (client bug 2026-07-02:
+    // "Sales by route looks off — earlier we were able to see all routes").
+    const routeMap = new Map<string, number>(ROUTES.map((r) => [r, 0]));
     for (const o of orders) {
       if (o.status === "cancelled" || o.status === "pending_approval") continue;
       const key = o.route ?? "Unassigned";
       routeMap.set(key, (routeMap.get(key) ?? 0) + o.total);
     }
-    const routeSales = [...routeMap.entries()]
-      .map(([route, sales]) => ({ route, sales }))
-      .sort((a, b) => b.sales - a.sales);
+    const routeSales = [...routeMap.entries()].map(([route, sales]) => ({ route, sales }));
 
     const lowStockSkus: LowStockRow[] = lowStock.map((s) => ({
       code: s.code,

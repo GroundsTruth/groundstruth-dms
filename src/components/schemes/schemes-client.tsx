@@ -7,6 +7,7 @@ import { createScheme, setSchemeActive } from "@/lib/schemes/actions";
 import type { SchemeRow } from "@/lib/schemes/data";
 import type { SkuOption } from "@/lib/inventory/data";
 import { FormField, FormActions } from "@/components/kit/form-field";
+import { IntInput } from "@/components/kit/validated-inputs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/kit/status-badge";
@@ -70,9 +71,9 @@ export function SchemesClient({ schemes, skus }: { schemes: SchemeRow[]; skus: S
             <FormField label="Name" required>{(p) => <Input {...p} value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} placeholder="e.g. 10+1 Water" />}</FormField>
             <div />
             <FormField label="Buy (trigger SKU)" required>{() => skuSelect(d.triggerSkuId, (v) => setD({ ...d, triggerSkuId: v }))}</FormField>
-            <FormField label="Trigger qty (cases)" required>{(p) => <Input {...p} type="number" min={1} step="any" value={d.triggerQty} onChange={(e) => setD({ ...d, triggerQty: e.target.value })} />}</FormField>
+            <FormField label="Trigger qty (cases)" required>{(p) => <IntInput {...p} value={d.triggerQty} onValueChange={(v) => setD({ ...d, triggerQty: v })} />}</FormField>
             <FormField label="Get free (SKU)" required>{() => skuSelect(d.freeSkuId, (v) => setD({ ...d, freeSkuId: v }))}</FormField>
-            <FormField label="Free qty (cases)" required>{(p) => <Input {...p} type="number" min={1} step="any" value={d.freeQty} onChange={(e) => setD({ ...d, freeQty: e.target.value })} />}</FormField>
+            <FormField label="Free qty (cases)" required>{(p) => <IntInput {...p} value={d.freeQty} onValueChange={(v) => setD({ ...d, freeQty: v })} />}</FormField>
           </div>
           {error ? <p className="mt-3 text-sm font-medium text-destructive">{error}</p> : null}
           <FormActions>

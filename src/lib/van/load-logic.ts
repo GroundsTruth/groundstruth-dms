@@ -24,7 +24,8 @@ export function validateLoad(input: LoadInput): string | null {
       return "Every line needs a quantity greater than 0.";
     }
     if (seen.has(l.skuId)) {
-      return `Duplicate SKU ${l.skuId} — merge it into one line.`;
+      // No raw ids in user-facing errors (bug round 2026-07-02).
+      return "The same SKU appears on more than one line — merge the duplicates.";
     }
     seen.add(l.skuId);
   }

@@ -133,6 +133,10 @@ export default async function DashboardPage() {
           <CardTitle className="text-base flex items-center gap-2">
             <Boxes className="h-4 w-4" /> Low stock — reorder
           </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            A SKU is low when it has under <span className="font-medium">5 days of cover</span> —
+            on-hand cases ÷ its average daily sales (client-set threshold).
+          </p>
         </CardHeader>
         <CardContent>
           {s.lowStockSkus.length === 0 ? (

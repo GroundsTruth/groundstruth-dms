@@ -31,7 +31,12 @@ export default async function InventoryPage() {
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
         <KpiCard label="Cases on hand" value={String(totalCases)} icon={Boxes} accent />
         <KpiCard label="SKUs in stock" value={String(inStock)} icon={PackageX} />
-        <KpiCard label="Low stock" value={String(lowCount)} icon={TriangleAlert} />
+        <KpiCard
+          label="Low stock"
+          value={String(lowCount)}
+          icon={TriangleAlert}
+          sub="< 5 days of cover (on-hand ÷ avg daily sales)"
+        />
       </div>
 
       <div className="mb-8">
