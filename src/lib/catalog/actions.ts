@@ -5,7 +5,7 @@ import type { SkuInput } from "./types";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const CATEGORIES = [
-  "Cola", "Lemon", "Orange", "Soda", "Energy", "Juice", "Water", "Other",
+  "CSD", "Soda", "Energy", "Juice", "Water", "Other",
 ] as const;
 
 function validate(input: SkuInput): string | null {

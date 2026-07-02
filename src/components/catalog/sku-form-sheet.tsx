@@ -18,8 +18,21 @@ import { FormField, FormActions } from "@/components/kit/form-field";
 import { Spinner } from "@/components/kit/loading-state";
 
 const CATEGORIES = [
-  "Cola", "Lemon", "Orange", "Soda", "Energy", "Juice", "Water", "Other",
+  "CSD", "Soda", "Energy", "Juice", "Water", "Other",
 ];
+
+/**
+ * Per-category tax defaults from the client Catalogue (2026-07-01, confirmed).
+ * Picking a category prefills HSN + GST% (bug round: "HSN not prefilled basis
+ * the category") — still editable for exceptions.
+ */
+const CATEGORY_TAX: Record<string, { hsn: string; gst: string } | undefined> = {
+  CSD: { hsn: "22021010", gst: "40" },
+  Energy: { hsn: "22021090", gst: "40" },
+  Juice: { hsn: "22029920", gst: "5" },
+  Water: { hsn: "22011010", gst: "5" },
+  Soda: { hsn: "22011010", gst: "5" },
+};
 
 /**
  * Add / edit SKU form in a slide-over Sheet. `editSku=null` → add mode (code is
@@ -36,7 +49,7 @@ export function SkuFormSheet({
   onOpenChange: (open: boolean) => void;
 }) {
   const [name, setName] = useState("");
-  const [category, setCategory] = useState("Cola");
+  const [category, setCategory] = useState("CSD");
   const [packMl, setPackMl] = useState("");
   const [packLabel, setPackLabel] = useState("");
   const [rate, setRate] = useState("");
@@ -67,17 +80,30 @@ export function SkuFormSheet({
       setUnitsPerCase(numOrEmpty(editSku.unitsPerCase));
     } else {
       setName("");
-      setCategory("Cola");
+      setCategory("CSD");
       setPackMl("");
       setPackLabel("");
       setRate("");
-      setHsn("");
-      setGst("");
+      // Add mode starts on CSD → prefill its tax defaults right away.
+      setHsn(CATEGORY_TAX.CSD?.hsn ?? "");
+      setGst(CATEGORY_TAX.CSD?.gst ?? "");
       setCess("");
       setMrp("");
       setUnitsPerCase("");
     }
   }, [open, editSku]);
+
+  /** Category change prefills HSN/GST from the catalogue defaults (add mode, or
+   * whenever the fields still hold the previous category's defaults / are empty). */
+  function onCategoryChange(next: string) {
+    const prev = CATEGORY_TAX[category];
+    const d = CATEGORY_TAX[next];
+    setCategory(next);
+    const hsnUntouched = hsn === "" || hsn === prev?.hsn;
+    const gstUntouched = gst === "" || gst === prev?.gst;
+    if (d && hsnUntouched) setHsn(d.hsn);
+    if (d && gstUntouched) setGst(d.gst);
+  }
 
   const nameError = touched && !name.trim() ? "Product name is required." : undefined;
   const packLabelError = touched && !packLabel.trim() ? "Pack label is required." : undefined;
@@ -171,7 +197,7 @@ export function SkuFormSheet({
               <select
                 {...p}
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => onCategoryChange(e.target.value)}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
                 {CATEGORIES.map((c) => (

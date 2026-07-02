@@ -1,7 +1,8 @@
+// Client taxonomy (Catalogue 2026-07-01): carbonated soft drinks — cola, lemon,
+// orange, jeera, Power UP, Zero — are ONE category, "CSD" (the flavour lives in the
+// name). Bug round 2026-07-02: "Category cola do not exist basis the catalogue".
 export type Category =
-  | "Cola"
-  | "Lemon"
-  | "Orange"
+  | "CSD"
   | "Soda"
   | "Energy"
   | "Juice"

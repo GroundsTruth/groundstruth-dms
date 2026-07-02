@@ -67,6 +67,11 @@ export const ALIASES: Record<string, string> = {
   "campa energy gb 330 ml can": "SKU025", // Gold Boost Energy Can 330ml
   "rasik 150 ml nimbu pani": "SKU038", // Rasiki Nimbu Pani 150ml
   "rasik 500 ml": "SKU035", // Rasiki Mango 500ml (only Rasiki at 500ml)
+  // 7/1 Catalogue renames — old feed names must keep resolving to the same SKUs.
+  "mix 500 ml": "SKU029", // now "Suncrush Mixed Fruit - 500 ML"
+  "rasiki mix 150 ml": "SKU037", // now "Rasiki Mixed Fruit - 150 ML"
+  "csd can lemon 200 ml": "SKU002", // pack corrected to 185 ML
+  "csd can zero 200 ml": "SKU003", // pack corrected to 185 ML
 };
 
 export function resolveSku(input: string, skus: Sku[] = SEED_SKUS): ResolveResult {
